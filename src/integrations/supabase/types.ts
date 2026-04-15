@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      applications: {
+        Row: {
+          active_listings: string | null
+          agency_name: string
+          associations: string | null
+          created_at: string | null
+          email: string
+          flags: string[] | null
+          id: string
+          idealista_profile: string | null
+          monthly_inquiries: string | null
+          pitch: string | null
+          rejection_reason: string | null
+          status: string
+          website: string | null
+          years_operating: string | null
+        }
+        Insert: {
+          active_listings?: string | null
+          agency_name: string
+          associations?: string | null
+          created_at?: string | null
+          email: string
+          flags?: string[] | null
+          id?: string
+          idealista_profile?: string | null
+          monthly_inquiries?: string | null
+          pitch?: string | null
+          rejection_reason?: string | null
+          status?: string
+          website?: string | null
+          years_operating?: string | null
+        }
+        Update: {
+          active_listings?: string | null
+          agency_name?: string
+          associations?: string | null
+          created_at?: string | null
+          email?: string
+          flags?: string[] | null
+          id?: string
+          idealista_profile?: string | null
+          monthly_inquiries?: string | null
+          pitch?: string | null
+          rejection_reason?: string | null
+          status?: string
+          website?: string | null
+          years_operating?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           agency_name: string | null
