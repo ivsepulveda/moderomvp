@@ -73,10 +73,10 @@ const Applications = () => {
 
   const updateStatus = async (id: string, status: Application["status"], reason?: string) => {
     setUpdating(true);
-    const update: Record<string, string> = { status };
-    if (reason) update.rejection_reason = reason;
-
-    const { error } = await supabase.from("applications").update(update).eq("id", id);
+    const { error } = await supabase
+      .from("applications")
+      .update({ status, ...(reason ? { rejection_reason: reason } : {}) })
+      .eq("id", id);
     if (error) {
       toast.error("Failed to update application");
       console.error(error);
