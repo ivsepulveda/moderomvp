@@ -1,7 +1,8 @@
 import ModeroLogo from "@/components/ModeroLogo";
 import ApplicationForm from "@/components/ApplicationForm";
-import { Shield, Zap, TrendingUp, Users, CheckCircle, Building } from "lucide-react";
+import { Shield, Zap, TrendingUp, Users, CheckCircle, Building, LogIn, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 
 const ValueCard = ({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) => (
@@ -30,9 +31,29 @@ const Index = () => {
       <nav className="flex items-center justify-between px-6 md:px-12 py-5 max-w-7xl mx-auto">
         <ModeroLogo />
         <div className="flex items-center gap-3">
-          <a href="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
-            Admin Login
-          </a>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2 rounded-xl border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all">
+                <LogIn className="w-4 h-4" />
+                Modero Login
+                <ChevronDown className="w-3 h-3 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem asChild>
+                <a href="/login" className="cursor-pointer gap-2">
+                  <Shield className="w-4 h-4" />
+                  Admin Login
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a href="/login" className="cursor-pointer gap-2">
+                  <Building className="w-4 h-4" />
+                  Agency Login
+                </a>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button variant="hero" size="lg" onClick={() => {
           setShowForm(true);
           setTimeout(() => document.getElementById("apply")?.scrollIntoView({ behavior: "smooth" }), 100);
