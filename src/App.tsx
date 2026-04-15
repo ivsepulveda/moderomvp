@@ -8,6 +8,9 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Login from "./pages/Login.tsx";
+import TenantAuth from "./pages/TenantAuth.tsx";
+import TenantOnboarding from "./pages/TenantOnboarding.tsx";
+import ApplicationStatus from "./pages/ApplicationStatus.tsx";
 import AdminLayout from "./components/AdminLayout.tsx";
 import AdminDashboard from "./pages/admin/Dashboard.tsx";
 import Applications from "./pages/admin/Applications.tsx";
@@ -31,6 +34,9 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/apply" element={<TenantAuth />} />
+            <Route path="/onboarding" element={<ProtectedRoute><TenantOnboarding /></ProtectedRoute>} />
+            <Route path="/application-status" element={<ProtectedRoute><ApplicationStatus /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
               <Route index element={<AdminDashboard />} />
               <Route path="applications" element={<Applications />} />
