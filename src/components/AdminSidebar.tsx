@@ -24,6 +24,13 @@ const mainItems = [
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
 
+const agencyItems = [
+  { title: "Agency Dashboard", url: "/agency", icon: LayoutDashboard },
+  { title: "Tenants", url: "/agency/tenants", icon: ClipboardList },
+  { title: "Listings", url: "/agency/listings", icon: Building2 },
+  { title: "Agency Settings", url: "/agency/settings", icon: Settings },
+];
+
 export function AdminSidebar() {
   const { state } = useSidebar();
   const { signOut } = useAuth();
