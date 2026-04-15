@@ -24,6 +24,13 @@ const mainItems = [
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
 
+const agencyItems = [
+  { title: "Agency Dashboard", url: "/agency", icon: LayoutDashboard },
+  { title: "Tenants", url: "/agency/tenants", icon: ClipboardList },
+  { title: "Listings", url: "/agency/listings", icon: Building2 },
+  { title: "Agency Settings", url: "/agency/settings", icon: Settings },
+];
+
 export function AdminSidebar() {
   const { state } = useSidebar();
   const { signOut } = useAuth();
@@ -49,6 +56,29 @@ export function AdminSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      end
+                      className="hover:bg-accent/50 transition-colors"
+                      activeClassName="bg-accent text-accent-foreground font-semibold"
+                    >
+                      <item.icon className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Agency Portal</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {agencyItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
