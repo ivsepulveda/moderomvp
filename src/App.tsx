@@ -13,6 +13,11 @@ import AdminDashboard from "./pages/admin/Dashboard.tsx";
 import Applications from "./pages/admin/Applications.tsx";
 import Agencies from "./pages/admin/Agencies.tsx";
 import AdminSettings from "./pages/admin/Settings.tsx";
+import AgencyLayout from "./components/AgencyLayout.tsx";
+import AgencyDashboard from "./pages/agency/Dashboard.tsx";
+import Tenants from "./pages/agency/Tenants.tsx";
+import Listings from "./pages/agency/Listings.tsx";
+import AgencySettings from "./pages/agency/Settings.tsx";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +36,12 @@ const App = () => (
               <Route path="applications" element={<Applications />} />
               <Route path="agencies" element={<Agencies />} />
               <Route path="settings" element={<AdminSettings />} />
+            </Route>
+            <Route path="/agency" element={<ProtectedRoute><AgencyLayout /></ProtectedRoute>}>
+              <Route index element={<AgencyDashboard />} />
+              <Route path="tenants" element={<Tenants />} />
+              <Route path="listings" element={<Listings />} />
+              <Route path="settings" element={<AgencySettings />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

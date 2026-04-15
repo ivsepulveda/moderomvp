@@ -41,13 +41,13 @@ const Index = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem asChild>
-                <a href="/login" className="cursor-pointer gap-2">
+                <a href="/login?type=admin" className="cursor-pointer gap-2">
                   <Shield className="w-4 h-4" />
                   Admin Login
                 </a>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <a href="/login" className="cursor-pointer gap-2">
+                <a href="/login?type=agency" className="cursor-pointer gap-2">
                   <Building className="w-4 h-4" />
                   Agency Login
                 </a>

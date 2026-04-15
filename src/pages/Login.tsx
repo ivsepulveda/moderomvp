@@ -1,14 +1,19 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import ModeroLogo from "@/components/ModeroLogo";
-import { Mail, Lock, ArrowRight, Shield } from "lucide-react";
+import { Mail, Lock, ArrowRight, Shield, Building2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Login = () => {
+  const [searchParams] = useSearchParams();
+  const loginType = searchParams.get("type") === "agency" ? "agency" : "admin";
+  const [activeTab, setActiveTab] = useState<"admin" | "agency">(loginType);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,9 +38,31 @@ const Login = () => {
           description: "We've sent you a confirmation link.",
         });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate("/admin");
+        
+        // Fetch role to decide where to redirect
+        if (data.user) {
+          const { data: roles } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", data.user.id);
+          
+          const userRoles = roles?.map((r: any) => r.role) || [];
+          
+          if (activeTab === "admin" && userRoles.includes("admin")) {
+            navigate("/admin");
+          } else if (activeTab === "agency" && userRoles.includes("agency")) {
+            navigate("/agency");
+          } else if (userRoles.includes("admin")) {
+            navigate("/admin");
+          } else if (userRoles.includes("agency")) {
+            navigate("/agency");
+          } else {
+            // No role assigned yet — default based on tab
+            navigate(activeTab === "admin" ? "/admin" : "/agency");
+          }
+        }
       }
     } catch (error: any) {
       toast({
@@ -48,6 +75,8 @@ const Login = () => {
     }
   };
 
+  const isAdmin = activeTab === "admin";
+
   return (
     <div className="min-h-screen flex gradient-hero">
       {/* Left decorative panel */}
@@ -57,23 +86,42 @@ const Login = () => {
         <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
         <div className="relative z-10 text-center px-12 space-y-6">
           <div className="w-20 h-20 gradient-primary rounded-2xl flex items-center justify-center mx-auto shadow-orange">
-            <Shield className="w-10 h-10 text-primary-foreground" />
+            {isAdmin ? (
+              <Shield className="w-10 h-10 text-primary-foreground" />
+            ) : (
+              <Building2 className="w-10 h-10 text-primary-foreground" />
+            )}
           </div>
-          <h2 className="text-3xl font-bold text-foreground">Control Room</h2>
+          <h2 className="text-3xl font-bold text-foreground">
+            {isAdmin ? "Control Room" : "Agency Portal"}
+          </h2>
           <p className="text-muted-foreground text-lg leading-relaxed max-w-sm mx-auto">
-            Manage your agency network, review applications, and monitor tenant intelligence — all in one place.
+            {isAdmin
+              ? "Manage your agency network, review applications, and monitor tenant intelligence — all in one place."
+              : "Access your tenant intelligence dashboard, manage listings, and track pre-qualified inquiries."}
           </p>
           <div className="flex items-center justify-center gap-8 pt-4">
-            {[
-              { value: "150+", label: "Agencies" },
-              { value: "99.9%", label: "Uptime" },
-              { value: "3", label: "Markets" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-2xl font-bold text-primary">{stat.value}</div>
-                <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
-              </div>
-            ))}
+            {isAdmin
+              ? [
+                  { value: "150+", label: "Agencies" },
+                  { value: "99.9%", label: "Uptime" },
+                  { value: "3", label: "Markets" },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center">
+                    <div className="text-2xl font-bold text-primary">{stat.value}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
+                  </div>
+                ))
+              : [
+                  { value: "87%", label: "Fraud Blocked" },
+                  { value: "3x", label: "Faster Leasing" },
+                  { value: "€12k", label: "Saved/mo" },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center">
+                    <div className="text-2xl font-bold text-primary">{stat.value}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
+                  </div>
+                ))}
           </div>
         </div>
       </div>
@@ -83,12 +131,24 @@ const Login = () => {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center space-y-4">
             <ModeroLogo size="lg" />
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "admin" | "agency")} className="w-full">
+              <TabsList className="w-full">
+                <TabsTrigger value="admin" className="flex-1 gap-2">
+                  <Shield className="w-4 h-4" /> Admin
+                </TabsTrigger>
+                <TabsTrigger value="agency" className="flex-1 gap-2">
+                  <Building2 className="w-4 h-4" /> Agency
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             <div>
               <h1 className="text-2xl font-bold text-foreground">
                 {isSignUp ? "Create your account" : "Welcome back"}
               </h1>
               <p className="text-muted-foreground mt-1 text-sm">
-                {isSignUp ? "Sign up to access the Control Room" : "Sign in to the Control Room"}
+                {isSignUp
+                  ? `Sign up for the ${isAdmin ? "Control Room" : "Agency Portal"}`
+                  : `Sign in to the ${isAdmin ? "Control Room" : "Agency Portal"}`}
               </p>
             </div>
           </div>
@@ -101,7 +161,7 @@ const Login = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@modero.com"
+                  placeholder={isAdmin ? "you@modero.com" : "you@agency.com"}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-11 h-12 rounded-xl bg-card border-border/60 focus:border-primary/40 transition-colors"
@@ -130,7 +190,7 @@ const Login = () => {
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground" />
               ) : (
                 <>
-                  <LogInIcon className="w-5 h-5 mr-2" />
+                  {isAdmin ? <Shield className="w-5 h-5 mr-2" /> : <Building2 className="w-5 h-5 mr-2" />}
                   {isSignUp ? "Create Account" : "Sign In"}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </>
@@ -158,14 +218,5 @@ const Login = () => {
     </div>
   );
 };
-
-// Inline icon to avoid naming conflict
-const LogInIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-    <polyline points="10 17 15 12 10 7" />
-    <line x1="15" y1="12" x2="3" y2="12" />
-  </svg>
-);
 
 export default Login;
