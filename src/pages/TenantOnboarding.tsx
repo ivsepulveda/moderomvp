@@ -273,7 +273,18 @@ const TenantOnboarding = () => {
           .eq("id", applicationId);
       }
 
-      toast({ title: "Application submitted!", description: "Your application is now being reviewed." });
+      // Trigger scoring engine
+      try {
+        const { data: scoreResult, error: scoreError } = await supabase.functions.invoke("calculate-score", {
+          body: { application_id: applicationId },
+        });
+        if (scoreError) console.error("Scoring error:", scoreError);
+        else console.log("Score calculated:", scoreResult);
+      } catch (scoreErr) {
+        console.error("Failed to invoke scoring:", scoreErr);
+      }
+
+      toast({ title: "Application submitted!", description: "Your trust score is being calculated." });
       navigate("/application-status");
     } catch (error: any) {
       toast({ title: "Upload error", description: error.message, variant: "destructive" });
