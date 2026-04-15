@@ -4,7 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle, ArrowRight, ArrowLeft, Building2, Globe, BarChart3, Upload, FileText } from "lucide-react";
+import { CheckCircle, ArrowRight, ArrowLeft, Building2, Globe, BarChart3, Upload, FileText, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface FormData {
   agencyName: string;
@@ -25,9 +27,20 @@ const STEPS = [
   { title: "Branding & Pitch", icon: FileText },
 ];
 
+function computeFlags(data: FormData): string[] {
+  const flags: string[] = [];
+  if (data.email.endsWith("@gmail.com") || data.email.endsWith("@hotmail.com") || data.email.endsWith("@yahoo.com")) {
+    flags.push("Personal email");
+  }
+  if (!data.website) flags.push("No website");
+  if (data.activeListings === "<10") flags.push("Low listings (<10)");
+  return flags;
+}
+
 const ApplicationForm = () => {
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     agencyName: "",
     website: "",
@@ -52,8 +65,30 @@ const ApplicationForm = () => {
     return false;
   };
 
-  const handleSubmit = () => {
-    setSubmitted(true);
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      const flags = computeFlags(formData);
+      const { error } = await supabase.from("applications").insert({
+        agency_name: formData.agencyName.trim(),
+        email: formData.email.trim(),
+        website: formData.website.trim() || null,
+        idealista_profile: formData.idealistaProfile.trim() || null,
+        active_listings: formData.activeListings || null,
+        monthly_inquiries: formData.monthlyInquiries || null,
+        years_operating: formData.yearsOperating || null,
+        associations: formData.associations.trim() || null,
+        pitch: formData.pitch.trim() || null,
+        flags,
+      });
+      if (error) throw error;
+      setSubmitted(true);
+    } catch (err: any) {
+      toast.error("Failed to submit application. Please try again.");
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -195,7 +230,7 @@ const ApplicationForm = () => {
             <div className="space-y-4">
               <div>
                 <Label>Agency Logo</Label>
-                <div className="mt-1.5 border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
+                <div className="mt-1.5 border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors cursor-pointer relative">
                   <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                   <p className="text-sm text-muted-foreground">
                     {formData.logoFile ? formData.logoFile.name : "Click to upload or drag & drop"}
@@ -206,7 +241,6 @@ const ApplicationForm = () => {
                     accept="image/*"
                     className="absolute inset-0 opacity-0 cursor-pointer"
                     onChange={(e) => update("logoFile", e.target.files?.[0] || null)}
-                    style={{ position: "absolute", inset: 0, opacity: 0 }}
                   />
                 </div>
               </div>
@@ -235,7 +269,8 @@ const ApplicationForm = () => {
               Continue <ArrowRight className="w-4 h-4" />
             </Button>
           ) : (
-            <Button variant="hero" onClick={handleSubmit} disabled={!canProceed()} className="gap-2">
+            <Button variant="hero" onClick={handleSubmit} disabled={!canProceed() || submitting} className="gap-2">
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               Submit Application <ArrowRight className="w-4 h-4" />
             </Button>
           )}
