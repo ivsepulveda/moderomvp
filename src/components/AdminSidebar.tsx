@@ -26,6 +26,7 @@ const mainItems = [
 
 export function AdminSidebar() {
   const { state } = useSidebar();
+  const { signOut } = useAuth();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const currentPath = location.pathname;
