@@ -78,6 +78,12 @@ export function AdminSidebar() {
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={signOut} className="text-muted-foreground hover:text-destructive transition-colors">
+              <LogOut className="mr-2 h-4 w-4" />
+              {!collapsed && <span>Sign Out</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
