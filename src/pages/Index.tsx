@@ -29,7 +29,11 @@ const Index = () => {
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 md:px-12 py-5 max-w-7xl mx-auto">
         <ModeroLogo />
-        <Button variant="hero" size="lg" onClick={() => {
+        <div className="flex items-center gap-3">
+          <a href="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
+            Admin Login
+          </a>
+          <Button variant="hero" size="lg" onClick={() => {
           setShowForm(true);
           setTimeout(() => document.getElementById("apply")?.scrollIntoView({ behavior: "smooth" }), 100);
         }}>

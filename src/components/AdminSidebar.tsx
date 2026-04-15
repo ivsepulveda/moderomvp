@@ -1,6 +1,7 @@
 import { LayoutDashboard, ClipboardList, Building2, Settings, LogOut } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import ModeroLogo from "@/components/ModeroLogo";
 
 import {
