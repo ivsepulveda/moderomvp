@@ -39,6 +39,7 @@ const Index = () => {
         }}>
           Apply Now
         </Button>
+        </div>
       </nav>
 
       {/* Hero */}
