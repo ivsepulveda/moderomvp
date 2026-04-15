@@ -1,6 +1,7 @@
 import { LayoutDashboard, ClipboardList, Building2, Settings, LogOut } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import ModeroLogo from "@/components/ModeroLogo";
 
 import {
@@ -25,6 +26,7 @@ const mainItems = [
 
 export function AdminSidebar() {
   const { state } = useSidebar();
+  const { signOut } = useAuth();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const currentPath = location.pathname;
@@ -74,6 +76,12 @@ export function AdminSidebar() {
                 <LogOut className="mr-2 h-4 w-4" />
                 {!collapsed && <span>Back to Site</span>}
               </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={signOut} className="text-muted-foreground hover:text-destructive transition-colors">
+              <LogOut className="mr-2 h-4 w-4" />
+              {!collapsed && <span>Sign Out</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
