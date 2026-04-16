@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      agency_agents: {
+        Row: {
+          agency_id: string
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          name: string
+          permissions: Json
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          agency_id: string
+          created_at?: string
+          email: string
+          id?: string
+          is_active?: boolean
+          name: string
+          permissions?: Json
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agency_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          permissions?: Json
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           active_listings: string | null
@@ -221,6 +257,8 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          notification_email: string | null
+          onboarding_completed: boolean | null
         }
         Insert: {
           agency_name?: string | null
@@ -230,6 +268,8 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          notification_email?: string | null
+          onboarding_completed?: boolean | null
         }
         Update: {
           agency_name?: string | null
@@ -239,6 +279,8 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          notification_email?: string | null
+          onboarding_completed?: boolean | null
         }
         Relationships: []
       }
