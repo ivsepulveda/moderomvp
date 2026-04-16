@@ -1,89 +1,187 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Building2, Mail, Calendar, MessageSquare, Zap, Shield, ExternalLink,
-  Check, User, Settings, Phone, FileText, Briefcase, AlertTriangle,
-  Zap as ZapIcon, Link2, CreditCard, Save,
+  User, Settings, FileText, Briefcase, AlertTriangle,
+  Zap as ZapIcon, Link2, CreditCard, Save, Globe, History, Fingerprint,
+  DollarSign, Brain,
 } from "lucide-react";
 import { toast } from "sonner";
 
+// --- TYPES ---
+interface ListingRules {
+  min_income_ratio: number;
+  income_gate_enabled: boolean;
+  require_linkedin: boolean;
+  require_db_credit: boolean;
+  require_biometric_id: boolean;
+  require_nie: boolean;
+  residency_history_check: boolean;
+  require_payslips: boolean;
+  require_work_contract: boolean;
+  require_tax_return: boolean;
+  sms_verification: boolean;
+  email_verification: boolean;
+  qualification_decision: "auto_approve" | "manual_review" | "auto_reject";
+  scoring_weights: {
+    db_credit: number;
+    linkedin: number;
+    identity: number;
+    residency: number;
+    verification: number;
+  };
+}
+
+const DEFAULT_RULES: ListingRules = {
+  min_income_ratio: 3,
+  income_gate_enabled: true,
+  require_linkedin: true,
+  require_db_credit: true,
+  require_biometric_id: true,
+  require_nie: false,
+  residency_history_check: false,
+  require_payslips: true,
+  require_work_contract: true,
+  require_tax_return: false,
+  sms_verification: true,
+  email_verification: true,
+  qualification_decision: "manual_review",
+  scoring_weights: {
+    db_credit: 30,
+    linkedin: 20,
+    identity: 20,
+    residency: 15,
+    verification: 15,
+  },
+};
+
+// --- RULE TOGGLE ROW ---
+const RuleToggle = ({
+  icon: Icon,
+  iconColor = "text-primary",
+  iconBg = "bg-primary/10",
+  title,
+  enabledNote,
+  disabledNote,
+  points,
+  enabled,
+  onToggle,
+  children,
+}: {
+  icon: React.ElementType;
+  iconColor?: string;
+  iconBg?: string;
+  title: string;
+  enabledNote: string;
+  disabledNote: string;
+  points: number;
+  enabled: boolean;
+  onToggle: (v: boolean) => void;
+  children?: React.ReactNode;
+}) => (
+  <div className={`p-5 rounded-xl border-2 transition-all ${enabled ? "border-primary/30 bg-primary/5" : "border-border bg-card"}`}>
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
+          <Icon className={`w-5 h-5 ${iconColor}`} />
+        </div>
+        <div>
+          <h4 className="font-semibold text-foreground">{title}</h4>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {enabled ? (
+              <span className="text-primary font-medium">{enabledNote}</span>
+            ) : (
+              <span>{disabledNote}</span>
+            )}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        {enabled && (
+          <Badge variant="outline" className="border-primary/30 text-primary text-xs font-bold">
+            {points}%
+          </Badge>
+        )}
+        <Switch checked={enabled} onCheckedChange={onToggle} />
+      </div>
+    </div>
+    {children && enabled && <div className="mt-4 pl-[52px]">{children}</div>}
+  </div>
+);
+
+// --- MAIN COMPONENT ---
 const AgencySettings = () => {
   const { profile } = useAuth();
 
   // Connection states
   const [zapierWebhook, setZapierWebhook] = useState("");
 
-  // Qualification Rules states
-  const [requireIdVerification, setRequireIdVerification] = useState(true);
-  const [identityBeforeQualification, setIdentityBeforeQualification] = useState(true);
-  const [acceptPassport, setAcceptPassport] = useState(true);
-  const [acceptNationalId, setAcceptNationalId] = useState(true);
-  const [acceptResidencePermit, setAcceptResidencePermit] = useState(false);
+  // Qualification rules state
+  const [rules, setRules] = useState<ListingRules>(DEFAULT_RULES);
 
-  const [phoneVerification, setPhoneVerification] = useState(true);
-  const [emailVerification, setEmailVerification] = useState(true);
-  const [businessEmailVerification, setBusinessEmailVerification] = useState(true);
+  const updateRule = <K extends keyof ListingRules>(key: K, value: ListingRules[K]) => {
+    setRules((prev) => ({ ...prev, [key]: value }));
+  };
 
-  const [creditCheckRequired, setCreditCheckRequired] = useState(true);
-  const [minCreditScore, setMinCreditScore] = useState("54");
+  // Calculate live score
+  const liveScore = useMemo(() => {
+    const w = rules.scoring_weights;
+    let total = 0;
+    if (rules.require_db_credit) total += w.db_credit;
+    if (rules.require_linkedin) total += w.linkedin;
+    if (rules.require_biometric_id || rules.require_nie) total += w.identity;
+    if (rules.residency_history_check) total += w.residency;
+    if (rules.sms_verification || rules.email_verification) total += w.verification;
+    return total;
+  }, [rules]);
 
-  const [maxRentToIncome, setMaxRentToIncome] = useState("40");
-  const [minIncomeMultiplier, setMinIncomeMultiplier] = useState("3");
-  const [reqPayslips, setReqPayslips] = useState(true);
-  const [reqEmploymentContract, setReqEmploymentContract] = useState(false);
-  const [reqTaxDeclaration, setReqTaxDeclaration] = useState(false);
-
-  const [employmentRequired, setEmploymentRequired] = useState(true);
-  const [linkedinRequired, setLinkedinRequired] = useState(true);
-
-  const [reqProofOfIncome, setReqProofOfIncome] = useState(true);
-  const [reqEmploymentContractDoc, setReqEmploymentContractDoc] = useState(false);
-  const [reqIdDocument, setReqIdDocument] = useState(true);
-  const [reqTaxDeclarationDoc, setReqTaxDeclarationDoc] = useState(false);
-
-  // Verification Integrations
-  const [linkedinVerification, setLinkedinVerification] = useState(true);
-  const [biometricVerification, setBiometricVerification] = useState(true);
-  const [smsVerification, setSmsVerification] = useState(true);
-  const [businessEmailVerify, setBusinessEmailVerify] = useState(true);
-  const [creditCheck, setCreditCheck] = useState(false);
-  const [bankVerification, setBankVerification] = useState(false);
-
-  // Risk Flags
-  const [flagCreditBelow, setFlagCreditBelow] = useState(true);
-  const [flagMissingIdentity, setFlagMissingIdentity] = useState(true);
-  const [flagIncompleteDocs, setFlagIncompleteDocs] = useState(true);
-  const [flagUnverifiedContact, setFlagUnverifiedContact] = useState(true);
-
-  // Qualification Logic
-  const [qualificationDecision, setQualificationDecision] = useState("auto_approve");
-
-  // Calculate max verification score
-  const verificationScore = [
-    linkedinVerification ? 15 : 0,
-    biometricVerification ? 25 : 0,
-    smsVerification ? 10 : 0,
-    businessEmailVerify ? 10 : 0,
-    creditCheck ? 30 : 0,
-    bankVerification ? 20 : 0,
-  ].reduce((a, b) => a + b, 0);
+  // Score breakdown for the bar
+  const scoreSegments = useMemo(() => {
+    const w = rules.scoring_weights;
+    return [
+      { label: "D&B Credit", value: rules.require_db_credit ? w.db_credit : 0, max: w.db_credit, color: "bg-orange-500" },
+      { label: "LinkedIn", value: rules.require_linkedin ? w.linkedin : 0, max: w.linkedin, color: "bg-blue-500" },
+      { label: "Biometric ID", value: (rules.require_biometric_id || rules.require_nie) ? w.identity : 0, max: w.identity, color: "bg-emerald-500" },
+      { label: "Residency", value: rules.residency_history_check ? w.residency : 0, max: w.residency, color: "bg-purple-500" },
+      { label: "Verifications", value: (rules.sms_verification || rules.email_verification) ? w.verification : 0, max: w.verification, color: "bg-amber-500" },
+    ];
+  }, [rules]);
 
   const handleConnect = (service: string) => {
     toast.info(`${service} integration coming soon`);
   };
 
-  const handleSaveRules = () => {
-    toast.success("Qualification rules saved successfully");
+  const handleSaveRules = async () => {
+    // Build the JSON for listing_rules
+    const listingRules = {
+      min_income_ratio: rules.min_income_ratio,
+      income_gate_enabled: rules.income_gate_enabled,
+      require_linkedin: rules.require_linkedin,
+      require_db_credit: rules.require_db_credit,
+      require_biometric_id: rules.require_biometric_id,
+      require_nie: rules.require_nie,
+      residency_history_check: rules.residency_history_check,
+      require_payslips: rules.require_payslips,
+      require_work_contract: rules.require_work_contract,
+      require_tax_return: rules.require_tax_return,
+      sms_verification: rules.sms_verification,
+      email_verification: rules.email_verification,
+      qualification_decision: rules.qualification_decision,
+      scoring_weights: rules.scoring_weights,
+    };
+
+    toast.success("Qualification rules saved. Tenant forms will adapt automatically.");
   };
 
   return (
@@ -105,7 +203,7 @@ const AgencySettings = () => {
             value="qualification"
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none bg-transparent px-1 pb-3 pt-1 gap-2"
           >
-            <Settings className="w-4 h-4" /> Qualification Rules
+            <Brain className="w-4 h-4" /> Intelligence Brain
           </TabsTrigger>
           <TabsTrigger
             value="connections"
@@ -194,424 +292,276 @@ const AgencySettings = () => {
           </Card>
         </TabsContent>
 
-        {/* ====== QUALIFICATION RULES TAB ====== */}
-        <TabsContent value="qualification" className="mt-6 space-y-6">
-          {/* Identity Verification */}
-          <Card className="shadow-card border-border bg-card">
-            <CardContent className="pt-6 space-y-5">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <Shield className="w-5 h-5 text-primary" />
+        {/* ====== INTELLIGENCE BRAIN TAB ====== */}
+        <TabsContent value="qualification" className="mt-6 space-y-5">
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center shrink-0">
+              <Brain className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-foreground">Intelligence Brain</h3>
+              <p className="text-sm text-muted-foreground">
+                Toggle criteria to build your 100-Point Score. The tenant form adapts to your rules automatically.
+              </p>
+            </div>
+          </div>
+
+          {/* Income Gate */}
+          <div className={`p-5 rounded-xl border-2 transition-all ${rules.income_gate_enabled ? "border-destructive/30 bg-destructive/5" : "border-border bg-card"}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
+                  <DollarSign className="w-5 h-5 text-destructive" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">Identity Verification</h3>
-                  <p className="text-sm text-muted-foreground">Control ID verification requirements</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between py-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-foreground">Require ID Verification</span>
-                  <Badge variant="destructive" className="text-xs">Required</Badge>
-                </div>
-                <Switch checked={requireIdVerification} onCheckedChange={setRequireIdVerification} />
-              </div>
-
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-foreground">Identity Verified Before Qualification</span>
-                <Switch checked={identityBeforeQualification} onCheckedChange={setIdentityBeforeQualification} />
-              </div>
-
-              <div className="space-y-2">
-                <span className="font-medium text-foreground">Acceptable ID Types</span>
-                <div className="flex gap-6">
                   <div className="flex items-center gap-2">
-                    <Checkbox checked={acceptPassport} onCheckedChange={(c) => setAcceptPassport(!!c)} />
-                    <span className="text-sm">Passport</span>
+                    <h4 className="font-semibold text-foreground">Income Gate</h4>
+                    <Badge variant="destructive" className="text-xs">Hard Gate</Badge>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox checked={acceptNationalId} onCheckedChange={(c) => setAcceptNationalId(!!c)} />
-                    <span className="text-sm">National ID</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox checked={acceptResidencePermit} onCheckedChange={(c) => setAcceptResidencePermit(!!c)} />
-                    <span className="text-sm">Residence Permit</span>
-                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {rules.income_gate_enabled ? (
+                      <span className="text-destructive font-medium">
+                        Tenant must earn ≥ {rules.min_income_ratio}× monthly rent. Failure = 0% score.
+                      </span>
+                    ) : (
+                      <span>Income ratio check bypassed — no hard gate applied.</span>
+                    )}
+                  </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Contact Verification */}
-          <Card className="shadow-card border-border bg-card">
-            <CardContent className="pt-6 space-y-5">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <Phone className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Contact Verification</h3>
-                  <p className="text-sm text-muted-foreground">Verify tenant contact information</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-foreground">Mobile Phone Verification Required</span>
-                <Switch checked={phoneVerification} onCheckedChange={setPhoneVerification} />
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-foreground">Email Verification Required</span>
-                <Switch checked={emailVerification} onCheckedChange={setEmailVerification} />
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-foreground">Business Email Verification Required</span>
-                <Switch checked={businessEmailVerification} onCheckedChange={setBusinessEmailVerification} />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Creditworthiness */}
-          <Card className="shadow-card border-border bg-card">
-            <CardContent className="pt-6 space-y-5">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <CreditCard className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Creditworthiness</h3>
-                  <p className="text-sm text-muted-foreground">Set credit score and check requirements</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-foreground">Credit Check Required</span>
-                <Switch checked={creditCheckRequired} onCheckedChange={setCreditCheckRequired} />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="font-medium text-foreground">Minimum Credit Score (1–100)</Label>
-                <Input
-                  type="number"
-                  value={minCreditScore}
-                  onChange={(e) => setMinCreditScore(e.target.value)}
-                  min="1"
-                  max="100"
-                  className="rounded-xl bg-muted/30 max-w-full"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Income & Affordability */}
-          <Card className="shadow-card border-border bg-card">
-            <CardContent className="pt-6 space-y-5">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <CreditCard className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Income & Affordability</h3>
-                  <p className="text-sm text-muted-foreground">Define income and affordability thresholds</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="font-medium text-foreground">Max Rent-to-Income Ratio (%)</Label>
-                  <Input
-                    type="number"
-                    value={maxRentToIncome}
-                    onChange={(e) => setMaxRentToIncome(e.target.value)}
-                    className="rounded-xl bg-muted/30"
+              <Switch checked={rules.income_gate_enabled} onCheckedChange={(v) => updateRule("income_gate_enabled", v)} />
+            </div>
+            {rules.income_gate_enabled && (
+              <div className="mt-4 pl-[52px] space-y-3">
+                <Label className="text-sm font-medium text-foreground">Rent-to-Income Ratio</Label>
+                <div className="flex items-center gap-4">
+                  <Slider
+                    value={[rules.min_income_ratio]}
+                    onValueChange={([v]) => updateRule("min_income_ratio", v)}
+                    min={2}
+                    max={5}
+                    step={0.5}
+                    className="flex-1"
                   />
-                  <p className="text-xs text-muted-foreground">e.g. 40 means rent ≤ 40% of monthly income</p>
+                  <span className="text-lg font-bold text-primary min-w-[48px] text-right">{rules.min_income_ratio}×</span>
                 </div>
-                <div className="space-y-2">
-                  <Label className="font-medium text-foreground">Minimum Income Multiplier (x rent)</Label>
-                  <Input
-                    type="number"
-                    value={minIncomeMultiplier}
-                    onChange={(e) => setMinIncomeMultiplier(e.target.value)}
-                    step="0.5"
-                    className="rounded-xl bg-muted/30"
-                  />
-                  <p className="text-xs text-muted-foreground">e.g. 3 means income must be ≥ 3× monthly rent</p>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>2×</span>
+                  <span>3×</span>
+                  <span>4×</span>
+                  <span>5×</span>
                 </div>
               </div>
+            )}
+          </div>
 
-              <div className="space-y-2">
-                <Label className="font-medium text-foreground">Required Income Documentation</Label>
-                <div className="flex gap-6">
-                  <div className="flex items-center gap-2">
-                    <Checkbox checked={reqPayslips} onCheckedChange={(c) => setReqPayslips(!!c)} />
-                    <span className="text-sm">Payslips</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox checked={reqEmploymentContract} onCheckedChange={(c) => setReqEmploymentContract(!!c)} />
-                    <span className="text-sm">Employment Contract</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox checked={reqTaxDeclaration} onCheckedChange={(c) => setReqTaxDeclaration(!!c)} />
-                    <span className="text-sm">Tax Declaration</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* D&B Credit */}
+          <RuleToggle
+            icon={CreditCard}
+            title="D&B Credit Check"
+            enabledNote={`Dun & Bradstreet credit pull required (+${rules.scoring_weights.db_credit} pts)`}
+            disabledNote="Credit check bypassed (0 pts)"
+            points={rules.scoring_weights.db_credit}
+            enabled={rules.require_db_credit}
+            onToggle={(v) => updateRule("require_db_credit", v)}
+          />
 
-          {/* Employment Verification */}
-          <Card className="shadow-card border-border bg-card">
-            <CardContent className="pt-6 space-y-5">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <Briefcase className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Employment Verification</h3>
-                  <p className="text-sm text-muted-foreground">Verify employment and professional profiles</p>
-                </div>
-              </div>
+          {/* LinkedIn */}
+          <RuleToggle
+            icon={Briefcase}
+            iconColor="text-blue-600"
+            iconBg="bg-blue-500/10"
+            title="LinkedIn Verification"
+            enabledNote={`Professional identity confirmed via LinkedIn (+${rules.scoring_weights.linkedin} pts)`}
+            disabledNote="LinkedIn verification bypassed (0 pts). LinkedIn button hidden from tenant form."
+            points={rules.scoring_weights.linkedin}
+            enabled={rules.require_linkedin}
+            onToggle={(v) => updateRule("require_linkedin", v)}
+          />
 
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-foreground">Employment Status Required</span>
-                <Switch checked={employmentRequired} onCheckedChange={setEmploymentRequired} />
+          {/* Biometric ID */}
+          <RuleToggle
+            icon={Fingerprint}
+            iconColor="text-emerald-600"
+            iconBg="bg-emerald-500/10"
+            title="Biometric ID / Passport Match"
+            enabledNote={`Tenant must pass biometric liveness check (+${rules.scoring_weights.identity} pts)`}
+            disabledNote="Identity verification bypassed (0 pts)"
+            points={rules.scoring_weights.identity}
+            enabled={rules.require_biometric_id}
+            onToggle={(v) => updateRule("require_biometric_id", v)}
+          >
+            <div className="flex items-center gap-3">
+              <Switch checked={rules.require_nie} onCheckedChange={(v) => updateRule("require_nie", v)} />
+              <div>
+                <span className="text-sm font-medium text-foreground">Require Spanish NIE</span>
+                <p className="text-xs text-muted-foreground">Mandatory for non-EU nationals in Spain</p>
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-foreground">LinkedIn Profile Verification Required</span>
-                <Switch checked={linkedinRequired} onCheckedChange={setLinkedinRequired} />
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </RuleToggle>
 
-          {/* Required Documents */}
-          <Card className="shadow-card border-border bg-card">
-            <CardContent className="pt-6 space-y-5">
-              <div className="flex items-start gap-3">
+          {/* 5-Year Residency History */}
+          <RuleToggle
+            icon={History}
+            iconColor="text-purple-600"
+            iconBg="bg-purple-500/10"
+            title="5-Year Residency History"
+            enabledNote={`Tenant must declare residency history (+${rules.scoring_weights.residency} pts). Triggers Foreign ID field.`}
+            disabledNote="Residency history not required (0 pts)"
+            points={rules.scoring_weights.residency}
+            enabled={rules.residency_history_check}
+            onToggle={(v) => updateRule("residency_history_check", v)}
+          />
+
+          {/* SMS / Email Verification */}
+          <RuleToggle
+            icon={Shield}
+            iconColor="text-amber-600"
+            iconBg="bg-amber-500/10"
+            title="Contact Verifications (SMS & Email)"
+            enabledNote={`SMS + email verification required (+${rules.scoring_weights.verification} pts)`}
+            disabledNote="Contact verification bypassed (0 pts)"
+            points={rules.scoring_weights.verification}
+            enabled={rules.sms_verification || rules.email_verification}
+            onToggle={(v) => {
+              updateRule("sms_verification", v);
+              updateRule("email_verification", v);
+            }}
+          >
+            <div className="flex gap-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Switch checked={rules.sms_verification} onCheckedChange={(v) => updateRule("sms_verification", v)} />
+                <span className="text-sm">SMS OTP</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Switch checked={rules.email_verification} onCheckedChange={(v) => updateRule("email_verification", v)} />
+                <span className="text-sm">Email</span>
+              </label>
+            </div>
+          </RuleToggle>
+
+          {/* Documents */}
+          <Card className="border-2 border-border">
+            <CardContent className="pt-5 space-y-4">
+              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <FileText className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">Required Documents</h3>
-                  <p className="text-sm text-muted-foreground">Specify which documents tenants must submit</p>
+                  <h4 className="font-semibold text-foreground">Required Document Uploads</h4>
+                  <p className="text-xs text-muted-foreground">Toggle which documents are mandatory on the tenant form</p>
                 </div>
               </div>
-
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-foreground">Proof of Income</span>
-                <Switch checked={reqProofOfIncome} onCheckedChange={setReqProofOfIncome} />
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-foreground">Employment Contract</span>
-                <Switch checked={reqEmploymentContractDoc} onCheckedChange={setReqEmploymentContractDoc} />
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-foreground">ID Document</span>
-                  <Badge variant="destructive" className="text-xs">Required</Badge>
-                </div>
-                <Switch checked={reqIdDocument} onCheckedChange={setReqIdDocument} />
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-foreground">Tax Declaration</span>
-                <Switch checked={reqTaxDeclarationDoc} onCheckedChange={setReqTaxDeclarationDoc} />
+              <div className="space-y-3 pl-[52px]">
+                {[
+                  { key: "require_payslips" as const, label: "Payslips (last 3 months)", desc: "Proof of regular income" },
+                  { key: "require_work_contract" as const, label: "Work Contract", desc: "Employment agreement" },
+                  { key: "require_tax_return" as const, label: "Tax Return (Declaración de la Renta)", desc: "Annual tax filing" },
+                ].map((doc) => (
+                  <div key={doc.key} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                    <div>
+                      <span className="text-sm font-medium text-foreground">{doc.label}</span>
+                      <p className="text-xs text-muted-foreground">{doc.desc}</p>
+                    </div>
+                    <Switch
+                      checked={rules[doc.key]}
+                      onCheckedChange={(v) => updateRule(doc.key, v)}
+                    />
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
 
-          {/* Verification Integrations */}
-          <Card className="shadow-card border-border bg-card">
-            <CardContent className="pt-6 space-y-5">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <Link2 className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Verification Integrations</h3>
-                  <p className="text-sm text-muted-foreground">Enable third-party verification providers for your KYC workflow</p>
-                  <p className="text-xs text-muted-foreground mt-1">Each enabled integration contributes to the overall tenant verification score.</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* LinkedIn */}
-                <div className={`p-4 rounded-xl border-2 ${linkedinVerification ? 'border-primary/40 bg-primary/5' : 'border-border'}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="font-semibold text-foreground">LinkedIn Verification</p>
-                      <p className="text-xs text-muted-foreground">LinkedIn</p>
-                    </div>
-                    <Switch checked={linkedinVerification} onCheckedChange={setLinkedinVerification} />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Confirm employment history and professional identity by connecting the tenant's LinkedIn profile.</p>
-                  <p className="text-xs text-primary font-medium mt-2">+15 pts to verification score</p>
-                </div>
-
-                {/* Biometric */}
-                <div className={`p-4 rounded-xl border-2 ${biometricVerification ? 'border-primary/40 bg-primary/5' : 'border-border'}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="font-semibold text-foreground">Biometric ID Verification</p>
-                      <p className="text-xs text-muted-foreground">Identomat</p>
-                    </div>
-                    <Switch checked={biometricVerification} onCheckedChange={setBiometricVerification} />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Verify ID documents and perform facial biometric checks to confirm the tenant's real identity.</p>
-                  <p className="text-xs text-primary font-medium mt-2">+25 pts to verification score</p>
-                </div>
-
-                {/* SMS */}
-                <div className={`p-4 rounded-xl border-2 ${smsVerification ? 'border-primary/40 bg-primary/5' : 'border-border'}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="font-semibold text-foreground">SMS Mobile Verification</p>
-                      <p className="text-xs text-muted-foreground">Twilio</p>
-                    </div>
-                    <Switch checked={smsVerification} onCheckedChange={setSmsVerification} />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Send a one-time code to the tenant's mobile number to confirm ownership of the phone number.</p>
-                  <p className="text-xs text-primary font-medium mt-2">+10 pts to verification score</p>
-                </div>
-
-                {/* Business Email */}
-                <div className={`p-4 rounded-xl border-2 ${businessEmailVerify ? 'border-primary/40 bg-primary/5' : 'border-border'}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="font-semibold text-foreground">Business Email Verification</p>
-                      <p className="text-xs text-muted-foreground">Email Validation</p>
-                    </div>
-                    <Switch checked={businessEmailVerify} onCheckedChange={setBusinessEmailVerify} />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Confirm the validity and ownership of the tenant's business email address domain.</p>
-                  <p className="text-xs text-primary font-medium mt-2">+10 pts to verification score</p>
-                </div>
-
-                {/* Credit Check */}
-                <div className={`p-4 rounded-xl border-2 ${creditCheck ? 'border-primary/40 bg-primary/5' : 'border-border'}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="font-semibold text-foreground">Credit Check</p>
-                      <p className="text-xs text-muted-foreground">Dun & Bradstreet</p>
-                    </div>
-                    <Switch checked={creditCheck} onCheckedChange={setCreditCheck} />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Assess financial reliability and creditworthiness through Dun & Bradstreet's comprehensive credit database.</p>
-                  <p className="text-xs text-primary font-medium mt-2">+30 pts to verification score</p>
-                </div>
-
-                {/* Bank */}
-                <div className={`p-4 rounded-xl border-2 ${bankVerification ? 'border-primary/40 bg-primary/5' : 'border-border'}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="font-semibold text-foreground">Bank Account Verification</p>
-                      <p className="text-xs text-muted-foreground">PSD2 Open Banking</p>
-                    </div>
-                    <Switch checked={bankVerification} onCheckedChange={setBankVerification} />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Verify the tenant's bank account and financial information through secure PSD2 open banking authentication.</p>
-                  <p className="text-xs text-primary font-medium mt-2">+20 pts to verification score</p>
-                </div>
-              </div>
-
-              {/* Max Score Bar */}
-              <div className="p-4 rounded-xl border border-border bg-muted/30">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-foreground">Max Achievable Verification Score</span>
-                  <span className="font-bold text-lg text-primary">{verificationScore} / 100 pts</span>
-                </div>
-                <Progress value={verificationScore} className="h-2" />
-                <p className="text-xs text-muted-foreground mt-2">Enable more integrations to increase the maximum qualification score available to tenants.</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Tenant Risk Flags */}
-          <Card className="shadow-card border-border bg-card">
-            <CardContent className="pt-6 space-y-5">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
-                  <AlertTriangle className="w-5 h-5 text-destructive" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Tenant Risk Flags</h3>
-                  <p className="text-sm text-muted-foreground">Rules that trigger warnings or manual review</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-foreground">Flag: Credit Score Below Threshold</span>
-                <Switch checked={flagCreditBelow} onCheckedChange={setFlagCreditBelow} />
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-foreground">Flag: Missing Identity Verification</span>
-                <Switch checked={flagMissingIdentity} onCheckedChange={setFlagMissingIdentity} />
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-foreground">Flag: Incomplete Documentation</span>
-                <Switch checked={flagIncompleteDocs} onCheckedChange={setFlagIncompleteDocs} />
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-foreground">Flag: Unverified Contact Information</span>
-                <Switch checked={flagUnverifiedContact} onCheckedChange={setFlagUnverifiedContact} />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Automatic Qualification Logic */}
-          <Card className="shadow-card border-border bg-card">
-            <CardContent className="pt-6 space-y-5">
-              <div className="flex items-start gap-3">
+          {/* Qualification Decision */}
+          <Card className="border-2 border-border">
+            <CardContent className="pt-5 space-y-4">
+              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <ZapIcon className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">Automatic Qualification Logic</h3>
-                  <p className="text-sm text-muted-foreground">Define how tenants are qualified based on rule combinations</p>
+                  <h4 className="font-semibold text-foreground">Qualification Decision</h4>
+                  <p className="text-xs text-muted-foreground">What happens after the score is calculated?</p>
                 </div>
               </div>
-
-              <div className="space-y-3">
-                <Label className="font-medium text-foreground">Default Qualification Decision</Label>
-                <Select value={qualificationDecision} onValueChange={setQualificationDecision}>
-                  <SelectTrigger className="rounded-xl bg-muted/30">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="auto_approve">Auto Approve — automatically qualify if all rules pass</SelectItem>
-                    <SelectItem value="manual_review">Manual Review — landlord reviews every application</SelectItem>
-                    <SelectItem value="auto_reject">Auto Reject — any rule fails → automatically rejected</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {[
+                  { value: "auto_approve" as const, label: "Auto Approve", desc: "Score ≥ threshold → instant qualification", icon: "✅" },
+                  { value: "manual_review" as const, label: "Manual Review", desc: "Agent reviews every application", icon: "👁️" },
+                  { value: "auto_reject" as const, label: "Auto Reject", desc: "Any rule fails → automatically rejected", icon: "❌" },
+                ].map((opt) => (
                   <div
-                    className={`p-4 rounded-xl border-2 cursor-pointer transition-colors ${qualificationDecision === 'auto_approve' ? 'border-primary bg-primary/5' : 'border-border'}`}
-                    onClick={() => setQualificationDecision('auto_approve')}
+                    key={opt.value}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${rules.qualification_decision === opt.value ? "border-primary bg-primary/5" : "border-border hover:border-primary/20"}`}
+                    onClick={() => updateRule("qualification_decision", opt.value)}
                   >
-                    <p className="font-semibold text-foreground">Auto Approve</p>
-                    <p className="text-xs text-muted-foreground mt-1">All rules pass → instantly qualified</p>
+                    <p className="text-lg mb-1">{opt.icon}</p>
+                    <p className="font-semibold text-foreground text-sm">{opt.label}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{opt.desc}</p>
                   </div>
-                  <div
-                    className={`p-4 rounded-xl border-2 cursor-pointer transition-colors ${qualificationDecision === 'manual_review' ? 'border-primary bg-primary/5' : 'border-border'}`}
-                    onClick={() => setQualificationDecision('manual_review')}
-                  >
-                    <p className="font-semibold text-foreground">Manual Review</p>
-                    <p className="text-xs text-muted-foreground mt-1">Landlord reviews every application</p>
-                  </div>
-                  <div
-                    className={`p-4 rounded-xl border-2 cursor-pointer transition-colors ${qualificationDecision === 'auto_reject' ? 'border-primary bg-primary/5' : 'border-border'}`}
-                    onClick={() => setQualificationDecision('auto_reject')}
-                  >
-                    <p className="font-semibold text-foreground">Auto Reject</p>
-                    <p className="text-xs text-muted-foreground mt-1">Any rule fails → automatically rejected</p>
-                  </div>
-                </div>
+                ))}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* ===== LIVE SCORE BAR ===== */}
+          <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-background shadow-lg">
+            <CardContent className="pt-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-foreground text-lg">Real-Time Score Distribution</h4>
+                  <p className="text-xs text-muted-foreground">Points available based on your active criteria</p>
+                </div>
+                <span className="text-3xl font-black text-primary">{liveScore}<span className="text-lg font-semibold text-muted-foreground"> / 100 pts</span></span>
+              </div>
+
+              {/* Stacked bar */}
+              <div className="w-full h-6 rounded-full bg-muted overflow-hidden flex">
+                {scoreSegments.map((seg) => (
+                  seg.value > 0 && (
+                    <div
+                      key={seg.label}
+                      className={`${seg.color} h-full transition-all duration-500 first:rounded-l-full last:rounded-r-full`}
+                      style={{ width: `${seg.value}%` }}
+                      title={`${seg.label}: ${seg.value}%`}
+                    />
+                  )
+                ))}
+              </div>
+
+              {/* Legend */}
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
+                {scoreSegments.map((seg) => (
+                  <div key={seg.label} className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-sm ${seg.color} ${seg.value === 0 ? "opacity-30" : ""}`} />
+                    <span className={`text-xs font-medium ${seg.value === 0 ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                      {seg.label} ({seg.value}%)
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Income Gate marker */}
+              {rules.income_gate_enabled && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
+                  <span className="text-xs text-destructive font-medium">
+                    Hard Gate Active: If tenant earns &lt; {rules.min_income_ratio}× rent, score is automatically 0%.
+                  </span>
+                </div>
+              )}
+
+              <p className="text-xs text-muted-foreground">
+                Enable more integrations to increase the maximum qualification score available to tenants.
+              </p>
             </CardContent>
           </Card>
 
           <div className="flex justify-end">
             <Button variant="hero" size="lg" className="rounded-xl gap-2" onClick={handleSaveRules}>
-              <Save className="w-4 h-4" /> Save All Rules
+              <Save className="w-4 h-4" /> Save Settings
             </Button>
           </div>
         </TabsContent>
