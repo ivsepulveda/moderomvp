@@ -217,6 +217,12 @@ const AgencySettings = () => {
           >
             <Calendar className="w-4 h-4" /> Connection Settings
           </TabsTrigger>
+          <TabsTrigger
+            value="team"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none bg-transparent px-1 pb-3 pt-1 gap-2"
+          >
+            <Users className="w-4 h-4" /> Team
+          </TabsTrigger>
         </TabsList>
 
         {/* ====== PROFILE TAB ====== */}
