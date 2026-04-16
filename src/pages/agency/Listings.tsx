@@ -2,12 +2,16 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import {
   Building2, MapPin, Euro, Users, Eye, X, Calendar, User, Phone,
   Mail, TrendingUp, ChevronRight, Shield, Clock, ArrowUpRight, Home,
-  DollarSign, FileText,
+  DollarSign, FileText, Pencil, Save, XCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface ListingDetail {
   id: number;
@@ -38,7 +42,7 @@ interface ListingDetail {
   roi: string;
 }
 
-const listings: ListingDetail[] = [
+const initialListings: ListingDetail[] = [
   {
     id: 1, address: "Calle Gran Vía 42, 3B", city: "Madrid", country: "Spain",
     price: "€2,200/mo", priceNum: 2200, deposit: "€4,400 (2 months)", bedrooms: 3, bathrooms: 2, sqm: 110,
@@ -102,7 +106,41 @@ const statusStyles: Record<string, string> = {
 };
 
 const Listings = () => {
+  const [listings, setListings] = useState<ListingDetail[]>(initialListings);
   const [selected, setSelected] = useState<ListingDetail | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState<Partial<ListingDetail>>({});
+
+  const startEditing = () => {
+    if (!selected) return;
+    setEditForm({ ...selected });
+    setEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setEditing(false);
+    setEditForm({});
+  };
+
+  const saveEditing = () => {
+    if (!selected || !editForm) return;
+    const priceNum = editForm.priceNum ?? selected.priceNum;
+    const updated: ListingDetail = {
+      ...selected,
+      ...editForm,
+      priceNum,
+      price: `€${priceNum.toLocaleString()}/mo`,
+    };
+    setListings((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
+    setSelected(updated);
+    setEditing(false);
+    setEditForm({});
+    toast.success("Listing updated successfully");
+  };
+
+  const updateField = (field: keyof ListingDetail, value: string | number) => {
+    setEditForm((prev) => ({ ...prev, [field]: value }));
+  };
 
   return (
     <div className="p-6 md:p-8 max-w-7xl space-y-6">
@@ -116,7 +154,7 @@ const Listings = () => {
           <Card
             key={listing.id}
             className="shadow-card hover:shadow-card-hover transition-all border-border cursor-pointer group"
-            onClick={() => setSelected(listing)}
+            onClick={() => { setSelected(listing); setEditing(false); }}
           >
             <CardContent className="p-5">
               <div className="flex items-center justify-between flex-wrap gap-4">
@@ -166,7 +204,7 @@ const Listings = () => {
 
       {/* Detail Modal */}
       {selected && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelected(null)}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setSelected(null); setEditing(false); }}>
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
@@ -175,15 +213,29 @@ const Listings = () => {
                     <Building2 className="w-6 h-6 text-primary-foreground" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">{selected.address}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{selected.city}, {selected.country}</p>
+                    <CardTitle className="text-lg">{editing ? (editForm.address ?? selected.address) : selected.address}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{editing ? `${editForm.city ?? selected.city}, ${editForm.country ?? selected.country}` : `${selected.city}, ${selected.country}`}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  {!editing ? (
+                    <Button variant="outline" size="sm" className="rounded-xl gap-1.5 text-xs" onClick={startEditing}>
+                      <Pencil className="w-3.5 h-3.5" /> Edit
+                    </Button>
+                  ) : (
+                    <>
+                      <Button variant="outline" size="sm" className="rounded-xl gap-1.5 text-xs" onClick={cancelEditing}>
+                        <XCircle className="w-3.5 h-3.5" /> Cancel
+                      </Button>
+                      <Button variant="hero" size="sm" className="rounded-xl gap-1.5 text-xs" onClick={saveEditing}>
+                        <Save className="w-3.5 h-3.5" /> Save
+                      </Button>
+                    </>
+                  )}
                   <Badge variant="outline" className={`text-xs capitalize ${statusStyles[selected.status]}`}>
                     {selected.status}
                   </Badge>
-                  <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => setSelected(null)}>
+                  <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => { setSelected(null); setEditing(false); }}>
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
@@ -193,59 +245,141 @@ const Listings = () => {
               {/* Property Info */}
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-3">Property Details</h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {[
-                    { label: "Monthly Rent", value: selected.price, icon: Euro },
-                    { label: "Deposit", value: selected.deposit, icon: DollarSign },
-                    { label: "Bedrooms", value: `${selected.bedrooms}`, icon: Home },
-                    { label: "Bathrooms", value: `${selected.bathrooms}`, icon: Home },
-                    { label: "Size", value: `${selected.sqm} m²`, icon: Building2 },
-                    { label: "Idealista ID", value: selected.idealistaId, icon: FileText },
-                    { label: "Published", value: new Date(selected.publishedDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }), icon: Calendar },
-                    { label: "Days Listed", value: `${Math.floor((Date.now() - new Date(selected.publishedDate).getTime()) / 86400000)}`, icon: Clock },
-                  ].map((item) => (
-                    <div key={item.label} className="bg-muted/30 rounded-lg p-3">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <item.icon className="w-3.5 h-3.5 text-muted-foreground" />
-                        <p className="text-xs text-muted-foreground">{item.label}</p>
-                      </div>
-                      <p className="text-sm font-medium text-foreground">{item.value}</p>
+                {editing ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Address</Label>
+                      <Input value={editForm.address ?? ""} onChange={(e) => updateField("address", e.target.value)} className="rounded-lg" />
                     </div>
-                  ))}
-                </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">City</Label>
+                      <Input value={editForm.city ?? ""} onChange={(e) => updateField("city", e.target.value)} className="rounded-lg" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Country</Label>
+                      <Input value={editForm.country ?? ""} onChange={(e) => updateField("country", e.target.value)} className="rounded-lg" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Monthly Rent (€)</Label>
+                      <Input type="number" value={editForm.priceNum ?? ""} onChange={(e) => updateField("priceNum", Number(e.target.value))} className="rounded-lg" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Deposit</Label>
+                      <Input value={editForm.deposit ?? ""} onChange={(e) => updateField("deposit", e.target.value)} className="rounded-lg" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Bedrooms</Label>
+                      <Input type="number" value={editForm.bedrooms ?? ""} onChange={(e) => updateField("bedrooms", Number(e.target.value))} className="rounded-lg" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Bathrooms</Label>
+                      <Input type="number" value={editForm.bathrooms ?? ""} onChange={(e) => updateField("bathrooms", Number(e.target.value))} className="rounded-lg" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Size (m²)</Label>
+                      <Input type="number" value={editForm.sqm ?? ""} onChange={(e) => updateField("sqm", Number(e.target.value))} className="rounded-lg" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Idealista ID</Label>
+                      <Input value={editForm.idealistaId ?? ""} onChange={(e) => updateField("idealistaId", e.target.value)} className="rounded-lg" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Status</Label>
+                      <Select value={editForm.status ?? selected.status} onValueChange={(v) => updateField("status", v)}>
+                        <SelectTrigger className="rounded-lg"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="paused">Paused</SelectItem>
+                          <SelectItem value="leased">Leased</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                      { label: "Monthly Rent", value: selected.price, icon: Euro },
+                      { label: "Deposit", value: selected.deposit, icon: DollarSign },
+                      { label: "Bedrooms", value: `${selected.bedrooms}`, icon: Home },
+                      { label: "Bathrooms", value: `${selected.bathrooms}`, icon: Home },
+                      { label: "Size", value: `${selected.sqm} m²`, icon: Building2 },
+                      { label: "Idealista ID", value: selected.idealistaId, icon: FileText },
+                      { label: "Published", value: new Date(selected.publishedDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }), icon: Calendar },
+                      { label: "Days Listed", value: `${Math.floor((Date.now() - new Date(selected.publishedDate).getTime()) / 86400000)}`, icon: Clock },
+                    ].map((item) => (
+                      <div key={item.label} className="bg-muted/30 rounded-lg p-3">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <item.icon className="w-3.5 h-3.5 text-muted-foreground" />
+                          <p className="text-xs text-muted-foreground">{item.label}</p>
+                        </div>
+                        <p className="text-sm font-medium text-foreground">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Responsible Agent */}
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-3">Responsible Agent</h4>
-                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
-                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-sm">
-                    {selected.responsibleAgent.split(" ").map(n => n[0]).join("")}
+                {editing ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Agent Name</Label>
+                      <Input value={editForm.responsibleAgent ?? ""} onChange={(e) => updateField("responsibleAgent", e.target.value)} className="rounded-lg" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Agent Email</Label>
+                      <Input value={editForm.agentEmail ?? ""} onChange={(e) => updateField("agentEmail", e.target.value)} className="rounded-lg" />
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{selected.responsibleAgent}</p>
-                    <p className="text-xs text-muted-foreground">{selected.agentEmail}</p>
+                ) : (
+                  <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-sm">
+                      {selected.responsibleAgent.split(" ").map(n => n[0]).join("")}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{selected.responsibleAgent}</p>
+                      <p className="text-xs text-muted-foreground">{selected.agentEmail}</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Landlord Info */}
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-3">Landlord</h4>
-                <div className="p-3 bg-muted/30 rounded-xl space-y-1.5">
-                  <div className="flex items-center gap-2 text-sm">
-                    <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-foreground">{selected.landlordName}</span>
+                {editing ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Name</Label>
+                      <Input value={editForm.landlordName ?? ""} onChange={(e) => updateField("landlordName", e.target.value)} className="rounded-lg" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Phone</Label>
+                      <Input value={editForm.landlordPhone ?? ""} onChange={(e) => updateField("landlordPhone", e.target.value)} className="rounded-lg" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Email</Label>
+                      <Input value={editForm.landlordEmail ?? ""} onChange={(e) => updateField("landlordEmail", e.target.value)} className="rounded-lg" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-foreground">{selected.landlordPhone}</span>
+                ) : (
+                  <div className="p-3 bg-muted/30 rounded-xl space-y-1.5">
+                    <div className="flex items-center gap-2 text-sm">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-foreground">{selected.landlordName}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-foreground">{selected.landlordPhone}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-foreground">{selected.landlordEmail}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-foreground">{selected.landlordEmail}</span>
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Inquiry Funnel */}
