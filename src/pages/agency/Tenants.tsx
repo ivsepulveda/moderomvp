@@ -3,9 +3,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Users, Shield, AlertTriangle, CheckCircle, XCircle, Clock, Search, X, Eye, Briefcase, Mail, Phone, FileText, Globe, MapPin, IdCard, CreditCard, Link2, User, Building2 } from "lucide-react";
+import { Users, Shield, AlertTriangle, CheckCircle, XCircle, Clock, Search, X, Eye, Briefcase, Mail, Phone, FileText, Globe, MapPin, IdCard, CreditCard, Link2, User, Building2, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface TenantData {
   id: number;
@@ -207,6 +210,33 @@ const scoreColor = (score: number) => {
 const Tenants = () => {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<TenantData | null>(null);
+  const [tenantActions, setTenantActions] = useState<Record<number, { status: "approved" | "rejected"; viewing?: { date: string; time: string } }>>({});
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const [viewingDate, setViewingDate] = useState("");
+  const [viewingTime, setViewingTime] = useState("10:00");
+
+  const handleApprove = (tenant: TenantData) => {
+    setTenantActions(prev => ({ ...prev, [tenant.id]: { status: "approved" } }));
+    toast.success(`${tenant.name} has been approved`);
+  };
+
+  const handleReject = (tenant: TenantData) => {
+    setTenantActions(prev => ({ ...prev, [tenant.id]: { status: "rejected" } }));
+    toast.error(`${tenant.name} has been rejected`);
+    setSelected(null);
+  };
+
+  const handleScheduleViewing = () => {
+    if (!selected || !viewingDate || !viewingTime) return;
+    setTenantActions(prev => ({
+      ...prev,
+      [selected.id]: { ...prev[selected.id], viewing: { date: viewingDate, time: viewingTime } },
+    }));
+    setShowScheduleDialog(false);
+    setViewingDate("");
+    setViewingTime("10:00");
+    toast.success(`Viewing scheduled for ${selected.name} on ${new Date(viewingDate).toLocaleDateString("en-GB", { day: "numeric", month: "long" })} at ${viewingTime}`);
+  };
 
   const filtered = tenants.filter(t =>
     t.name.toLowerCase().includes(search.toLowerCase()) ||
