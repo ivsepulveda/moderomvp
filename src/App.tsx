@@ -38,7 +38,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/apply" element={<TenantAuth />} />
+            <Route path="/apply" element={<Apply />} />
+            <Route path="/tenant/auth" element={<TenantAuth />} />
             <Route path="/onboarding" element={<ProtectedRoute><TenantOnboarding /></ProtectedRoute>} />
             <Route path="/application-status" element={<ProtectedRoute><ApplicationStatus /></ProtectedRoute>} />
             <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
