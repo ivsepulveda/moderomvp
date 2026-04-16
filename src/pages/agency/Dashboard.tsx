@@ -374,6 +374,14 @@ const AgencyDashboard = () => {
                   <Badge className="bg-primary/10 text-primary text-xs hover:bg-primary/10">
                     {listing.inquiries.length} {listing.inquiries.length === 1 ? "inquiry" : "inquiries"}
                   </Badge>
+                  {(() => {
+                    const viewingCount = listing.inquiries.filter(i => tenantActions[i.id]?.viewing).length;
+                    return viewingCount > 0 ? (
+                      <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
+                        <Calendar className="w-3 h-3" /> {viewingCount} viewing{viewingCount > 1 ? "s" : ""}
+                      </Badge>
+                    ) : null;
+                  })()}
                   {isExpanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
                 </div>
               </div>
