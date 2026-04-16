@@ -407,8 +407,13 @@ const AgencyDashboard = () => {
                           <p className="text-xs text-muted-foreground">Trust Score</p>
                         </div>
                         <Badge variant="outline" className={`text-xs capitalize ${statusStyles[inquiry.status]}`}>
-                          {inquiry.status}
+                          {tenantActions[inquiry.id]?.status === "approved" ? "approved" : tenantActions[inquiry.id]?.status === "rejected" ? "rejected" : inquiry.status}
                         </Badge>
+                        {tenantActions[inquiry.id]?.viewing && (
+                          <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
+                            <Calendar className="w-3 h-3" /> {new Date(tenantActions[inquiry.id].viewing!.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                          </Badge>
+                        )}
                         <span className="text-xs text-muted-foreground hidden md:flex items-center gap-1">
                           <Clock className="w-3 h-3" /> {inquiry.time}
                         </span>
