@@ -56,26 +56,6 @@ const AdminSettings = () => {
         </CardContent>
       </Card>
 
-      <Card className="shadow-card border-border">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Shield className="w-5 h-5 text-primary" /> Trust Score Defaults
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Default Minimum Trust Score</Label>
-            <Input type="number" defaultValue="6" min="1" max="10" className="rounded-xl max-w-[120px]" />
-          </div>
-          <div className="space-y-2">
-            <Label>Default Income Multiplier</Label>
-            <Input type="number" defaultValue="3" min="1" max="10" step="0.5" className="rounded-xl max-w-[120px]" />
-          </div>
-          <Button variant="hero" size="lg" className="rounded-xl">
-            Save Defaults
-          </Button>
-        </CardContent>
-      </Card>
 
       <Card className="shadow-card border-border">
         <CardHeader>
