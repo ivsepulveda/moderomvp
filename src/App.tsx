@@ -11,6 +11,7 @@ import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Login from "./pages/Login.tsx";
 import TenantAuth from "./pages/TenantAuth.tsx";
+import Apply from "./pages/Apply.tsx";
 import TenantOnboarding from "./pages/TenantOnboarding.tsx";
 import ApplicationStatus from "./pages/ApplicationStatus.tsx";
 import AdminLayout from "./components/AdminLayout.tsx";
