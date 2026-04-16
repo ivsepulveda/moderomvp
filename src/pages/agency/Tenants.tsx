@@ -488,15 +488,26 @@ const Tenants = () => {
 
               {/* LinkedIn */}
               <div className="space-y-2">
-                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Link2 className="w-4 h-4 text-muted-foreground" /> LinkedIn</h4>
+                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Link2 className="w-4 h-4 text-blue-600" /> LinkedIn</h4>
                 {selected.linkedIn ? (
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1">
-                    <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-600" /><span className="text-sm font-medium text-blue-800">Verified</span></div>
-                    <p className="text-xs text-blue-700">{selected.linkedinHeadline}</p>
-                    <p className="text-xs text-blue-600">{selected.linkedinProfile}</p>
+                  <div className="p-4 bg-blue-50/80 border border-blue-200 rounded-xl space-y-3">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-blue-600" />
+                      <span className="text-base font-semibold text-blue-900">Verified</span>
+                    </div>
+                    <p className="text-sm text-blue-700 font-medium">{selected.linkedinHeadline}</p>
+                    <a href={`https://${selected.linkedinProfile}`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-800 underline underline-offset-2 flex items-center gap-1">
+                      <Link2 className="w-3.5 h-3.5" /> {selected.linkedinProfile}
+                    </a>
                   </div>
                 ) : (
-                  <div className="p-3 bg-muted/30 rounded-xl flex items-center gap-2"><XCircle className="w-4 h-4 text-muted-foreground" /><span className="text-sm text-muted-foreground">Not verified</span></div>
+                  <div className="p-4 bg-muted/30 rounded-xl flex items-center gap-3 border border-border">
+                    <XCircle className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                      <span className="text-sm font-medium text-muted-foreground">Not connected</span>
+                      <p className="text-xs text-muted-foreground/70">LinkedIn verification has not been completed</p>
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -540,8 +551,11 @@ const Tenants = () => {
                 <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><FileText className="w-4 h-4 text-muted-foreground" /> Documents</h4>
                 <div className="space-y-1.5">
                   {selected.documents.map((doc, i) => (
-                    <div key={i} className="flex items-center justify-between py-2 px-3 bg-muted/30 rounded-lg">
-                      <span className="text-sm text-foreground">{doc.name}</span>
+                    <div key={i} className="flex items-center justify-between py-2.5 px-3 bg-muted/30 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm text-foreground">{doc.name}</span>
+                      </div>
                       <div className="flex items-center gap-2">
                         {doc.uploaded ? (
                           <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">Uploaded</Badge>
@@ -553,6 +567,11 @@ const Tenants = () => {
                         ) : doc.uploaded ? (
                           <Badge variant="outline" className="text-[10px] bg-yellow-50 text-yellow-700 border-yellow-200">Pending</Badge>
                         ) : null}
+                        {doc.uploaded && (
+                          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-primary hover:text-primary/80">
+                            <Eye className="w-3.5 h-3.5" /> Preview
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -565,13 +584,23 @@ const Tenants = () => {
               <div className="space-y-2">
                 <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Shield className="w-4 h-4 text-muted-foreground" /> Contact Verifications</h4>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2 text-sm bg-muted/30 rounded-lg p-3">
-                    {selected.emailVerified ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <XCircle className="w-4 h-4 text-destructive" />}
-                    <span>Email {selected.emailVerified ? "Verified" : "Not Verified"}</span>
+                  <div className="bg-muted/30 rounded-lg p-3 space-y-1">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium text-foreground">Email</span>
+                      {selected.emailVerified ? <CheckCircle className="w-4 h-4 text-emerald-600 ml-auto" /> : <XCircle className="w-4 h-4 text-destructive ml-auto" />}
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">{selected.email}</p>
+                    <p className="text-[10px] text-muted-foreground">{selected.emailVerified ? "Verified" : "Not verified"}</p>
                   </div>
-                  <div className="flex items-center gap-2 text-sm bg-muted/30 rounded-lg p-3">
-                    {selected.phoneVerified ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <XCircle className="w-4 h-4 text-destructive" />}
-                    <span>Phone {selected.phoneVerified ? "Verified" : "Not Verified"}</span>
+                  <div className="bg-muted/30 rounded-lg p-3 space-y-1">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium text-foreground">Mobile</span>
+                      {selected.phoneVerified ? <CheckCircle className="w-4 h-4 text-emerald-600 ml-auto" /> : <XCircle className="w-4 h-4 text-destructive ml-auto" />}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{selected.phone}</p>
+                    <p className="text-[10px] text-muted-foreground">{selected.phoneVerified ? "Verified" : "Not verified"}</p>
                   </div>
                 </div>
               </div>
