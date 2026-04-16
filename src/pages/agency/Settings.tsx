@@ -15,7 +15,7 @@ import {
   Building2, Mail, Calendar, MessageSquare, Zap, Shield, ExternalLink,
   User, Settings, FileText, Briefcase, AlertTriangle,
   Zap as ZapIcon, Link2, CreditCard, Save, Globe, History, Fingerprint,
-  DollarSign, Brain,
+  DollarSign, Brain, IdCard, Camera,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,6 +27,8 @@ interface ListingRules {
   require_db_credit: boolean;
   require_biometric_id: boolean;
   require_nie: boolean;
+  require_dni: boolean;
+  require_photo: boolean;
   residency_history_check: boolean;
   require_payslips: boolean;
   require_work_contract: boolean;
@@ -50,6 +52,8 @@ const DEFAULT_RULES: ListingRules = {
   require_db_credit: true,
   require_biometric_id: true,
   require_nie: false,
+  require_dni: false,
+  require_photo: true,
   residency_history_check: false,
   require_payslips: true,
   require_work_contract: true,
@@ -140,7 +144,7 @@ const AgencySettings = () => {
     let total = 0;
     if (rules.require_db_credit) total += w.db_credit;
     if (rules.require_linkedin) total += w.linkedin;
-    if (rules.require_biometric_id || rules.require_nie) total += w.identity;
+    if (rules.require_biometric_id || rules.require_nie || rules.require_dni) total += w.identity;
     if (rules.residency_history_check) total += w.residency;
     if (rules.sms_verification || rules.email_verification) total += w.verification;
     return total;
@@ -152,7 +156,7 @@ const AgencySettings = () => {
     return [
       { label: "D&B Credit", value: rules.require_db_credit ? w.db_credit : 0, max: w.db_credit, color: "bg-orange-500" },
       { label: "LinkedIn", value: rules.require_linkedin ? w.linkedin : 0, max: w.linkedin, color: "bg-blue-500" },
-      { label: "Biometric ID", value: (rules.require_biometric_id || rules.require_nie) ? w.identity : 0, max: w.identity, color: "bg-emerald-500" },
+      { label: "Identity", value: (rules.require_biometric_id || rules.require_nie || rules.require_dni) ? w.identity : 0, max: w.identity, color: "bg-emerald-500" },
       { label: "Residency", value: rules.residency_history_check ? w.residency : 0, max: w.residency, color: "bg-purple-500" },
       { label: "Verifications", value: (rules.sms_verification || rules.email_verification) ? w.verification : 0, max: w.verification, color: "bg-amber-500" },
     ];
@@ -163,7 +167,6 @@ const AgencySettings = () => {
   };
 
   const handleSaveRules = async () => {
-    // Build the JSON for listing_rules
     const listingRules = {
       min_income_ratio: rules.min_income_ratio,
       income_gate_enabled: rules.income_gate_enabled,
@@ -171,6 +174,8 @@ const AgencySettings = () => {
       require_db_credit: rules.require_db_credit,
       require_biometric_id: rules.require_biometric_id,
       require_nie: rules.require_nie,
+      require_dni: rules.require_dni,
+      require_photo: rules.require_photo,
       residency_history_check: rules.residency_history_check,
       require_payslips: rules.require_payslips,
       require_work_contract: rules.require_work_contract,
@@ -338,6 +343,19 @@ const AgencySettings = () => {
             </div>
           </div>
 
+          {/* Tenant Photo */}
+          <RuleToggle
+            icon={Camera}
+            iconColor="text-indigo-600"
+            iconBg="bg-indigo-500/10"
+            title="Tenant Photo (Avatar)"
+            enabledNote="Tenant must upload a profile photo. Photo displayed in tenant inquiry cards."
+            disabledNote="Photo upload not required — initials shown instead."
+            points={0}
+            enabled={rules.require_photo}
+            onToggle={(v) => updateRule("require_photo", v)}
+          />
+
           {/* Income Gate */}
           <div className={`p-5 rounded-xl border-2 transition-all ${rules.income_gate_enabled ? "border-destructive/30 bg-destructive/5" : "border-border bg-card"}`}>
             <div className="flex items-center justify-between">
@@ -409,9 +427,27 @@ const AgencySettings = () => {
             points={rules.scoring_weights.linkedin}
             enabled={rules.require_linkedin}
             onToggle={(v) => updateRule("require_linkedin", v)}
-          />
+          >
+            <div className="space-y-3">
+              <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                <p className="text-xs font-semibold text-blue-800 mb-1">🔗 LinkedIn Auto-Fill Intelligence</p>
+                <p className="text-xs text-blue-700 leading-relaxed">
+                  When enabled, Modero connects to the tenant's LinkedIn profile and auto-fills:
+                </p>
+                <ul className="text-xs text-blue-700 mt-1.5 space-y-1 list-disc pl-4">
+                  <li><strong>Current Employer</strong> — company name and job title extracted automatically</li>
+                  <li><strong>Employment Duration</strong> — how many years at current position</li>
+                  <li><strong>Business Email Cross-Check</strong> — if the tenant's email domain matches their employer, this boosts the score</li>
+                  <li><strong>Payslip Match</strong> — employer on LinkedIn is compared against uploaded payslips for consistency</li>
+                </ul>
+                <p className="text-xs text-blue-600 mt-2 font-medium">
+                  ⚡ Mismatches between LinkedIn employer and payslips will be flagged and reduce the qualification score.
+                </p>
+              </div>
+            </div>
+          </RuleToggle>
 
-          {/* Biometric ID */}
+          {/* Biometric ID / Passport Match */}
           <RuleToggle
             icon={Fingerprint}
             iconColor="text-emerald-600"
@@ -422,15 +458,69 @@ const AgencySettings = () => {
             points={rules.scoring_weights.identity}
             enabled={rules.require_biometric_id}
             onToggle={(v) => updateRule("require_biometric_id", v)}
-          >
-            <div className="flex items-center gap-3">
-              <Switch checked={rules.require_nie} onCheckedChange={(v) => updateRule("require_nie", v)} />
-              <div>
-                <span className="text-sm font-medium text-foreground">Require Spanish NIE</span>
-                <p className="text-xs text-muted-foreground">Mandatory for non-EU nationals in Spain</p>
+          />
+
+          {/* Spanish NIE — separate section */}
+          <div className={`p-5 rounded-xl border-2 transition-all ${rules.require_nie ? "border-amber-500/30 bg-amber-500/5" : "border-border bg-card"}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                  <IdCard className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground">Spanish NIE</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {rules.require_nie ? (
+                      <span className="text-amber-600 font-medium">NIE number required for non-EU nationals residing in Spain.</span>
+                    ) : (
+                      <span>NIE verification not required.</span>
+                    )}
+                  </p>
+                </div>
               </div>
+              <Switch checked={rules.require_nie} onCheckedChange={(v) => updateRule("require_nie", v)} />
             </div>
-          </RuleToggle>
+            {rules.require_nie && (
+              <div className="mt-3 pl-[52px]">
+                <p className="text-xs text-muted-foreground">
+                  The <strong>Número de Identidad de Extranjero (NIE)</strong> is mandatory for non-EU nationals living or working in Spain. 
+                  The tenant form will require the NIE number and upload of the NIE card.
+                </p>
+                <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600 mt-2">Non-EU Nationals</Badge>
+              </div>
+            )}
+          </div>
+
+          {/* Spanish DNI — separate section */}
+          <div className={`p-5 rounded-xl border-2 transition-all ${rules.require_dni ? "border-sky-500/30 bg-sky-500/5" : "border-border bg-card"}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center shrink-0">
+                  <IdCard className="w-5 h-5 text-sky-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground">Spanish DNI</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {rules.require_dni ? (
+                      <span className="text-sky-600 font-medium">DNI required for Spanish nationals or permanent residents.</span>
+                    ) : (
+                      <span>DNI verification not required.</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <Switch checked={rules.require_dni} onCheckedChange={(v) => updateRule("require_dni", v)} />
+            </div>
+            {rules.require_dni && (
+              <div className="mt-3 pl-[52px]">
+                <p className="text-xs text-muted-foreground">
+                  The <strong>Documento Nacional de Identidad (DNI)</strong> is the standard ID for Spanish citizens and 
+                  those with a permanent residence permit. The tenant form will require the DNI number and a scan of the document.
+                </p>
+                <Badge variant="outline" className="text-xs border-sky-500/30 text-sky-600 mt-2">Spanish Nationals / Permanent Residents</Badge>
+              </div>
+            )}
+          </div>
 
           {/* 5-Year Residency History */}
           <RuleToggle

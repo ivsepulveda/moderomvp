@@ -1,6 +1,9 @@
-import { Building2, Users, TrendingUp, Clock, Shield, BarChart3, ArrowUpRight } from "lucide-react";
+import { useState } from "react";
+import { Building2, Users, TrendingUp, Clock, Shield, ArrowUpRight, ChevronDown, ChevronRight, CheckCircle, XCircle, Eye, X, Briefcase, Mail, Phone, FileText, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 
 const stats = [
@@ -10,22 +13,81 @@ const stats = [
   { label: "Avg. Trust Score", value: "7.8", icon: TrendingUp, change: "+0.3 vs last month", trend: "up" },
 ];
 
-const recentInquiries = [
-  { id: 1, name: "Carlos Mendez", property: "Calle Gran Vía 42, 3B", score: 8.5, status: "qualified", time: "10 min ago" },
-  { id: 2, name: "Ana Ferreira", property: "Rua Augusta 15, 2D", score: 6.2, status: "review", time: "25 min ago" },
-  { id: 3, name: "Marco Rossi", property: "Via Roma 88, Int 4", score: 3.1, status: "flagged", time: "1 hour ago" },
-  { id: 4, name: "Sophie Laurent", property: "Calle Serrano 12, 5A", score: 9.1, status: "qualified", time: "2 hours ago" },
-  { id: 5, name: "João Silva", property: "Av. Liberdade 100, 1E", score: 7.4, status: "qualified", time: "3 hours ago" },
+interface TenantInquiry {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  score: number;
+  status: "qualified" | "review" | "flagged" | "pending";
+  time: string;
+  avatar?: string;
+  income: string;
+  employer: string;
+  jobTitle: string;
+  linkedinVerified: boolean;
+  idVerified: boolean;
+  documentsComplete: boolean;
+  contractType: string;
+}
+
+interface Listing {
+  id: number;
+  title: string;
+  address: string;
+  rent: string;
+  inquiries: TenantInquiry[];
+}
+
+const listings: Listing[] = [
+  {
+    id: 1,
+    title: "Luxury Apartment",
+    address: "Calle Gran Vía 42, 3B, Madrid",
+    rent: "€2,200/mo",
+    inquiries: [
+      { id: 1, name: "Carlos Mendez", email: "carlos@mendez.es", phone: "+34 612 345 678", score: 8.5, status: "qualified", time: "10 min ago", income: "€3,200/mo", employer: "Accenture Spain", jobTitle: "Senior Consultant", linkedinVerified: true, idVerified: true, documentsComplete: true, contractType: "Indefinido" },
+      { id: 3, name: "Marco Rossi", email: "marco@gmail.com", phone: "+39 333 456 789", score: 3.1, status: "flagged", time: "1 hour ago", income: "Not verified", employer: "Unknown", jobTitle: "N/A", linkedinVerified: false, idVerified: false, documentsComplete: false, contractType: "N/A" },
+    ],
+  },
+  {
+    id: 2,
+    title: "Modern Studio",
+    address: "Calle Serrano 12, 5A, Madrid",
+    rent: "€1,400/mo",
+    inquiries: [
+      { id: 4, name: "Sophie Laurent", email: "sophie@laurent.fr", phone: "+33 6 12 34 56 78", score: 9.1, status: "qualified", time: "2 hours ago", avatar: "", income: "€4,800/mo", employer: "L'Oréal", jobTitle: "Marketing Director", linkedinVerified: true, idVerified: true, documentsComplete: true, contractType: "CDI" },
+    ],
+  },
+  {
+    id: 3,
+    title: "Cozy 2-Bedroom",
+    address: "Rua Augusta 15, 2D, Lisbon",
+    rent: "€1,100/mo",
+    inquiries: [
+      { id: 2, name: "Ana Ferreira", email: "ana@ferreira.pt", phone: "+351 912 345 678", score: 6.2, status: "review", time: "25 min ago", income: "€2,100/mo", employer: "Freelance", jobTitle: "Graphic Designer", linkedinVerified: false, idVerified: true, documentsComplete: false, contractType: "Freelance" },
+      { id: 5, name: "João Silva", email: "joao@silva.pt", phone: "+351 923 456 789", score: 7.4, status: "qualified", time: "3 hours ago", income: "€2,900/mo", employer: "Deloitte Portugal", jobTitle: "Auditor", linkedinVerified: true, idVerified: true, documentsComplete: true, contractType: "Sem Termo" },
+    ],
+  },
 ];
 
 const statusStyles: Record<string, string> = {
   qualified: "bg-green-100 text-green-800 border-green-200",
   review: "bg-yellow-100 text-yellow-800 border-yellow-200",
   flagged: "bg-red-100 text-red-800 border-red-200",
+  pending: "bg-gray-100 text-gray-800 border-gray-200",
 };
 
 const AgencyDashboard = () => {
   const { profile } = useAuth();
+  const [expandedListings, setExpandedListings] = useState<number[]>([1]);
+  const [selectedInquiry, setSelectedInquiry] = useState<TenantInquiry | null>(null);
+
+  const toggleListing = (id: number) => {
+    setExpandedListings((prev) =>
+      prev.includes(id) ? prev.filter((l) => l !== id) : [...prev, id]
+    );
+  };
 
   return (
     <div className="p-6 md:p-8 space-y-8 max-w-7xl">
@@ -62,47 +124,86 @@ const AgencyDashboard = () => {
         })}
       </div>
 
-      {/* Recent Inquiries */}
-      <Card className="shadow-card border-border">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Recent Tenant Inquiries</CardTitle>
-            <a href="/agency/tenants" className="text-sm text-primary hover:underline font-medium">View all →</a>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {recentInquiries.map((inquiry) => (
+      {/* Tenant Inquiries by Listing */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold text-foreground">Tenant Inquiries by Listing</h3>
+          <a href="/agency/tenants" className="text-sm text-primary hover:underline font-medium">View all →</a>
+        </div>
+
+        {listings.map((listing) => {
+          const isExpanded = expandedListings.includes(listing.id);
+          return (
+            <Card key={listing.id} className="shadow-card border-border overflow-hidden">
+              {/* Listing Header */}
               <div
-                key={inquiry.id}
-                className="flex items-center justify-between p-3 rounded-xl border border-border hover:bg-accent/30 transition-colors"
+                className="flex items-center justify-between p-4 cursor-pointer hover:bg-accent/30 transition-colors"
+                onClick={() => toggleListing(listing.id)}
               >
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-accent-foreground font-bold text-sm flex-shrink-0">
-                    {inquiry.name.charAt(0)}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <Building2 className="w-5 h-5 text-primary" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-medium text-foreground text-sm truncate">{inquiry.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{inquiry.property}</p>
+                  <div>
+                    <h4 className="font-semibold text-foreground text-sm">{listing.title}</h4>
+                    <p className="text-xs text-muted-foreground">{listing.address}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <div className="text-right hidden sm:block">
-                    <p className="text-sm font-semibold text-foreground">{inquiry.score}</p>
-                    <p className="text-xs text-muted-foreground">Trust Score</p>
-                  </div>
-                  <Badge variant="outline" className={`text-xs capitalize ${statusStyles[inquiry.status]}`}>
-                    {inquiry.status}
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className="text-xs">{listing.rent}</Badge>
+                  <Badge className="bg-primary/10 text-primary text-xs hover:bg-primary/10">
+                    {listing.inquiries.length} {listing.inquiries.length === 1 ? "inquiry" : "inquiries"}
                   </Badge>
-                  <span className="text-xs text-muted-foreground hidden md:flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {inquiry.time}
-                  </span>
+                  {isExpanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
                 </div>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+
+              {/* Inquiries List */}
+              {isExpanded && (
+                <div className="border-t border-border">
+                  {listing.inquiries.map((inquiry) => (
+                    <div
+                      key={inquiry.id}
+                      className="flex items-center justify-between p-4 border-b border-border last:border-0 hover:bg-accent/20 transition-colors cursor-pointer"
+                      onClick={() => setSelectedInquiry(inquiry)}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Avatar className="w-10 h-10">
+                          {inquiry.avatar ? (
+                            <AvatarImage src={inquiry.avatar} alt={inquiry.name} />
+                          ) : null}
+                          <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
+                            {inquiry.name.split(" ").map(n => n[0]).join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="font-medium text-foreground text-sm truncate">{inquiry.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{inquiry.employer} · {inquiry.jobTitle}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <div className="text-right hidden sm:block">
+                          <div className="flex items-center gap-1">
+                            <Shield className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-sm font-bold text-foreground">{inquiry.score}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">Trust Score</p>
+                        </div>
+                        <Badge variant="outline" className={`text-xs capitalize ${statusStyles[inquiry.status]}`}>
+                          {inquiry.status}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground hidden md:flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {inquiry.time}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          );
+        })}
+      </div>
 
       {/* Revenue & Performance */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -159,6 +260,117 @@ const AgencyDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Tenant Profile Modal */}
+      {selectedInquiry && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedInquiry(null)}>
+          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <Avatar className="w-14 h-14">
+                    {selectedInquiry.avatar ? (
+                      <AvatarImage src={selectedInquiry.avatar} alt={selectedInquiry.name} />
+                    ) : null}
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
+                      {selectedInquiry.name.split(" ").map(n => n[0]).join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <CardTitle className="text-lg">{selectedInquiry.name}</CardTitle>
+                    <Badge variant="outline" className={`text-xs capitalize mt-1 ${statusStyles[selectedInquiry.status]}`}>
+                      {selectedInquiry.status}
+                    </Badge>
+                  </div>
+                </div>
+                <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => setSelectedInquiry(null)}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {/* Trust Score */}
+              <div className="flex items-center justify-center gap-2 py-3 bg-primary/5 rounded-xl">
+                <Shield className="w-6 h-6 text-primary" />
+                <span className="text-3xl font-black text-primary">{selectedInquiry.score}</span>
+                <span className="text-sm text-muted-foreground">/ 10 Trust Score</span>
+              </div>
+
+              {/* Contact */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-foreground">Contact</h4>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Mail className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-foreground">{selectedInquiry.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-foreground">{selectedInquiry.phone}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Employment */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-foreground">Employment</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-muted/30 rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground">Employer</p>
+                    <p className="text-sm font-medium text-foreground">{selectedInquiry.employer}</p>
+                  </div>
+                  <div className="bg-muted/30 rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground">Job Title</p>
+                    <p className="text-sm font-medium text-foreground">{selectedInquiry.jobTitle}</p>
+                  </div>
+                  <div className="bg-muted/30 rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground">Income</p>
+                    <p className="text-sm font-medium text-foreground">{selectedInquiry.income}</p>
+                  </div>
+                  <div className="bg-muted/30 rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground">Contract Type</p>
+                    <p className="text-sm font-medium text-foreground">{selectedInquiry.contractType}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Verifications */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-foreground">Verifications</h4>
+                <div className="space-y-1.5">
+                  {[
+                    { label: "LinkedIn Verified", ok: selectedInquiry.linkedinVerified },
+                    { label: "ID Verified", ok: selectedInquiry.idVerified },
+                    { label: "Documents Complete", ok: selectedInquiry.documentsComplete },
+                  ].map((v) => (
+                    <div key={v.label} className="flex items-center gap-2 text-sm">
+                      {v.ok ? (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-destructive" />
+                      )}
+                      <span className={v.ok ? "text-foreground" : "text-destructive"}>{v.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-2">
+                <Button variant="hero" className="flex-1 rounded-xl gap-2" onClick={() => { setSelectedInquiry(null); }}>
+                  <CheckCircle className="w-4 h-4" /> Approve
+                </Button>
+                <Button variant="outline" className="flex-1 rounded-xl gap-2" onClick={() => { setSelectedInquiry(null); }}>
+                  <Eye className="w-4 h-4" /> Schedule Viewing
+                </Button>
+                <Button variant="destructive" className="rounded-xl gap-2" onClick={() => { setSelectedInquiry(null); }}>
+                  <XCircle className="w-4 h-4" /> Reject
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
