@@ -7,6 +7,8 @@ interface Profile {
   full_name: string | null;
   agency_name: string | null;
   email: string | null;
+  notification_email: string | null;
+  onboarding_completed: boolean | null;
 }
 
 interface AuthContextType {
