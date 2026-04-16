@@ -66,14 +66,6 @@ export function AgencySidebar() {
       <SidebarFooter className="border-t border-border p-3">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <a href="/" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Home className="mr-2 h-4 w-4" />
-                {!collapsed && <span>Back to Site</span>}
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
             <SidebarMenuButton onClick={signOut} className="text-muted-foreground hover:text-destructive transition-colors">
               <LogOut className="mr-2 h-4 w-4" />
               {!collapsed && <span>Sign Out</span>}
