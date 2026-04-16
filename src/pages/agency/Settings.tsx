@@ -125,14 +125,87 @@ const RuleToggle = ({
   </div>
 );
 
+// --- Agent type ---
+interface AgentRecord {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  permissions: {
+    view_tenants: boolean;
+    approve_tenants: boolean;
+    schedule_viewings: boolean;
+    manage_listings: boolean;
+  };
+  is_active: boolean;
+}
+
+const DEFAULT_AGENT_PERMISSIONS = {
+  view_tenants: true,
+  approve_tenants: false,
+  schedule_viewings: true,
+  manage_listings: false,
+};
+
 // --- MAIN COMPONENT ---
 const AgencySettings = () => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
 
   // Connection states
   const [zapierWebhook, setZapierWebhook] = useState("");
 
-  // Qualification rules state
+  // Team state
+  const [agents, setAgents] = useState<AgentRecord[]>([]);
+  const [loadingAgents, setLoadingAgents] = useState(false);
+  const [showAddAgent, setShowAddAgent] = useState(false);
+  const [newAgentName, setNewAgentName] = useState("");
+  const [newAgentEmail, setNewAgentEmail] = useState("");
+  const [newAgentPhone, setNewAgentPhone] = useState("");
+  const [newAgentPerms, setNewAgentPerms] = useState({ ...DEFAULT_AGENT_PERMISSIONS });
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchAgents = async () => {
+      setLoadingAgents(true);
+      const { data } = await supabase
+        .from("agency_agents")
+        .select("*")
+        .eq("agency_id", user.id)
+        .order("created_at", { ascending: true });
+      if (data) setAgents(data as any);
+      setLoadingAgents(false);
+    };
+    fetchAgents();
+  }, [user]);
+
+  const handleAddAgent = async () => {
+    if (!user || !newAgentName.trim() || !newAgentEmail.trim()) {
+      toast.error("Name and email are required");
+      return;
+    }
+    const { data, error } = await supabase.from("agency_agents").insert({
+      agency_id: user.id,
+      name: newAgentName.trim(),
+      email: newAgentEmail.trim(),
+      phone: newAgentPhone.trim() || null,
+      permissions: newAgentPerms,
+    }).select().single();
+    if (error) { toast.error(error.message); return; }
+    setAgents((prev) => [...prev, data as any]);
+    setNewAgentName("");
+    setNewAgentEmail("");
+    setNewAgentPhone("");
+    setNewAgentPerms({ ...DEFAULT_AGENT_PERMISSIONS });
+    setShowAddAgent(false);
+    toast.success("Agent added");
+  };
+
+  const handleRemoveAgent = async (id: string) => {
+    const { error } = await supabase.from("agency_agents").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setAgents((prev) => prev.filter((a) => a.id !== id));
+    toast.success("Agent removed");
+  };
   const [rules, setRules] = useState<ListingRules>(DEFAULT_RULES);
 
   const updateRule = <K extends keyof ListingRules>(key: K, value: ListingRules[K]) => {
