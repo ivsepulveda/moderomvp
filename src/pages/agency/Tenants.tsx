@@ -350,6 +350,55 @@ const Tenants = () => {
                 </div>
               </div>
 
+              {/* Application Progress */}
+              {(() => {
+                const steps = [
+                  { label: "Initial Contact", desc: "First inquiry received", done: true },
+                  { label: "Document Upload", desc: "Documents submitted", done: selected.documents.filter(d => d.uploaded).length >= 2 },
+                  { label: "ID Verification", desc: "Identity confirmed", done: selected.idVerified && selected.biometricPassed },
+                  { label: "Financial Check", desc: "Income & credit verified", done: (selected.dbCreditScore ?? 0) > 0 && selected.incomeMonthly > 0 },
+                  { label: "Final Review", desc: "Ready for decision", done: selected.status === "qualified" },
+                ];
+                const completedCount = steps.filter(s => s.done).length;
+                const progressPercent = (completedCount / steps.length) * 100;
+                return (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-semibold text-foreground">Application Progress</h4>
+                    <div className="w-full h-2.5 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-primary to-amber-400 transition-all duration-500"
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+                    <div className="grid grid-cols-5 gap-2">
+                      {steps.map((step, i) => (
+                        <div
+                          key={i}
+                          className={`rounded-xl border p-2.5 text-center transition-all ${
+                            step.done
+                              ? "border-primary/40 bg-primary/5"
+                              : "border-border bg-muted/20"
+                          }`}
+                        >
+                          <div className="flex items-center justify-center mb-1.5">
+                            {step.done ? (
+                              <CheckCircle className="w-4 h-4 text-primary" />
+                            ) : (
+                              <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30" />
+                            )}
+                          </div>
+                          <p className="text-[10px] font-semibold text-foreground leading-tight">Step {i + 1}</p>
+                          <p className="text-[10px] font-medium text-foreground leading-tight">{step.label}</p>
+                          <p className="text-[9px] text-muted-foreground leading-tight mt-0.5">{step.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <Separator />
+
               {/* Fraud Alert */}
               {selected.fraudFlag && (
                 <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
