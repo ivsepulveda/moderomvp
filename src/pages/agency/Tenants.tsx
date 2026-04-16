@@ -488,15 +488,26 @@ const Tenants = () => {
 
               {/* LinkedIn */}
               <div className="space-y-2">
-                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Link2 className="w-4 h-4 text-muted-foreground" /> LinkedIn</h4>
+                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Link2 className="w-4 h-4 text-blue-600" /> LinkedIn</h4>
                 {selected.linkedIn ? (
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1">
-                    <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-600" /><span className="text-sm font-medium text-blue-800">Verified</span></div>
-                    <p className="text-xs text-blue-700">{selected.linkedinHeadline}</p>
-                    <p className="text-xs text-blue-600">{selected.linkedinProfile}</p>
+                  <div className="p-4 bg-blue-50/80 border border-blue-200 rounded-xl space-y-3">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-blue-600" />
+                      <span className="text-base font-semibold text-blue-900">Verified</span>
+                    </div>
+                    <p className="text-sm text-blue-700 font-medium">{selected.linkedinHeadline}</p>
+                    <a href={`https://${selected.linkedinProfile}`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-800 underline underline-offset-2 flex items-center gap-1">
+                      <Link2 className="w-3.5 h-3.5" /> {selected.linkedinProfile}
+                    </a>
                   </div>
                 ) : (
-                  <div className="p-3 bg-muted/30 rounded-xl flex items-center gap-2"><XCircle className="w-4 h-4 text-muted-foreground" /><span className="text-sm text-muted-foreground">Not verified</span></div>
+                  <div className="p-4 bg-muted/30 rounded-xl flex items-center gap-3 border border-border">
+                    <XCircle className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                      <span className="text-sm font-medium text-muted-foreground">Not connected</span>
+                      <p className="text-xs text-muted-foreground/70">LinkedIn verification has not been completed</p>
+                    </div>
+                  </div>
                 )}
               </div>
 
