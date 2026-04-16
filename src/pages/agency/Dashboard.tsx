@@ -790,20 +790,117 @@ const AgencyDashboard = () => {
 
               {/* Actions */}
               <div className="flex gap-3 pt-3 sticky bottom-0 bg-card pb-1">
-                <Button variant="hero" className="flex-1 rounded-xl gap-2" onClick={() => setSelectedInquiry(null)}>
-                  <CheckCircle className="w-4 h-4" /> Approve
-                </Button>
-                <Button variant="outline" className="flex-1 rounded-xl gap-2" onClick={() => setSelectedInquiry(null)}>
-                  <Eye className="w-4 h-4" /> Schedule Viewing
-                </Button>
-                <Button variant="destructive" className="rounded-xl gap-2" onClick={() => setSelectedInquiry(null)}>
-                  <XCircle className="w-4 h-4" /> Reject
-                </Button>
+                {(() => {
+                  const action = tenantActions[selectedInquiry.id];
+                  const isApproved = action?.status === "approved";
+                  const isRejected = action?.status === "rejected";
+                  const hasViewing = !!action?.viewing;
+
+                  if (isRejected) {
+                    return (
+                      <div className="flex-1 text-center py-3 rounded-xl bg-destructive/10 border border-destructive/20">
+                        <p className="text-sm font-semibold text-destructive flex items-center justify-center gap-2">
+                          <XCircle className="w-4 h-4" /> Application Rejected
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <>
+                      {!isApproved && (
+                        <Button variant="hero" className="flex-1 rounded-xl gap-2" onClick={() => handleApprove(selectedInquiry)}>
+                          <CheckCircle className="w-4 h-4" /> Approve
+                        </Button>
+                      )}
+                      {isApproved && !hasViewing && (
+                        <Button variant="outline" className="flex-1 rounded-xl gap-2 border-border" onClick={() => setShowScheduleDialog(true)}>
+                          <Eye className="w-4 h-4" /> Schedule Viewing
+                        </Button>
+                      )}
+                      {isApproved && hasViewing && (
+                        <div className="flex-1 rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-center">
+                          <p className="text-sm font-semibold text-emerald-800 flex items-center justify-center gap-2">
+                            <Calendar className="w-4 h-4" /> Viewing on {new Date(action.viewing!.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} at {action.viewing!.time}
+                          </p>
+                        </div>
+                      )}
+                      {!isApproved && (
+                        <Button variant="destructive" className="rounded-xl gap-2" onClick={() => handleReject(selectedInquiry)}>
+                          <XCircle className="w-4 h-4" /> Reject
+                        </Button>
+                      )}
+                      {isApproved && !hasViewing && (
+                        <Button variant="destructive" className="rounded-xl gap-2" onClick={() => handleReject(selectedInquiry)}>
+                          <XCircle className="w-4 h-4" /> Reject
+                        </Button>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </CardContent>
           </Card>
         </div>
       )}
+
+      {/* Schedule Viewing Dialog */}
+      <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary" /> Schedule Viewing
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            {selectedInquiry && (
+              <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
+                <Avatar className="w-10 h-10">
+                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
+                    {selectedInquiry.name.split(" ").map(n => n[0]).join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{selectedInquiry.name}</p>
+                  <p className="text-xs text-muted-foreground">{selectedInquiry.propertyApplied}</p>
+                </div>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Date</Label>
+              <Input
+                type="date"
+                value={viewingDate}
+                onChange={(e) => setViewingDate(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+                className="rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Time</Label>
+              <Input
+                type="time"
+                value={viewingTime}
+                onChange={(e) => setViewingTime(e.target.value)}
+                className="rounded-xl"
+              />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowScheduleDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="hero"
+                className="flex-1 rounded-xl gap-2"
+                onClick={handleScheduleViewing}
+                disabled={!viewingDate || !viewingTime}
+              >
+                <Calendar className="w-4 h-4" /> Confirm Viewing
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
