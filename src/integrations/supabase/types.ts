@@ -474,6 +474,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tenant_applications_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "public_properties"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tenant_applications_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -619,6 +626,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "viewings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "public_properties"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "viewings_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -629,7 +643,51 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_properties: {
+        Row: {
+          address: string | null
+          agency_id: string | null
+          bathrooms: number | null
+          bedrooms: number | null
+          created_at: string | null
+          currency: string | null
+          id: string | null
+          idealista_listing_id: string | null
+          is_active: boolean | null
+          rent: number | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          agency_id?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string | null
+          idealista_listing_id?: string | null
+          is_active?: boolean | null
+          rent?: number | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          agency_id?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string | null
+          idealista_listing_id?: string | null
+          is_active?: boolean | null
+          rent?: number | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
