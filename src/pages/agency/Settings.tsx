@@ -307,6 +307,37 @@ const AgencySettings = () => {
             </div>
           </div>
 
+          {/* GDPR Compliance — always required */}
+          <div className="p-5 rounded-xl border-2 border-emerald-500/30 bg-emerald-500/5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+                  <Shield className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-semibold text-foreground">GDPR Data Consent</h4>
+                    <Badge className="bg-emerald-600 text-xs hover:bg-emerald-600">Required</Badge>
+                  </div>
+                  <p className="text-xs text-emerald-600 font-medium mt-0.5">
+                    Tenant must accept GDPR data processing consent before starting the qualification form.
+                  </p>
+                </div>
+              </div>
+              <Switch checked={true} disabled />
+            </div>
+            <div className="mt-3 pl-[52px] space-y-1">
+              <p className="text-xs text-muted-foreground">
+                This rule cannot be disabled. Under EU regulation, tenant data processing requires explicit consent.
+                The qualification form will display a mandatory GDPR consent checkbox before any data is collected.
+              </p>
+              <div className="flex items-center gap-2 mt-2">
+                <Badge variant="outline" className="text-xs border-emerald-500/30 text-emerald-600">EU Compliant</Badge>
+                <Badge variant="outline" className="text-xs border-emerald-500/30 text-emerald-600">Always Active</Badge>
+              </div>
+            </div>
+          </div>
+
           {/* Income Gate */}
           <div className={`p-5 rounded-xl border-2 transition-all ${rules.income_gate_enabled ? "border-destructive/30 bg-destructive/5" : "border-border bg-card"}`}>
             <div className="flex items-center justify-between">
