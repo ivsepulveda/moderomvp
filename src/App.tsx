@@ -21,6 +21,7 @@ import AgencyDashboard from "./pages/agency/Dashboard.tsx";
 import Tenants from "./pages/agency/Tenants.tsx";
 import Listings from "./pages/agency/Listings.tsx";
 import AgencySettings from "./pages/agency/Settings.tsx";
+import AgencyOnboarding from "./pages/agency/Onboarding.tsx";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
               <Route path="listings" element={<Listings />} />
               <Route path="settings" element={<AgencySettings />} />
             </Route>
+            <Route path="/agency/onboarding" element={<ProtectedRoute><AgencyOnboarding /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

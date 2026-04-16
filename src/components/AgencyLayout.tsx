@@ -1,10 +1,15 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AgencySidebar } from "@/components/AgencySidebar";
-import { Outlet } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
 const AgencyLayout = () => {
-  const { profile } = useAuth();
+  const { profile, userRole } = useAuth();
+
+  // Redirect to onboarding if agency hasn't completed it
+  if (userRole === "agency" && profile && !profile.onboarding_completed) {
+    return <Navigate to="/agency/onboarding" replace />;
+  }
 
   return (
     <SidebarProvider>

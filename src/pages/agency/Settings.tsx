@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,8 @@ import {
   Building2, Mail, Calendar, MessageSquare, Zap, Shield, ExternalLink,
   User, Settings, FileText, Briefcase, AlertTriangle,
   Zap as ZapIcon, Link2, CreditCard, Save, Globe, History, Fingerprint,
-  DollarSign, Brain, IdCard, Camera,
+  DollarSign, Brain, IdCard, Camera, Users, UserPlus, Eye, Check,
+  CalendarCheck, Home, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -124,14 +125,87 @@ const RuleToggle = ({
   </div>
 );
 
+// --- Agent type ---
+interface AgentRecord {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  permissions: {
+    view_tenants: boolean;
+    approve_tenants: boolean;
+    schedule_viewings: boolean;
+    manage_listings: boolean;
+  };
+  is_active: boolean;
+}
+
+const DEFAULT_AGENT_PERMISSIONS = {
+  view_tenants: true,
+  approve_tenants: false,
+  schedule_viewings: true,
+  manage_listings: false,
+};
+
 // --- MAIN COMPONENT ---
 const AgencySettings = () => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
 
   // Connection states
   const [zapierWebhook, setZapierWebhook] = useState("");
 
-  // Qualification rules state
+  // Team state
+  const [agents, setAgents] = useState<AgentRecord[]>([]);
+  const [loadingAgents, setLoadingAgents] = useState(false);
+  const [showAddAgent, setShowAddAgent] = useState(false);
+  const [newAgentName, setNewAgentName] = useState("");
+  const [newAgentEmail, setNewAgentEmail] = useState("");
+  const [newAgentPhone, setNewAgentPhone] = useState("");
+  const [newAgentPerms, setNewAgentPerms] = useState({ ...DEFAULT_AGENT_PERMISSIONS });
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchAgents = async () => {
+      setLoadingAgents(true);
+      const { data } = await supabase
+        .from("agency_agents")
+        .select("*")
+        .eq("agency_id", user.id)
+        .order("created_at", { ascending: true });
+      if (data) setAgents(data as any);
+      setLoadingAgents(false);
+    };
+    fetchAgents();
+  }, [user]);
+
+  const handleAddAgent = async () => {
+    if (!user || !newAgentName.trim() || !newAgentEmail.trim()) {
+      toast.error("Name and email are required");
+      return;
+    }
+    const { data, error } = await supabase.from("agency_agents").insert({
+      agency_id: user.id,
+      name: newAgentName.trim(),
+      email: newAgentEmail.trim(),
+      phone: newAgentPhone.trim() || null,
+      permissions: newAgentPerms,
+    }).select().single();
+    if (error) { toast.error(error.message); return; }
+    setAgents((prev) => [...prev, data as any]);
+    setNewAgentName("");
+    setNewAgentEmail("");
+    setNewAgentPhone("");
+    setNewAgentPerms({ ...DEFAULT_AGENT_PERMISSIONS });
+    setShowAddAgent(false);
+    toast.success("Agent added");
+  };
+
+  const handleRemoveAgent = async (id: string) => {
+    const { error } = await supabase.from("agency_agents").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    setAgents((prev) => prev.filter((a) => a.id !== id));
+    toast.success("Agent removed");
+  };
   const [rules, setRules] = useState<ListingRules>(DEFAULT_RULES);
 
   const updateRule = <K extends keyof ListingRules>(key: K, value: ListingRules[K]) => {
@@ -216,6 +290,12 @@ const AgencySettings = () => {
           >
             <Calendar className="w-4 h-4" /> Connection Settings
           </TabsTrigger>
+          <TabsTrigger
+            value="team"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none bg-transparent px-1 pb-3 pt-1 gap-2"
+          >
+            <Users className="w-4 h-4" /> Team
+          </TabsTrigger>
         </TabsList>
 
         {/* ====== PROFILE TAB ====== */}
@@ -253,6 +333,11 @@ const AgencySettings = () => {
                     <Input defaultValue={profile?.email || ""} disabled className="rounded-xl bg-muted/30" />
                     <span className="text-xs text-muted-foreground whitespace-nowrap">(cannot be changed)</span>
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Notification Email</Label>
+                  <Input defaultValue={profile?.notification_email || ""} placeholder="viewings@youragency.com" className="rounded-xl bg-muted/30" />
+                  <p className="text-xs text-muted-foreground">Used as reply-to for tenant emails (viewing confirmations, updates)</p>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Agency Website</Label>
@@ -817,6 +902,115 @@ const AgencySettings = () => {
               }}>
                 Save Webhook
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ====== TEAM TAB ====== */}
+        <TabsContent value="team" className="mt-6 space-y-6">
+          <Card className="shadow-card border-border">
+            <CardHeader className="flex flex-row items-start justify-between">
+              <div>
+                <CardTitle className="text-lg">Team Members</CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">Manage agents and their permissions</p>
+              </div>
+              {!showAddAgent && (
+                <Button variant="hero" size="sm" className="rounded-xl gap-2" onClick={() => setShowAddAgent(true)}>
+                  <UserPlus className="w-4 h-4" /> Add Agent
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Add agent form */}
+              {showAddAgent && (
+                <div className="space-y-4 p-4 rounded-xl border-2 border-primary/20 bg-primary/5">
+                  <h4 className="font-semibold text-foreground text-sm">New Agent</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Name *</Label>
+                      <Input value={newAgentName} onChange={(e) => setNewAgentName(e.target.value)} placeholder="Agent name" className="rounded-xl h-9" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Email *</Label>
+                      <Input type="email" value={newAgentEmail} onChange={(e) => setNewAgentEmail(e.target.value)} placeholder="agent@agency.com" className="rounded-xl h-9" />
+                    </div>
+                    <div className="space-y-1 md:col-span-2">
+                      <Label className="text-xs">Phone (optional)</Label>
+                      <Input value={newAgentPhone} onChange={(e) => setNewAgentPhone(e.target.value)} placeholder="+34 600 000 000" className="rounded-xl h-9" />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Permissions</Label>
+                    <div className="rounded-xl border border-border bg-card p-3 space-y-1">
+                      {[
+                        { key: "view_tenants" as const, label: "View Tenants", icon: Eye },
+                        { key: "approve_tenants" as const, label: "Approve / Reject Tenants", icon: Check },
+                        { key: "schedule_viewings" as const, label: "Schedule Viewings", icon: CalendarCheck },
+                        { key: "manage_listings" as const, label: "Manage Listings", icon: Home },
+                      ].map((perm) => (
+                        <div key={perm.key} className="flex items-center justify-between py-2">
+                          <div className="flex items-center gap-2">
+                            <perm.icon className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-sm text-foreground">{perm.label}</span>
+                          </div>
+                          <Switch
+                            checked={newAgentPerms[perm.key]}
+                            onCheckedChange={(v) => setNewAgentPerms((p) => ({ ...p, [perm.key]: v }))}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="hero" className="rounded-xl" onClick={handleAddAgent}>
+                      <UserPlus className="w-4 h-4 mr-2" /> Add Agent
+                    </Button>
+                    <Button variant="outline" className="rounded-xl" onClick={() => setShowAddAgent(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Agent list */}
+              {loadingAgents ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+                </div>
+              ) : agents.length === 0 && !showAddAgent ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Users className="w-10 h-10 mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">No team members yet</p>
+                  <p className="text-xs mt-1">Add agents to help manage your listings and tenants</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {agents.map((agent) => (
+                    <div key={agent.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                          {agent.name[0]?.toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground text-sm">{agent.name}</p>
+                          <p className="text-xs text-muted-foreground">{agent.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex gap-1">
+                          {agent.permissions?.view_tenants && <Badge variant="outline" className="text-xs px-1.5"><Eye className="w-3 h-3" /></Badge>}
+                          {agent.permissions?.approve_tenants && <Badge variant="outline" className="text-xs px-1.5"><Check className="w-3 h-3" /></Badge>}
+                          {agent.permissions?.schedule_viewings && <Badge variant="outline" className="text-xs px-1.5"><CalendarCheck className="w-3 h-3" /></Badge>}
+                          {agent.permissions?.manage_listings && <Badge variant="outline" className="text-xs px-1.5"><Home className="w-3 h-3" /></Badge>}
+                        </div>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleRemoveAgent(agent.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
