@@ -283,7 +283,7 @@ const AgencyDashboard = () => {
     <div className="p-6 md:p-8 space-y-8 max-w-7xl">
       <div>
         <h2 className="text-2xl font-bold text-foreground">
-          Welcome back{profile?.agency_name ? `, ${profile.agency_name}` : ""}
+          {profile?.agency_name || "Agency Dashboard"}
         </h2>
         <p className="text-muted-foreground text-sm mt-1">Your tenant intelligence overview</p>
       </div>
