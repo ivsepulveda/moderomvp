@@ -262,6 +262,11 @@ const AgencySettings = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Notification Email</Label>
+                  <Input defaultValue={profile?.notification_email || ""} placeholder="viewings@youragency.com" className="rounded-xl bg-muted/30" />
+                  <p className="text-xs text-muted-foreground">Used as reply-to for tenant emails (viewing confirmations, updates)</p>
+                </div>
+                <div className="space-y-2">
                   <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Agency Website</Label>
                   <Input placeholder="https://youragency.com" className="rounded-xl bg-muted/30" />
                 </div>
