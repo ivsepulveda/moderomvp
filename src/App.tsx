@@ -50,6 +50,7 @@ const App = () => (
               <Route path="listings" element={<Listings />} />
               <Route path="settings" element={<AgencySettings />} />
             </Route>
+            <Route path="/agency/onboarding" element={<ProtectedRoute><AgencyOnboarding /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
