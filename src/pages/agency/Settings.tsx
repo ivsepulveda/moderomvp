@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,8 @@ import {
   Building2, Mail, Calendar, MessageSquare, Zap, Shield, ExternalLink,
   User, Settings, FileText, Briefcase, AlertTriangle,
   Zap as ZapIcon, Link2, CreditCard, Save, Globe, History, Fingerprint,
-  DollarSign, Brain, IdCard, Camera,
+  DollarSign, Brain, IdCard, Camera, Users, UserPlus, Eye, Check,
+  CalendarCheck, Home, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
