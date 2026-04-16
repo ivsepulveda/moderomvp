@@ -435,7 +435,136 @@ const AgencyDashboard = () => {
         })}
       </div>
 
-      {/* Revenue & Performance */}
+      {/* Upcoming Viewings This Week */}
+      {(() => {
+        const allViewings = listings.flatMap(listing =>
+          listing.inquiries
+            .filter(i => tenantActions[i.id]?.viewing)
+            .map(i => ({
+              ...i,
+              listing,
+              viewing: tenantActions[i.id].viewing!,
+            }))
+        ).sort((a, b) => {
+          const da = new Date(`${a.viewing.date}T${a.viewing.time}`);
+          const db = new Date(`${b.viewing.date}T${b.viewing.time}`);
+          return da.getTime() - db.getTime();
+        });
+
+        // Get current week range
+        const now = new Date();
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay() + 1);
+        startOfWeek.setHours(0, 0, 0, 0);
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        // Days of the week
+        const weekDays: { label: string; date: Date }[] = [];
+        for (let d = 0; d < 7; d++) {
+          const day = new Date(startOfWeek);
+          day.setDate(startOfWeek.getDate() + d);
+          weekDays.push({
+            label: day.toLocaleDateString("en-GB", { weekday: "short" }),
+            date: day,
+          });
+        }
+
+        return (
+          <Card className="shadow-card border-border">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-primary" /> Upcoming Viewings
+                </CardTitle>
+                <Badge variant="outline" className="text-xs">
+                  {allViewings.length} scheduled
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {allViewings.length === 0 ? (
+                <div className="text-center py-8">
+                  <Calendar className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">No viewings scheduled yet</p>
+                  <p className="text-xs text-muted-foreground/70 mt-1">Approve a tenant and schedule a viewing to see it here</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Week overview */}
+                  <div className="grid grid-cols-7 gap-1.5">
+                    {weekDays.map((wd) => {
+                      const dayStr = wd.date.toISOString().split("T")[0];
+                      const dayViewings = allViewings.filter(v => v.viewing.date === dayStr);
+                      const isToday = dayStr === now.toISOString().split("T")[0];
+                      return (
+                        <div
+                          key={dayStr}
+                          className={`rounded-xl p-2 text-center transition-all ${
+                            isToday ? "bg-primary/10 border border-primary/30" : "bg-muted/30"
+                          } ${dayViewings.length > 0 ? "ring-1 ring-primary/20" : ""}`}
+                        >
+                          <p className={`text-[10px] font-medium ${isToday ? "text-primary" : "text-muted-foreground"}`}>
+                            {wd.label}
+                          </p>
+                          <p className={`text-sm font-bold ${isToday ? "text-primary" : "text-foreground"}`}>
+                            {wd.date.getDate()}
+                          </p>
+                          {dayViewings.length > 0 && (
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary mx-auto mt-1" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Viewing list */}
+                  <div className="space-y-2">
+                    {allViewings.map((v) => (
+                      <div
+                        key={v.id}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-accent/30 transition-colors cursor-pointer"
+                        onClick={() => setSelectedInquiry(v)}
+                      >
+                        <div className="w-12 text-center shrink-0">
+                          <p className="text-lg font-bold text-primary">
+                            {new Date(v.viewing.date).getDate()}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground uppercase">
+                            {new Date(v.viewing.date).toLocaleDateString("en-GB", { month: "short" })}
+                          </p>
+                        </div>
+                        <Separator orientation="vertical" className="h-10" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <Avatar className="w-7 h-7">
+                              <AvatarFallback className="bg-primary/10 text-primary font-bold text-[10px]">
+                                {v.name.split(" ").map(n => n[0]).join("")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate">{v.name}</p>
+                              <p className="text-xs text-muted-foreground truncate">{v.listing.title} · {v.listing.address}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-sm font-semibold text-foreground">{v.viewing.time}</p>
+                          <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">
+                            Confirmed
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })()}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="shadow-card border-border">
           <CardHeader className="pb-2">
