@@ -7,6 +7,10 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 const stats = [
   { label: "Active Listings", value: "34", icon: Building2, change: "+2 this week", trend: "up" },
@@ -270,11 +274,38 @@ const AgencyDashboard = () => {
   const { profile } = useAuth();
   const [expandedListings, setExpandedListings] = useState<number[]>([1]);
   const [selectedInquiry, setSelectedInquiry] = useState<TenantInquiry | null>(null);
+  const [tenantActions, setTenantActions] = useState<Record<number, { status: "approved" | "rejected"; viewing?: { date: string; time: string } }>>({});
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const [viewingDate, setViewingDate] = useState("");
+  const [viewingTime, setViewingTime] = useState("10:00");
 
   const toggleListing = (id: number) => {
     setExpandedListings((prev) =>
       prev.includes(id) ? prev.filter((l) => l !== id) : [...prev, id]
     );
+  };
+
+  const handleApprove = (inquiry: TenantInquiry) => {
+    setTenantActions(prev => ({ ...prev, [inquiry.id]: { status: "approved" } }));
+    toast.success(`${inquiry.name} has been approved`);
+  };
+
+  const handleReject = (inquiry: TenantInquiry) => {
+    setTenantActions(prev => ({ ...prev, [inquiry.id]: { status: "rejected" } }));
+    toast.error(`${inquiry.name} has been rejected`);
+    setSelectedInquiry(null);
+  };
+
+  const handleScheduleViewing = () => {
+    if (!selectedInquiry || !viewingDate || !viewingTime) return;
+    setTenantActions(prev => ({
+      ...prev,
+      [selectedInquiry.id]: { ...prev[selectedInquiry.id], viewing: { date: viewingDate, time: viewingTime } },
+    }));
+    setShowScheduleDialog(false);
+    setViewingDate("");
+    setViewingTime("10:00");
+    toast.success(`Viewing scheduled for ${selectedInquiry.name} on ${new Date(viewingDate).toLocaleDateString("en-GB", { day: "numeric", month: "long" })} at ${viewingTime}`);
   };
 
   const totalScore = selectedInquiry?.scoreBreakdown.reduce((a, b) => a + b.score, 0) ?? 0;
