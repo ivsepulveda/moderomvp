@@ -12,7 +12,7 @@ const AgencyRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!user || userRole !== "agency") {
+  if (!user || (userRole !== "agency" && userRole !== "admin")) {
     return <Navigate to="/login" replace />;
   }
 
