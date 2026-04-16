@@ -253,6 +253,7 @@ export type Database = {
           id: string
           idealista_listing_id: string | null
           is_active: boolean | null
+          listing_rules: Json
           rent: number | null
           title: string
           updated_at: string | null
@@ -267,6 +268,7 @@ export type Database = {
           id?: string
           idealista_listing_id?: string | null
           is_active?: boolean | null
+          listing_rules?: Json
           rent?: number | null
           title: string
           updated_at?: string | null
@@ -281,6 +283,7 @@ export type Database = {
           id?: string
           idealista_listing_id?: string | null
           is_active?: boolean | null
+          listing_rules?: Json
           rent?: number | null
           title?: string
           updated_at?: string | null
