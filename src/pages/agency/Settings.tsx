@@ -121,7 +121,7 @@ const AgencySettings = () => {
             <CardHeader className="flex flex-row items-start justify-between">
               <div>
                 <CardTitle className="text-lg">Profile Information</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">Manage your personal account details</p>
+                <p className="text-sm text-muted-foreground mt-1">Manage your agency account details</p>
               </div>
               <Button variant="outline" size="sm" className="rounded-xl gap-2">
                 <Save className="w-4 h-4" /> Edit Profile
@@ -140,34 +140,56 @@ const AgencySettings = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">First Name</Label>
-                  <Input defaultValue={profile?.full_name?.split(" ")[0] || ""} className="rounded-xl bg-muted/30" />
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Agency Name</Label>
+                  <Input defaultValue={profile?.agency_name || ""} placeholder="e.g. Madrid Premier Rentals" className="rounded-xl bg-muted/30" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Surname</Label>
-                  <Input defaultValue={profile?.full_name?.split(" ").slice(1).join(" ") || ""} className="rounded-xl bg-muted/30" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Company Name</Label>
-                  <Input defaultValue={profile?.agency_name || ""} className="rounded-xl bg-muted/30" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Mobile Number</Label>
-                  <Input placeholder="+34 600 000 000" className="rounded-xl bg-muted/30" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">City</Label>
-                  <Input placeholder="Madrid" className="rounded-xl bg-muted/30" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Email Address</Label>
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Business Email</Label>
                   <div className="flex items-center gap-2">
                     <Input defaultValue={profile?.email || ""} disabled className="rounded-xl bg-muted/30" />
                     <span className="text-xs text-muted-foreground whitespace-nowrap">(cannot be changed)</span>
                   </div>
                 </div>
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Agency Website</Label>
+                  <Input placeholder="https://youragency.com" className="rounded-xl bg-muted/30" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Idealista Profile Link</Label>
+                  <Input placeholder="https://idealista.com/pro/your-agency" className="rounded-xl bg-muted/30" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Active Listings</Label>
+                  <Input placeholder="e.g. 25" className="rounded-xl bg-muted/30" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Monthly Inquiries</Label>
+                  <Input placeholder="e.g. 50-100" className="rounded-xl bg-muted/30" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Years Operating</Label>
+                  <Input placeholder="e.g. 5-10" className="rounded-xl bg-muted/30" />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Professional Associations</Label>
+                  <Input placeholder="e.g. APEMIP, GIPE, FIAIP, CEPI" className="rounded-xl bg-muted/30" />
+                  <p className="text-xs text-muted-foreground">Optional — membership is weighted positively</p>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Agency Logo</Label>
+                  <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors cursor-pointer relative">
+                    <Building2 className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Click to upload or drag & drop</p>
+                    <p className="text-xs text-muted-foreground mt-1">PNG, JPG up to 5MB</p>
+                    <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" />
+                  </div>
+                </div>
               </div>
+
+              <Button variant="hero" size="lg" className="rounded-xl">
+                Save Changes
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
