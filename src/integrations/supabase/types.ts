@@ -50,6 +50,59 @@ export type Database = {
         }
         Relationships: []
       }
+      agency_setup: {
+        Row: {
+          application_id: string
+          basic_info: Json
+          completed: boolean
+          completed_at: string | null
+          connection_settings: Json
+          created_at: string
+          current_step: number
+          id: string
+          intelligence_brain: Json
+          listings: Json
+          team_members: Json
+          updated_at: string
+        }
+        Insert: {
+          application_id: string
+          basic_info?: Json
+          completed?: boolean
+          completed_at?: string | null
+          connection_settings?: Json
+          created_at?: string
+          current_step?: number
+          id?: string
+          intelligence_brain?: Json
+          listings?: Json
+          team_members?: Json
+          updated_at?: string
+        }
+        Update: {
+          application_id?: string
+          basic_info?: Json
+          completed?: boolean
+          completed_at?: string | null
+          connection_settings?: Json
+          created_at?: string
+          current_step?: number
+          id?: string
+          intelligence_brain?: Json
+          listings?: Json
+          team_members?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agency_setup_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           active_listings: string | null
