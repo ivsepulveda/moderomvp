@@ -568,26 +568,56 @@ const AgencyDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="shadow-card border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Revenue Saved for Landlords</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Fair-Rent Intelligence</CardTitle>
+              <Badge variant="outline" className="text-[10px] bg-primary/5 text-primary border-primary/20">
+                25–35% of net income
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Sustainable rent range per qualified tenant — use to advise landlords.
+            </p>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="text-center py-4">
-                <p className="text-4xl font-bold text-primary">€12,450</p>
-                <p className="text-sm text-muted-foreground mt-1">Total vacancy cost prevented this month</p>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { label: "Avg. Days Saved", value: "18" },
-                  { label: "Bad Tenants Blocked", value: "9" },
-                  { label: "Landlord NPS", value: "92" },
-                ].map((m) => (
-                  <div key={m.label} className="bg-secondary rounded-xl p-3 text-center">
-                    <p className="text-lg font-bold text-foreground">{m.value}</p>
-                    <p className="text-xs text-muted-foreground">{m.label}</p>
-                  </div>
-                ))}
-              </div>
+            <div className="space-y-2.5 max-h-72 overflow-y-auto">
+              {listings.flatMap((listing) =>
+                listing.inquiries
+                  .filter((i) => i.incomeMonthly > 0 && (i.status === "qualified" || i.status === "review"))
+                  .map((i) => {
+                    const lo = Math.round(i.incomeMonthly * 0.25);
+                    const hi = Math.round(i.incomeMonthly * 0.35);
+                    const inRange = i.rentApplied >= lo && i.rentApplied <= hi;
+                    const overpaying = i.rentApplied > hi;
+                    return (
+                      <div key={`${listing.id}-${i.id}`} className="p-3 rounded-xl bg-muted/30 border border-border">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{i.name}</p>
+                            <p className="text-[11px] text-muted-foreground truncate">{listing.title} · €{i.incomeMonthly.toLocaleString()}/mo net</p>
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] shrink-0 ${
+                              inRange ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                              overpaying ? "bg-amber-50 text-amber-700 border-amber-200" :
+                              "bg-blue-50 text-blue-700 border-blue-200"
+                            }`}
+                          >
+                            {inRange ? "Fair" : overpaying ? "Overpaying" : "Below range"}
+                          </Badge>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Listing rent</span>
+                          <span className="font-semibold text-foreground">€{i.rentApplied.toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Sustainable range</span>
+                          <span className="font-semibold text-primary">€{lo.toLocaleString()} – €{hi.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    );
+                  })
+              )}
             </div>
           </CardContent>
         </Card>
