@@ -251,13 +251,20 @@ Deno.serve(async (req) => {
     });
 
     // Update application
+    // Update application — map result to status
+    const status =
+      result === "approved" ? "approved" :
+      result === "review"   ? "under_review" :
+      result === "risk"     ? "under_review" :
+                              "rejected";
+
     await supabase
       .from("tenant_applications")
       .update({
         score: totalScore,
         score_category: category,
         fraud_flag: fraud.flag,
-        status: result === "approved" ? "approved" : result === "review" ? "under_review" : "rejected",
+        status,
       })
       .eq("id", application_id);
 
