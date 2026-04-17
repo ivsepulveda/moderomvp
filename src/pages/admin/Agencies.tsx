@@ -1,7 +1,10 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Globe, ExternalLink, Building2, Loader2, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Building2, Clock, ExternalLink, Globe, Loader2, Mail, Settings2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -12,35 +15,85 @@ interface ApprovedAgency {
   website: string | null;
   idealista_profile: string | null;
   active_listings: string | null;
+  monthly_inquiries: string | null;
   years_operating: string | null;
+  associations: string | null;
+  pitch: string | null;
   created_at: string;
+  status: string;
+}
+
+interface AgencySetupRecord {
+  application_id: string;
+  current_step: number;
+  completed: boolean;
+  updated_at: string;
+  listings: unknown[] | null;
+  team_members: unknown[] | null;
 }
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+  return new Date(dateStr).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
+const setupProgressLabels = ["Basic info", "Listings", "Connections", "Intelligence Brain", "Team & assignments"];
+
 const Agencies = () => {
+  const navigate = useNavigate();
   const [agencies, setAgencies] = useState<ApprovedAgency[]>([]);
+  const [setupMap, setSetupMap] = useState<Record<string, AgencySetupRecord>>({});
   const [loading, setLoading] = useState(true);
+  const [selectedAgency, setSelectedAgency] = useState<ApprovedAgency | null>(null);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
       const { data, error } = await supabase
         .from("applications")
         .select("*")
         .eq("status", "approved")
         .order("created_at", { ascending: false });
+
       if (error) {
         toast.error("Failed to load agencies");
         console.error(error);
-      } else {
-        setAgencies((data as ApprovedAgency[]) || []);
+        setLoading(false);
+        return;
       }
+
+      const approved = (data as ApprovedAgency[]) || [];
+      setAgencies(approved);
+
+      if (approved.length > 0) {
+        const { data: setups, error: setupError } = await supabase
+          .from("agency_setup")
+          .select("application_id,current_step,completed,updated_at,listings,team_members")
+          .in("application_id", approved.map((agency) => agency.id));
+
+        if (setupError) {
+          toast.error("Failed to load agency setup status");
+        } else {
+          const mapped = ((setups as AgencySetupRecord[]) || []).reduce<Record<string, AgencySetupRecord>>((acc, item) => {
+            acc[item.application_id] = item;
+            return acc;
+          }, {});
+          setSetupMap(mapped);
+        }
+      }
+
       setLoading(false);
     };
-    fetch();
+
+    fetchData();
   }, []);
+
+  const selectedSetup = selectedAgency ? setupMap[selectedAgency.id] : null;
+  const selectedListingsCount = selectedSetup && Array.isArray(selectedSetup.listings) ? selectedSetup.listings.length : 0;
+  const selectedTeamCount = selectedSetup && Array.isArray(selectedSetup.team_members) ? selectedSetup.team_members.length : 0;
+  const setupStatusLabel = useMemo(() => {
+    if (!selectedSetup) return "Not started";
+    if (selectedSetup.completed) return "Completed";
+    return `In progress · ${setupProgressLabels[selectedSetup.current_step] || "Draft"}`;
+  }, [selectedSetup]);
 
   if (loading) {
     return (
@@ -51,55 +104,201 @@ const Agencies = () => {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-foreground">Approved Agencies</h2>
-        <p className="text-muted-foreground text-sm mt-1">All agencies currently active on the Modero network</p>
-      </div>
+    <>
+      <div className="p-6 md:p-8 max-w-7xl">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-foreground">Approved Agencies</h2>
+          <p className="text-muted-foreground text-sm mt-1">All agencies currently active on the Modero network</p>
+        </div>
 
-      {agencies.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-12">No approved agencies yet</p>
-      ) : (
-        <div className="grid gap-4">
-          {agencies.map((agency) => (
-            <Card key={agency.id} className="shadow-card hover:shadow-card-hover transition-all border-border">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center text-primary-foreground font-bold text-lg shadow-orange">
-                      {agency.agency_name.charAt(0)}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">{agency.agency_name}</h3>
-                      <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
-                        <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {agency.email}</span>
-                        {agency.website && (
-                          <a href={agency.website.startsWith("http") ? agency.website : `https://${agency.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
-                            <Globe className="w-3 h-3" /> Website <ExternalLink className="w-2.5 h-2.5" />
-                          </a>
-                        )}
+        {agencies.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-12">No approved agencies yet</p>
+        ) : (
+          <div className="grid gap-4">
+            {agencies.map((agency) => {
+              const setup = setupMap[agency.id];
+              const listingsCount = setup && Array.isArray(setup.listings) ? setup.listings.length : 0;
+              const teamCount = setup && Array.isArray(setup.team_members) ? setup.team_members.length : 0;
+
+              return (
+                <Card
+                  key={agency.id}
+                  className="shadow-card hover:shadow-card-hover transition-all border-border cursor-pointer"
+                  onClick={() => setSelectedAgency(agency)}
+                >
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between flex-wrap gap-4">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center text-primary-foreground font-bold text-lg shadow-orange flex-shrink-0">
+                          {agency.agency_name.charAt(0)}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-foreground truncate">{agency.agency_name}</h3>
+                          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
+                            <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {agency.email}</span>
+                            {agency.website && (
+                              <a
+                                href={agency.website.startsWith("http") ? agency.website : `https://${agency.website}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(event) => event.stopPropagation()}
+                                className="flex items-center gap-1 text-primary hover:underline"
+                              >
+                                <Globe className="w-3 h-3" /> Website <ExternalLink className="w-2.5 h-2.5" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 flex-wrap justify-end">
+                        <span className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Building2 className="w-3.5 h-3.5" /> {agency.active_listings || "—"} listings
+                        </span>
+                        <span className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Users className="w-3.5 h-3.5" /> {teamCount} team
+                        </span>
+                        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
+                          {setup?.completed ? "Setup complete" : setup ? "Setup in progress" : "Setup needed"}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">Joined {formatDate(agency.created_at)}</span>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Building2 className="w-3.5 h-3.5" /> {agency.active_listings || "—"} listings
-                    </span>
-                    {agency.years_operating && (
-                      <span className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" /> {agency.years_operating} yrs
-                      </span>
+                    {setup && (
+                      <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="rounded-xl bg-muted/30 px-3 py-2 text-sm">
+                          <p className="text-xs text-muted-foreground">Portal listings</p>
+                          <p className="font-semibold text-foreground">{listingsCount}</p>
+                        </div>
+                        <div className="rounded-xl bg-muted/30 px-3 py-2 text-sm">
+                          <p className="text-xs text-muted-foreground">Team members</p>
+                          <p className="font-semibold text-foreground">{teamCount}</p>
+                        </div>
+                        <div className="rounded-xl bg-muted/30 px-3 py-2 text-sm sm:col-span-2">
+                          <p className="text-xs text-muted-foreground">Onboarding status</p>
+                          <p className="font-semibold text-foreground">{setup.completed ? "Completed" : `Step ${setup.current_step + 1} of 5`}</p>
+                        </div>
+                      </div>
                     )}
-                    <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">Active</Badge>
-                    <span className="text-xs text-muted-foreground">Joined {formatDate(agency.created_at)}</span>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <Dialog open={!!selectedAgency} onOpenChange={() => setSelectedAgency(null)}>
+        {selectedAgency && (
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center text-primary-foreground font-bold text-lg flex-shrink-0">
+                  {selectedAgency.agency_name.charAt(0)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <DialogTitle className="truncate text-left">{selectedAgency.agency_name}</DialogTitle>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">Approved</Badge>
+                    <span className="text-xs text-muted-foreground">Application ID: {selectedAgency.id}</span>
+                    <span className="text-xs text-muted-foreground">Joined {formatDate(selectedAgency.created_at)}</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+              </div>
+            </DialogHeader>
+
+            <div className="space-y-5 py-2">
+              <section>
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Contact & online presence</h4>
+                <div className="space-y-2 text-sm">
+                  <a href={`mailto:${selectedAgency.email}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                    <Mail className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <span className="truncate">{selectedAgency.email}</span>
+                  </a>
+                  {selectedAgency.website ? (
+                    <a href={selectedAgency.website.startsWith("http") ? selectedAgency.website : `https://${selectedAgency.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
+                      <Globe className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate">{selectedAgency.website}</span>
+                      <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                    </a>
+                  ) : (
+                    <div className="flex items-center gap-2 text-muted-foreground"><Globe className="w-4 h-4" /> No website provided</div>
+                  )}
+                  {selectedAgency.idealista_profile ? (
+                    <a href={selectedAgency.idealista_profile} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
+                      <ExternalLink className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate">{selectedAgency.idealista_profile}</span>
+                    </a>
+                  ) : (
+                    <div className="flex items-center gap-2 text-muted-foreground"><ExternalLink className="w-4 h-4" /> No Idealista profile</div>
+                  )}
+                </div>
+              </section>
+
+              <section>
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Agency stats</h4>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {[
+                    { label: "Active listings", value: selectedAgency.active_listings || "—" },
+                    { label: "Monthly inquiries", value: selectedAgency.monthly_inquiries || "—" },
+                    { label: "Years operating", value: selectedAgency.years_operating || "—" },
+                    { label: "Portal team", value: String(selectedTeamCount) },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-xl bg-muted/30 p-3">
+                      <p className="text-xs text-muted-foreground">{item.label}</p>
+                      <p className="text-lg font-semibold text-foreground mt-1">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {selectedAgency.associations && (
+                <section>
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Professional associations</h4>
+                  <div className="rounded-xl bg-muted/30 p-3 text-sm text-foreground whitespace-pre-wrap break-words">{selectedAgency.associations}</div>
+                </section>
+              )}
+
+              <section>
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Agency pitch</h4>
+                <div className="rounded-xl bg-muted/30 p-3 text-sm text-foreground whitespace-pre-wrap break-words">
+                  {selectedAgency.pitch || <span className="italic text-muted-foreground">No pitch provided</span>}
+                </div>
+              </section>
+
+              <section>
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Onboarding setup</h4>
+                <div className="rounded-2xl border border-border p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{setupStatusLabel}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {selectedSetup ? `Last updated ${formatDate(selectedSetup.updated_at)}` : "No agency onboarding has been started yet."}
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
+                      {selectedSetup?.completed ? "Portal ready" : selectedSetup ? `Step ${selectedSetup.current_step + 1} of 5` : "Start setup"}
+                    </Badge>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-xl bg-muted/30 p-3">
+                      <p className="text-xs text-muted-foreground">Configured listings</p>
+                      <p className="text-lg font-semibold text-foreground mt-1">{selectedListingsCount}</p>
+                    </div>
+                    <div className="rounded-xl bg-muted/30 p-3">
+                      <p className="text-xs text-muted-foreground">Configured team members</p>
+                      <p className="text-lg font-semibold text-foreground mt-1">{selectedTeamCount}</p>
+                    </div>
+                  </div>
+                  <Button variant="hero" className="rounded-xl" onClick={() => navigate(`/admin/agencies/${selectedAgency.id}/setup`)}>
+                    <Settings2 className="w-4 h-4 mr-2" /> {selectedSetup ? "Continue Agency Setup" : "Start Agency Setup"}
+                  </Button>
+                </div>
+              </section>
+            </div>
+          </DialogContent>
+        )}
+      </Dialog>
+    </>
   );
 };
 

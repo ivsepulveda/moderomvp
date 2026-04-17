@@ -18,6 +18,7 @@ import AdminLayout from "./components/AdminLayout.tsx";
 import AdminDashboard from "./pages/admin/Dashboard.tsx";
 import Applications from "./pages/admin/Applications.tsx";
 import Agencies from "./pages/admin/Agencies.tsx";
+import AgencySetup from "./pages/admin/AgencySetup.tsx";
 import AdminSettings from "./pages/admin/Settings.tsx";
 import AgencyLayout from "./components/AgencyLayout.tsx";
 import AgencyDashboard from "./pages/agency/Dashboard.tsx";
@@ -46,6 +47,7 @@ const App = () => (
               <Route index element={<AdminDashboard />} />
               <Route path="applications" element={<Applications />} />
               <Route path="agencies" element={<Agencies />} />
+              <Route path="agencies/:id/setup" element={<AgencySetup />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
             <Route path="/agency" element={<AgencyRoute><AgencyLayout /></AgencyRoute>}>

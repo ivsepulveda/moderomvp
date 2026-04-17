@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Building2, Users, TrendingUp, Clock, Shield, ArrowUpRight, ChevronDown, ChevronRight, CheckCircle, XCircle, Eye, X, Briefcase, Mail, Phone, FileText, AlertTriangle, Globe, MapPin, IdCard, CreditCard, Calendar, Link2, User, Camera } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Building2, Users, TrendingUp, Clock, Shield, ArrowUpRight, ChevronDown, ChevronRight, CheckCircle, XCircle, Eye, X, Briefcase, Mail, Phone, FileText, AlertTriangle, Globe, MapPin, IdCard, CreditCard, Calendar, Link2, User, Camera, Settings2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const stats = [
@@ -29,16 +30,13 @@ interface TenantInquiry {
   time: string;
   appliedDate: string;
   avatar?: string;
-  // Personal
   nationality: string;
   countryOfBirth: string;
   ageRange: string;
-  // Identity
   idType: "DNI" | "NIE" | "Passport";
   idNumber: string;
   idVerified: boolean;
   biometricPassed: boolean;
-  // Employment
   income: string;
   incomeMonthly: number;
   employer: string;
@@ -47,28 +45,20 @@ interface TenantInquiry {
   contractType: string;
   salaryPaymentDate: string;
   businessEmailMatch: boolean;
-  // LinkedIn
   linkedinVerified: boolean;
   linkedinProfile: string;
   linkedinHeadline: string;
-  // Financial
   dbCreditScore: number | null;
   dbCreditRating: string;
-  // Documents
   documents: { name: string; uploaded: boolean; verified: boolean }[];
   documentsComplete: boolean;
-  // Residency
   residencyHistory: { country: string; years: string }[];
   livedAbroad: boolean;
-  // Verifications
   emailVerified: boolean;
   phoneVerified: boolean;
-  // Score breakdown
   scoreBreakdown: { category: string; score: number; max: number; color: string }[];
-  // Fraud
   fraudFlag: boolean;
   fraudReasons: string[];
-  // Property applied for
   propertyApplied: string;
   rentApplied: number;
   incomeRatio: number;
@@ -80,6 +70,15 @@ interface Listing {
   address: string;
   rent: string;
   inquiries: TenantInquiry[];
+}
+
+interface AgencySetupSummary {
+  id: string;
+  current_step: number;
+  completed: boolean;
+  listings: unknown[] | null;
+  team_members: unknown[] | null;
+  updated_at: string;
 }
 
 const listings: Listing[] = [
@@ -271,13 +270,52 @@ const scoreColor = (score: number) => {
 };
 
 const AgencyDashboard = () => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [expandedListings, setExpandedListings] = useState<number[]>([1]);
   const [selectedInquiry, setSelectedInquiry] = useState<TenantInquiry | null>(null);
   const [tenantActions, setTenantActions] = useState<Record<number, { status: "approved" | "rejected"; viewing?: { date: string; time: string } }>>({});
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [viewingDate, setViewingDate] = useState("");
   const [viewingTime, setViewingTime] = useState("10:00");
+  const [agencySetup, setAgencySetup] = useState<AgencySetupSummary | null>(null);
+
+  const storageKey = useMemo(() => `modero-tenant-actions:${user?.id || "guest"}`, [user?.id]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      try {
+        setTenantActions(JSON.parse(stored));
+      } catch {
+        setTenantActions({});
+      }
+    } else {
+      setTenantActions({});
+    }
+  }, [storageKey]);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(tenantActions));
+  }, [storageKey, tenantActions]);
+
+  useEffect(() => {
+    if (!profile?.email) return;
+
+    const fetchSetup = async () => {
+      const { data, error } = await supabase
+        .from("agency_setup")
+        .select("id,current_step,completed,listings,team_members,updated_at")
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data) {
+        setAgencySetup(data as AgencySetupSummary);
+      }
+    };
+
+    fetchSetup();
+  }, [profile?.email]);
 
   const toggleListing = (id: number) => {
     setExpandedListings((prev) =>
@@ -305,10 +343,12 @@ const AgencyDashboard = () => {
     setShowScheduleDialog(false);
     setViewingDate("");
     setViewingTime("10:00");
-    toast.success(`Viewing scheduled for ${selectedInquiry.name} on ${new Date(viewingDate).toLocaleDateString("en-GB", { day: "numeric", month: "long" })} at ${viewingTime}`);
+    toast.success(`Viewing saved for ${selectedInquiry.name} on ${new Date(viewingDate).toLocaleDateString("en-GB", { day: "numeric", month: "long" })} at ${viewingTime}`);
   };
 
   const totalScore = selectedInquiry?.scoreBreakdown.reduce((a, b) => a + b.score, 0) ?? 0;
+  const setupListingsCount = agencySetup && Array.isArray(agencySetup.listings) ? agencySetup.listings.length : 0;
+  const setupTeamCount = agencySetup && Array.isArray(agencySetup.team_members) ? agencySetup.team_members.length : 0;
 
   return (
     <div className="p-6 md:p-8 space-y-8 max-w-7xl">
@@ -318,6 +358,44 @@ const AgencyDashboard = () => {
         </h2>
         <p className="text-muted-foreground text-sm mt-1">Your tenant intelligence overview</p>
       </div>
+
+      {agencySetup && (
+        <Card className="shadow-card border-border">
+          <CardContent className="p-5">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-lg font-semibold text-foreground">Agency setup synced</h3>
+                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
+                    {agencySetup.completed ? "Portal ready" : `Step ${agencySetup.current_step + 1} of 5`}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">Your admin-configured onboarding is stored in the agency portal and available across your workspace.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:min-w-[280px]">
+                <div className="rounded-xl bg-muted/30 p-3">
+                  <p className="text-xs text-muted-foreground">Configured listings</p>
+                  <p className="text-lg font-semibold text-foreground mt-1">{setupListingsCount}</p>
+                </div>
+                <div className="rounded-xl bg-muted/30 p-3">
+                  <p className="text-xs text-muted-foreground">Configured team</p>
+                  <p className="text-lg font-semibold text-foreground mt-1">{setupTeamCount}</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <Card className="shadow-card border-border bg-muted/20">
+        <CardContent className="p-4 flex items-start gap-3">
+          <Settings2 className="w-5 h-5 text-primary mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-foreground">Viewing persistence fixed for the current demo dashboard</p>
+            <p className="text-xs text-muted-foreground mt-1">Scheduled viewings now stay stored in your portal state across reloads instead of disappearing after refresh.</p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
