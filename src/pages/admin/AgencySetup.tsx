@@ -150,28 +150,34 @@ const AgencySetup = () => {
       setApplication(app as ApplicationRecord);
 
       if (setup) {
-        const saved = setup as AgencySetupRecord;
+        const saved = setup as unknown as AgencySetupRecord;
+        const savedBasicInfo = (saved.basic_info && typeof saved.basic_info === "object" && !Array.isArray(saved.basic_info)) ? saved.basic_info : {};
+        const savedConnectionSettings = (saved.connection_settings && typeof saved.connection_settings === "object" && !Array.isArray(saved.connection_settings)) ? saved.connection_settings : {};
+        const savedIntelligenceBrain = (saved.intelligence_brain && typeof saved.intelligence_brain === "object" && !Array.isArray(saved.intelligence_brain)) ? saved.intelligence_brain : {};
+        const savedListings = Array.isArray(saved.listings) ? (saved.listings as unknown as ListingDraft[]) : [];
+        const savedTeamMembers = Array.isArray(saved.team_members) ? (saved.team_members as unknown as TeamMemberDraft[]) : [];
+
         setStep(saved.current_step || 0);
         setCompleted(saved.completed || false);
         setBasicInfo({
-          agency_name: saved.basic_info?.agency_name ?? app.agency_name ?? "",
-          email: saved.basic_info?.email ?? app.email ?? "",
-          website: saved.basic_info?.website ?? app.website ?? "",
-          idealista_profile: saved.basic_info?.idealista_profile ?? app.idealista_profile ?? "",
-          active_listings: saved.basic_info?.active_listings ?? app.active_listings ?? "",
-          monthly_inquiries: saved.basic_info?.monthly_inquiries ?? app.monthly_inquiries ?? "",
-          years_operating: saved.basic_info?.years_operating ?? app.years_operating ?? "",
-          associations: saved.basic_info?.associations ?? app.associations ?? "",
-          pitch: saved.basic_info?.pitch ?? app.pitch ?? "",
+          agency_name: savedBasicInfo.agency_name ?? app.agency_name ?? "",
+          email: savedBasicInfo.email ?? app.email ?? "",
+          website: savedBasicInfo.website ?? app.website ?? "",
+          idealista_profile: savedBasicInfo.idealista_profile ?? app.idealista_profile ?? "",
+          active_listings: savedBasicInfo.active_listings ?? app.active_listings ?? "",
+          monthly_inquiries: savedBasicInfo.monthly_inquiries ?? app.monthly_inquiries ?? "",
+          years_operating: savedBasicInfo.years_operating ?? app.years_operating ?? "",
+          associations: savedBasicInfo.associations ?? app.associations ?? "",
+          pitch: savedBasicInfo.pitch ?? app.pitch ?? "",
         });
-        setListings(saved.listings?.length ? saved.listings : [emptyListing()]);
+        setListings(savedListings.length ? savedListings : [emptyListing()]);
         setConnectionSettings({
-          notification_email: saved.connection_settings?.notification_email ?? app.email ?? "",
-          calendar_provider: saved.connection_settings?.calendar_provider ?? "none",
-          inbox_connected: saved.connection_settings?.inbox_connected ?? false,
+          notification_email: savedConnectionSettings.notification_email ?? app.email ?? "",
+          calendar_provider: savedConnectionSettings.calendar_provider ?? "none",
+          inbox_connected: savedConnectionSettings.inbox_connected ?? false,
         });
-        setIntelligenceBrain({ ...defaultBrain, ...saved.intelligence_brain });
-        setTeamMembers(saved.team_members ?? []);
+        setIntelligenceBrain({ ...defaultBrain, ...(savedIntelligenceBrain as Partial<typeof defaultBrain>) });
+        setTeamMembers(savedTeamMembers);
       } else {
         setBasicInfo({
           agency_name: app.agency_name ?? "",
@@ -218,7 +224,7 @@ const AgencySetup = () => {
       completed_at: markCompleted ? new Date().toISOString() : null,
     };
 
-    const { error } = await supabase.from("agency_setup").upsert(payload, { onConflict: "application_id" });
+    const { error } = await supabase.from("agency_setup").upsert([payload] as any, { onConflict: "application_id" });
     setSaving(false);
 
     if (error) {
