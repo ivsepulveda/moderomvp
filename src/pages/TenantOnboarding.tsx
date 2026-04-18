@@ -1102,8 +1102,106 @@ const TenantOnboarding = () => {
                 <Button onClick={goBack} variant="outline" size="lg" className="h-12 rounded-xl">
                   <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Button>
+                <Button onClick={goNext} variant="hero" size="lg"
+                  className="flex-1 h-12 rounded-xl" disabled={!documentsValid}>
+                  Continue <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* STEP 6 — Financial */}
+        {step === 6 && (
+          <Card className="shadow-card">
+            <CardHeader className="text-center items-center">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-2">
+                <Banknote className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle className="text-2xl">Financial Information</CardTitle>
+              <CardDescription>Provide your income details for the qualification assessment</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Monthly Net Income (€) *</Label>
+                  <Input
+                    type="number"
+                    value={employment.income_monthly}
+                    onChange={(e) => setEmployment({ ...employment, income_monthly: e.target.value })}
+                    placeholder="0"
+                    className="h-12 rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Salary Day of Month</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={31}
+                    value={employment.salary_payment_date}
+                    onChange={(e) => setEmployment({ ...employment, salary_payment_date: e.target.value })}
+                    placeholder="e.g. 5"
+                    className="h-12 rounded-xl"
+                  />
+                </div>
+              </div>
+
+              {employment.income_monthly && Number(employment.income_monthly) > 0 && (
+                <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-2">
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" /> Income Assessment
+                  </p>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Your monthly income</span>
+                    <span className="font-semibold">€{Number(employment.income_monthly).toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Recommended max rent (40%)</span>
+                    <span className="font-semibold text-primary">
+                      €{Math.round(Number(employment.income_monthly) * 0.4).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <Button onClick={goBack} variant="outline" size="lg" className="h-12 rounded-xl">
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                </Button>
+                <Button onClick={goNext} variant="hero" size="lg"
+                  className="flex-1 h-12 rounded-xl" disabled={!employment.income_monthly}>
+                  Continue <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* STEP 7 — Credit */}
+        {step === 7 && (
+          <Card className="shadow-card">
+            <CardHeader className="text-center items-center">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-2">
+                <CreditCard className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle className="text-2xl">Credit Check & Financing</CardTitle>
+              <CardDescription>Final financial assessment — this step is required for qualification</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="rounded-xl border border-border p-4 space-y-2">
+                <p className="text-sm font-medium">Authorize credit check</p>
+                <p className="text-xs text-muted-foreground">
+                  We'll perform a soft credit check to verify your financial standing. This will not affect your credit score.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button onClick={goBack} variant="outline" size="lg" className="h-12 rounded-xl">
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                </Button>
                 <Button onClick={submitDocuments} variant="hero" size="lg"
-                  className="flex-1 h-12 rounded-xl" disabled={saving || !documentsValid}>
+                  className="flex-1 h-12 rounded-xl" disabled={saving}>
                   {saving ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground" />
                     : <>Submit Application <CheckCircle className="w-4 h-4 ml-2" /></>}
                 </Button>
