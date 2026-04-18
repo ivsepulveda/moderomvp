@@ -1305,8 +1305,20 @@ const TenantOnboarding = () => {
                   </Button>
                 )}
                 {credit.status === "failed" && (
-                  <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
-                    Credit check did not meet the qualification threshold. You can still submit, but financing is unavailable.
+                  <div className="space-y-3">
+                    <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 space-y-1">
+                      <p className="text-sm font-semibold text-destructive">Credit check not approved</p>
+                      <p className="text-sm text-destructive/90">
+                        Unfortunately your score ({credit.score}) is below our financing threshold. Financing options are unavailable, but you can still submit your application for the agency to review.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={runCreditCheck}
+                      variant="outline" size="sm"
+                      className="w-full rounded-xl"
+                    >
+                      Try again
+                    </Button>
                   </div>
                 )}
               </div>
