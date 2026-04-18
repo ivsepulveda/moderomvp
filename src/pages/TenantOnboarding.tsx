@@ -180,7 +180,7 @@ const TenantOnboarding = () => {
       { id: 3, key: "employment", label: "Employment", icon: Briefcase, active: true },
       {
         id: 4, key: "verifications", label: "Verifications", icon: ShieldCheck,
-        active: brain.email_verification || brain.sms_verification || brain.residency_history_check,
+        active: brain.residency_history_check,
       },
       {
         id: 5, key: "documents", label: "Documents", icon: Upload,
