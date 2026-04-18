@@ -778,6 +778,153 @@ const AgencySettings = () => {
           </div>
         </TabsContent>
 
+        {/* ====== CO-PILOT AGENT TAB ====== */}
+        <TabsContent value="copilot" className="mt-6 space-y-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center shrink-0">
+              <Zap className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-foreground">Set up The Co-pilot Agent</h3>
+              <p className="text-sm text-muted-foreground">
+                Configure your AI agent that auto-replies, qualifies leads and books viewings on your behalf.
+              </p>
+            </div>
+          </div>
+
+          {/* Identity */}
+          <Card className="shadow-card border-border">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <User className="w-4 h-4 text-primary" /> Agent Identity
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">How your Co-pilot introduces itself to tenants</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Agent Name</Label>
+                  <Input defaultValue="Modero" placeholder="e.g. Sofía" className="rounded-xl bg-muted/30" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Default Language</Label>
+                  <Select defaultValue="es">
+                    <SelectTrigger className="rounded-xl bg-muted/30"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="es">Spanish</SelectItem>
+                      <SelectItem value="pt">Portuguese</SelectItem>
+                      <SelectItem value="it">Italian</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Tone of Voice</Label>
+                  <Select defaultValue="professional">
+                    <SelectTrigger className="rounded-xl bg-muted/30"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="professional">Professional</SelectItem>
+                      <SelectItem value="friendly">Friendly</SelectItem>
+                      <SelectItem value="formal">Formal</SelectItem>
+                      <SelectItem value="casual">Casual</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Reply Speed</Label>
+                  <Select defaultValue="instant">
+                    <SelectTrigger className="rounded-xl bg-muted/30"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="instant">Instant (&lt; 1 min)</SelectItem>
+                      <SelectItem value="fast">Fast (~5 min)</SelectItem>
+                      <SelectItem value="natural">Natural (~15 min)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Automation Rules */}
+          <Card className="shadow-card border-border">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ZapIcon className="w-4 h-4 text-primary" /> Automation Rules
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">Decide what your Co-pilot does without asking</p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {[
+                { key: "auto_reply", title: "Auto-reply to new inquiries", desc: "Greet, qualify and request documents automatically" },
+                { key: "auto_qualify", title: "Auto-qualify leads", desc: "Apply your Intelligence Brain rules without manual review" },
+                { key: "auto_book", title: "Auto-book viewings for qualified tenants", desc: "Use connected calendar to offer time slots" },
+                { key: "auto_reject", title: "Auto-reject unqualified leads politely", desc: "Send a soft no when minimum criteria are not met" },
+                { key: "escalate", title: "Escalate edge cases to a human agent", desc: "Notify the team when the Co-pilot is unsure" },
+              ].map((r, i) => (
+                <div key={r.key} className="flex items-center justify-between p-4 rounded-xl border border-border bg-muted/20">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{r.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{r.desc}</p>
+                  </div>
+                  <Switch defaultChecked={i < 3} />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Working Hours */}
+          <Card className="shadow-card border-border">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-primary" /> Working Hours
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">When the Co-pilot can schedule viewings</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Start Time</Label>
+                  <Input type="time" defaultValue="09:00" className="rounded-xl bg-muted/30" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">End Time</Label>
+                  <Input type="time" defaultValue="19:00" className="rounded-xl bg-muted/30" />
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-muted/20">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Reply outside working hours</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Send acknowledgement and queue for next business day</p>
+                </div>
+                <Switch defaultChecked />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Custom Knowledge */}
+          <Card className="shadow-card border-border">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Brain className="w-4 h-4 text-primary" /> Custom Instructions
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">Anything specific your agent should always say or avoid</p>
+            </CardHeader>
+            <CardContent>
+              <textarea
+                rows={5}
+                placeholder="e.g. Always mention that pets are allowed only on a per-property basis. Never share the exact address before a viewing is confirmed."
+                className="w-full rounded-xl bg-muted/30 border border-border p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end">
+            <Button variant="hero" size="lg" className="rounded-xl gap-2" onClick={() => toast.success("Co-pilot Agent settings saved")}>
+              <Save className="w-4 h-4" /> Save Co-pilot Settings
+            </Button>
+          </div>
+        </TabsContent>
+
         {/* ====== CONNECTION SETTINGS TAB ====== */}
         <TabsContent value="connections" className="mt-6 space-y-6">
           {/* Email */}
