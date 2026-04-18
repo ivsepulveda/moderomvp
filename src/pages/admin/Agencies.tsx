@@ -289,9 +289,6 @@ const Agencies = () => {
                       <p className="text-lg font-semibold text-foreground mt-1">{selectedTeamCount}</p>
                     </div>
                   </div>
-                  <Button variant="hero" className="rounded-xl" onClick={() => navigate(`/admin/agencies/${selectedAgency.id}/setup`)}>
-                    <Settings2 className="w-4 h-4 mr-2" /> {selectedSetup ? "Continue Agency Setup" : "Start Agency Setup"}
-                  </Button>
                 </div>
               </section>
             </div>
