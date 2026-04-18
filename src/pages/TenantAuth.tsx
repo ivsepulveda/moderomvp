@@ -432,27 +432,7 @@ const TenantAuth = () => {
           ) : (
             <span />
           )}
-          <div className="flex items-center gap-3">
-            {/* Language selector */}
-            <div className="flex items-center gap-1.5">
-              <Globe className="w-4 h-4 text-muted-foreground" />
-              <Select value={lang} onValueChange={(v) => setLang(v as Lang)}>
-                <SelectTrigger
-                  className="h-9 w-[110px] rounded-lg border-border/60 bg-background text-sm"
-                  aria-label={t.languageLabel}
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">🇬🇧 English</SelectItem>
-                  <SelectItem value="es">🇪🇸 Español</SelectItem>
-                  <SelectItem value="pt">🇵🇹 Português</SelectItem>
-                  <SelectItem value="it">🇮🇹 Italiano</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-          </div>
+          <div />
         </div>
       </header>
 
