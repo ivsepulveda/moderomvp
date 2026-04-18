@@ -114,17 +114,15 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-5 gap-8 max-w-6xl mx-auto items-stretch">
+        <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto items-stretch">
           {/* Main dashboard screenshot */}
-          <div className="lg:col-span-3 group flex flex-col">
-            <div className="relative rounded-3xl overflow-hidden ring-1 ring-border/40 shadow-2xl shadow-primary/10 transition-transform duration-500 group-hover:-translate-y-1 flex-1">
+          <div className="group flex flex-col">
+            <div className="relative rounded-3xl overflow-hidden ring-1 ring-border/40 shadow-2xl shadow-primary/10 transition-transform duration-500 group-hover:-translate-y-1 aspect-[16/10] bg-card">
               <img
                 src={dashboardOverview}
                 alt="Modero agency dashboard showing active listings, tenant inquiries, pre-qualification rate and trust score KPIs"
                 loading="lazy"
-                width={1376}
-                height={774}
-                className="w-full h-full object-cover block"
+                className="absolute inset-0 w-full h-full object-cover block"
               />
             </div>
             <div className="mt-5 px-1">
@@ -136,15 +134,13 @@ const Index = () => {
           </div>
 
           {/* Tenant detail screenshot */}
-          <div className="lg:col-span-2 group flex flex-col">
-            <div className="relative rounded-3xl overflow-hidden ring-1 ring-border/40 shadow-2xl shadow-primary/10 transition-transform duration-500 group-hover:-translate-y-1 flex-1">
+          <div className="group flex flex-col">
+            <div className="relative rounded-3xl overflow-hidden ring-1 ring-border/40 shadow-2xl shadow-primary/10 transition-transform duration-500 group-hover:-translate-y-1 aspect-[16/10] bg-card">
               <img
                 src={dashboardTenant}
                 alt="Modero tenant trust score breakdown across credit, LinkedIn, identity, residency and verifications"
                 loading="lazy"
-                width={1376}
-                height={774}
-                className="w-full h-full object-cover block"
+                className="absolute inset-0 w-full h-full object-cover block"
               />
             </div>
             <div className="mt-5 px-1">
