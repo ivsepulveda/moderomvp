@@ -89,6 +89,16 @@ Deno.serve(async (req) => {
 
     // ───────── 3. CLEAN existing demo data for this agency ─────────
     // Delete in dependency order
+    await supabase.from("notifications").delete().eq("agency_id", agencyId);
+    const { data: existingConvs } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("agency_id", agencyId);
+    const convIds = (existingConvs ?? []).map((c) => c.id);
+    if (convIds.length) {
+      await supabase.from("messages").delete().in("conversation_id", convIds);
+      await supabase.from("conversations").delete().eq("agency_id", agencyId);
+    }
     await supabase.from("viewings").delete().eq("agency_id", agencyId);
     const { data: existingApps } = await supabase
       .from("tenant_applications")
@@ -314,27 +324,47 @@ Deno.serve(async (req) => {
       },
     ]);
 
-    // ───────── 10. LEADS ─────────
-    await supabase.from("leads").insert([
+    // ───────── 10. LEADS (will be processed by AI brain below) ─────────
+    const { data: insertedLeads } = await supabase.from("leads").insert([
       {
-        tenant_name: "Pablo Fernandez", tenant_email: "pablo.f@outlook.com", tenant_phone: "+34 611 222 333",
-        property_title: prop1.title, idealista_listing_id: "IDL-2026-001", price: prop1.rent,
-        message: "Hello, I am interested in this apartment. Software dev working remotely.",
-        processed: false,
+        agency_id: agencyId, property_id: prop1.id,
+        tenant_name: "Pablo Fernandez", tenant_email: "pablo.f@bbva.com", tenant_phone: "+34 611 222 333",
+        property_title: prop1.title, idealista_listing_id: prop1.idealista_listing_id ?? "IDL-2026-001", price: prop1.rent,
+        message: "Hola, soy Senior Risk Analyst en BBVA con contrato indefinido (€5.200/mes neto). Llevo 6 años en la empresa. Tengo nóminas, contrato y referencias. ¿Cuándo puedo visitarlo?",
+        match_status: "matched", processed: false,
       },
       {
+        agency_id: agencyId, property_id: prop2.id,
         tenant_name: "Charlotte Dubois", tenant_email: "charlotte.d@gmail.com", tenant_phone: "+33 6 98 76 54 32",
-        property_title: prop2.title, idealista_listing_id: "IDL-2026-002", price: prop2.rent,
-        message: "Bonjour, relocating to Madrid in September.",
-        processed: true,
+        property_title: prop2.title, idealista_listing_id: prop2.idealista_listing_id ?? "IDL-2026-002", price: prop2.rent,
+        message: "Bonjour, je suis freelance graphic designer, revenus environ €2.000/mois. Je peux fournir relevés bancaires des 6 derniers mois. Disponible immédiatement.",
+        match_status: "matched", processed: false,
       },
       {
-        tenant_name: "Suspicious Sender", tenant_email: "noreply@suspicious.com", tenant_phone: null,
-        property_title: prop3.title, idealista_listing_id: "IDL-2026-003", price: prop3.rent,
-        message: "Will pay 6 months upfront. No viewing needed.",
-        processed: false,
+        agency_id: agencyId, property_id: prop3.id,
+        tenant_name: "Anonymous Buyer", tenant_email: "fastdeal99@protonmail.com", tenant_phone: null,
+        property_title: prop3.title, idealista_listing_id: prop3.idealista_listing_id ?? "IDL-2026-003", price: prop3.rent,
+        message: "I will pay 12 months upfront in cash, no viewing needed. Send IBAN urgently.",
+        match_status: "matched", processed: false,
       },
-    ]);
+    ]).select("id");
+
+    // Trigger AI qualification for each lead (best-effort, non-blocking)
+    const leadIds = (insertedLeads ?? []).map((l) => l.id);
+    for (const lid of leadIds) {
+      try {
+        await fetch(`${supabaseUrl}/functions/v1/qualify-lead`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${serviceRoleKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ lead_id: lid }),
+        });
+      } catch (e) {
+        console.error("Failed to qualify seeded lead", lid, e);
+      }
+    }
 
     // ───────── 11. AGENCY APPLICATIONS (admin queue) ─────────
     // Make sure the demo agency itself shows as approved in the admin Agencies page
