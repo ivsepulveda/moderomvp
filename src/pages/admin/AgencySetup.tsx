@@ -120,7 +120,9 @@ const AgencySetup = () => {
     years_operating: "",
     associations: "",
     pitch: "",
+    logo_url: "",
   });
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [listings, setListings] = useState<ListingDraft[]>([emptyListing()]);
   const [connectionSettings, setConnectionSettings] = useState({
     notification_email: "",
