@@ -31,6 +31,7 @@ interface ApplicationRecord {
 
 interface ListingDraft {
   id: string;
+  idealista_id: string;
   title: string;
   address: string;
   rent: string;
