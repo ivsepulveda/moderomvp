@@ -451,15 +451,6 @@ const TenantAuth = () => {
               </Select>
             </div>
 
-            <span className="hidden md:inline text-sm text-muted-foreground">
-              {t.header.alreadyQualified}
-            </span>
-            <button
-              onClick={scrollToForm}
-              className="text-sm font-medium text-primary hover:underline"
-            >
-              {t.header.signIn}
-            </button>
           </div>
         </div>
       </header>
