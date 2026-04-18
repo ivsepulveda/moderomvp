@@ -477,8 +477,13 @@ const TenantOnboarding = () => {
           ))}
         </div>
 
-        {/* Profile completeness — boosts trust score */}
-        <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4">
+        {/* Per-step segmented completeness — moved here from inside the step card */}
+        <div className="mt-5">
+          <StepProgress stepId={step} />
+        </div>
+
+        {/* Profile completeness — overall, boosts trust score */}
+        <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
           <div className="flex items-start gap-3">
             <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" />
             <div className="flex-1 space-y-2">
