@@ -345,6 +345,7 @@ const TenantAuth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const formRef = useRef<HTMLDivElement>(null);
+  const inquiryRef = useRef<HTMLDivElement>(null);
 
   const agencyName = searchParams.get("agency");
   const agencyEmail = searchParams.get("agency_email");
