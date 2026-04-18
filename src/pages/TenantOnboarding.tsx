@@ -1312,49 +1312,85 @@ const TenantOnboarding = () => {
               </div>
 
               {/* Financing options — only when credit passed */}
-              {credit.status === "passed" && (
-                <div className="space-y-3">
-                  <div>
-                    <p className="font-semibold text-foreground">Financing Options (Optional)</p>
-                    <p className="text-sm text-muted-foreground">
-                      Based on your score, you qualify for up to <span className="font-semibold text-foreground">{credit.months} months</span> of financing for your deposit
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { id: "klarna" as const, name: "Klarna", letter: "K", bg: "bg-[hsl(142_71%_45%)]", desc1: "Buy now, pay later", desc2: "Flexible instalments" },
-                      { id: "santander" as const, name: "Santander", letter: "S", bg: "bg-[hsl(0_84%_55%)]", desc1: "Personal financing", desc2: "Competitive rates" },
-                    ].map((p) => {
-                      const selected = credit.provider === p.id;
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => setCredit((c) => ({ ...c, provider: selected ? "" : p.id }))}
-                          className={`text-left rounded-2xl border-2 p-4 transition-all ${
-                            selected ? "border-primary bg-primary/5 shadow-orange" : "border-border hover:border-primary/40"
-                          }`}
-                        >
-                          <div className={`w-11 h-11 rounded-full ${p.bg} flex items-center justify-center text-white font-bold mb-3`}>
-                            {p.letter}
-                          </div>
-                          <p className="font-semibold text-foreground">{p.name}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{p.desc1}</p>
-                          <p className="text-xs text-muted-foreground">{p.desc2}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {credit.provider && (
-                    <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-primary" />
-                      <span>
-                        Selected <span className="font-semibold capitalize">{credit.provider}</span> — up to <span className="font-semibold">{credit.months} months</span>
-                      </span>
+              {credit.status === "passed" && (() => {
+                const rent = Number(employment.rent_target) || Number(employment.income_monthly) * 0.35 || 1200;
+                const deposit = Math.round(rent * 2);
+                const upfront = Math.round(rent); // first month upfront
+                const months = credit.months || 12;
+                const monthly = Math.round(deposit / months);
+                return (
+                  <div className="space-y-3">
+                    <div>
+                      <p className="font-semibold text-foreground">Financing Options (Optional)</p>
+                      <p className="text-sm text-muted-foreground">
+                        Based on your score, you qualify for up to <span className="font-semibold text-foreground">{months} months</span> of financing for your deposit and rent.
+                      </p>
                     </div>
-                  )}
-                </div>
-              )}
+
+                    {/* Qualification summary */}
+                    <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Deposit financed</span>
+                        <span className="font-semibold text-foreground">€{deposit.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Upfront payment today</span>
+                        <span className="font-semibold text-foreground">€{upfront.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Term</span>
+                        <span className="font-semibold text-foreground">Up to {months} months</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { id: "klarna" as const, name: "Klarna", letter: "K", bg: "bg-[hsl(142_71%_45%)]", desc1: "Buy now, pay later", desc2: "Flexible instalments" },
+                        { id: "santander" as const, name: "Santander", letter: "S", bg: "bg-[hsl(0_84%_55%)]", desc1: "Personal financing", desc2: "Competitive rates" },
+                      ].map((p) => {
+                        const selected = credit.provider === p.id;
+                        return (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => setCredit((c) => ({ ...c, provider: selected ? "" : p.id }))}
+                            className={`text-left rounded-2xl border-2 p-4 transition-all ${
+                              selected ? "border-primary bg-primary/5 shadow-orange" : "border-border hover:border-primary/40"
+                            }`}
+                          >
+                            <div className={`w-11 h-11 rounded-full ${p.bg} flex items-center justify-center text-white font-bold mb-3`}>
+                              {p.letter}
+                            </div>
+                            <p className="font-semibold text-foreground">{p.name}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{p.desc1}</p>
+                            <p className="text-xs text-muted-foreground">{p.desc2}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {credit.provider && (
+                      <div className="rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/10 to-primary/5 p-4 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-primary" />
+                          <span className="text-sm font-semibold capitalize">{credit.provider} selected</span>
+                        </div>
+                        <p className="text-sm text-foreground">
+                          You're qualified to finance <span className="font-bold">€{deposit.toLocaleString()}</span> over <span className="font-bold">{months} months</span>.
+                        </p>
+                        <div className="flex items-center justify-between pt-2 border-t border-primary/20">
+                          <span className="text-xs text-muted-foreground">Estimated monthly</span>
+                          <span className="text-base font-bold text-primary">€{monthly.toLocaleString()}/mo</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">Upfront payment</span>
+                          <span className="text-sm font-semibold text-foreground">€{upfront.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className="flex gap-3 pt-2">
                 <Button onClick={goBack} variant="outline" size="lg" className="h-12 rounded-xl">
