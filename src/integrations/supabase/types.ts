@@ -357,13 +357,18 @@ export type Database = {
           agency_id: string
           bathrooms: number | null
           bedrooms: number | null
+          commission_months: number | null
           created_at: string | null
           currency: string | null
           id: string
           idealista_listing_id: string | null
           is_active: boolean | null
+          listed_at: string | null
           listing_rules: Json
           rent: number | null
+          rented_at: string | null
+          suggested_rent: number | null
+          target_rent: number | null
           title: string
           updated_at: string | null
         }
@@ -372,13 +377,18 @@ export type Database = {
           agency_id: string
           bathrooms?: number | null
           bedrooms?: number | null
+          commission_months?: number | null
           created_at?: string | null
           currency?: string | null
           id?: string
           idealista_listing_id?: string | null
           is_active?: boolean | null
+          listed_at?: string | null
           listing_rules?: Json
           rent?: number | null
+          rented_at?: string | null
+          suggested_rent?: number | null
+          target_rent?: number | null
           title: string
           updated_at?: string | null
         }
@@ -387,13 +397,18 @@ export type Database = {
           agency_id?: string
           bathrooms?: number | null
           bedrooms?: number | null
+          commission_months?: number | null
           created_at?: string | null
           currency?: string | null
           id?: string
           idealista_listing_id?: string | null
           is_active?: boolean | null
+          listed_at?: string | null
           listing_rules?: Json
           rent?: number | null
+          rented_at?: string | null
+          suggested_rent?: number | null
+          target_rent?: number | null
           title?: string
           updated_at?: string | null
         }

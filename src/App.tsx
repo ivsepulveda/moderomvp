@@ -24,6 +24,7 @@ import AgencyLayout from "./components/AgencyLayout.tsx";
 import AgencyDashboard from "./pages/agency/Dashboard.tsx";
 import Tenants from "./pages/agency/Tenants.tsx";
 import Listings from "./pages/agency/Listings.tsx";
+import Analytics from "./pages/agency/Analytics.tsx";
 import AgencySettings from "./pages/agency/Settings.tsx";
 import AgencyOnboarding from "./pages/agency/Onboarding.tsx";
 
@@ -54,6 +55,7 @@ const App = () => (
               <Route index element={<AgencyDashboard />} />
               <Route path="tenants" element={<Tenants />} />
               <Route path="listings" element={<Listings />} />
+              <Route path="analytics" element={<Analytics />} />
               <Route path="settings" element={<AgencySettings />} />
             </Route>
             <Route path="/agency/onboarding" element={<AgencyRoute><AgencyOnboarding /></AgencyRoute>} />
