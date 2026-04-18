@@ -432,27 +432,7 @@ const TenantAuth = () => {
           ) : (
             <span />
           )}
-          <div className="flex items-center gap-3">
-            {/* Language selector */}
-            <div className="flex items-center gap-1.5">
-              <Globe className="w-4 h-4 text-muted-foreground" />
-              <Select value={lang} onValueChange={(v) => setLang(v as Lang)}>
-                <SelectTrigger
-                  className="h-9 w-[110px] rounded-lg border-border/60 bg-background text-sm"
-                  aria-label={t.languageLabel}
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">🇬🇧 English</SelectItem>
-                  <SelectItem value="es">🇪🇸 Español</SelectItem>
-                  <SelectItem value="pt">🇵🇹 Português</SelectItem>
-                  <SelectItem value="it">🇮🇹 Italiano</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-          </div>
+          <div />
         </div>
       </header>
 
@@ -460,14 +440,33 @@ const TenantAuth = () => {
         {/* Left: Pitch */}
         <div className="space-y-10">
           <div ref={inquiryRef} className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/5 via-primary/[0.03] to-transparent p-6 lg:p-7 space-y-5 shadow-sm scroll-mt-24">
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold uppercase tracking-wide">
-                <Sparkles className="w-3.5 h-3.5" />
-                {t.inquiry.badge}
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold uppercase tracking-wide">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  {t.inquiry.badge}
+                </div>
+                <span className="text-xs font-medium text-muted-foreground">
+                  {t.inquiry.via}
+                </span>
               </div>
-              <span className="text-xs font-medium text-muted-foreground">
-                {t.inquiry.via}
-              </span>
+              <div className="flex items-center gap-1.5 ml-auto">
+                <Globe className="w-4 h-4 text-muted-foreground" />
+                <Select value={lang} onValueChange={(v) => setLang(v as Lang)}>
+                  <SelectTrigger
+                    className="h-9 w-[130px] rounded-lg border-border/60 bg-background text-sm"
+                    aria-label={t.languageLabel}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">🇬🇧 English</SelectItem>
+                    <SelectItem value="es">🇪🇸 Español</SelectItem>
+                    <SelectItem value="pt">🇵🇹 Português</SelectItem>
+                    <SelectItem value="it">🇮🇹 Italiano</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div>
