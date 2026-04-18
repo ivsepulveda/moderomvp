@@ -91,10 +91,14 @@ const TenantOnboarding = () => {
   // Step 1 — Consent
   const [consent, setConsent] = useState({ gdpr: false, photo: null as File | null });
 
-  // Step 2 — Identity
+  // Step 2 — Identity (now includes contact + verifications)
   const [identity, setIdentity] = useState({
     name: "", phone: "", nationality: "", country_of_birth: "", age_range: "",
     nie: "", dni: "", linkedin_url: "",
+    whatsapp_same: true, whatsapp_phone: "", whatsapp_connected: false,
+    email_type: "" as "" | "business" | "student" | "private",
+    email_code: "", email_verified: false,
+    sms_code: "", sms_verified: false,
   });
 
   // Step 3 — Employment
@@ -103,10 +107,8 @@ const TenantOnboarding = () => {
     contract_type: "", income_monthly: "", salary_payment_date: "",
   });
 
-  // Step 4 — Verifications
+  // Step 4 — Verifications (residency only now)
   const [verif, setVerif] = useState({
-    email_code: "", sms_code: "",
-    email_verified: false, sms_verified: false,
     residency_addresses: "",
   });
 
