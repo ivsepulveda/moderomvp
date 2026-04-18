@@ -63,10 +63,6 @@ const TenantAuth = () => {
         if (error) throw error;
         navigate("/onboarding");
       }
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        navigate("/onboarding");
-      }
     } catch (error: any) {
       toast({
         title: "Error",
