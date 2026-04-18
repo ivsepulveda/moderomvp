@@ -156,9 +156,10 @@ const TenantOnboarding = () => {
         identity,
         employment,
         verif,
+        credit,
       }));
     } catch { /* ignore quota errors */ }
-  }, [STORAGE_KEY, step, consent.gdpr, identity, employment, verif]);
+  }, [STORAGE_KEY, step, consent.gdpr, identity, employment, verif, credit]);
 
 
   // ---------- Load Brain from agency_setup ----------
