@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
+import IntelligenceBrainStep from "@/components/agency-setup/IntelligenceBrainStep";
 import { toast } from "sonner";
 
 interface ApplicationRecord {
@@ -462,53 +463,10 @@ const AgencySetup = () => {
             )}
 
             {step === 3 && (
-              <div className="space-y-5">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">4. Set the Intelligence Brain</h3>
-                  <p className="text-sm text-muted-foreground">Define the default tenant qualification logic for this agency.</p>
-                </div>
-                <div className="rounded-2xl border border-border p-4 space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-3">
-                      <Label>Minimum income ratio</Label>
-                      <Badge variant="outline">{intelligenceBrain.min_income_ratio.toFixed(1)}x rent</Badge>
-                    </div>
-                    <Slider value={[intelligenceBrain.min_income_ratio]} min={2} max={5} step={0.5} onValueChange={([value]) => setIntelligenceBrain((prev) => ({ ...prev, min_income_ratio: value }))} />
-                  </div>
-                  <Separator />
-                  <div className="grid gap-3 md:grid-cols-2">
-                    {[
-                      ["require_linkedin", "Require LinkedIn"],
-                      ["require_db_credit", "Require D&B credit"],
-                      ["require_biometric_id", "Require biometric ID"],
-                      ["require_payslips", "Require payslips"],
-                      ["require_work_contract", "Require work contract"],
-                      ["require_tax_return", "Require tax return"],
-                      ["residency_history_check", "Check residency history"],
-                      ["email_verification", "Require email verification"],
-                      ["sms_verification", "Require SMS verification"],
-                    ].map(([key, label]) => (
-                      <div key={key} className="rounded-xl border border-border px-4 py-3 flex items-center justify-between gap-3">
-                        <span className="text-sm text-foreground">{label}</span>
-                        <Switch checked={Boolean(intelligenceBrain[key as keyof typeof intelligenceBrain])} onCheckedChange={(checked) => setIntelligenceBrain((prev) => ({ ...prev, [key]: checked }))} />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Qualification decision</Label>
-                    <Select value={intelligenceBrain.qualification_decision} onValueChange={(value) => setIntelligenceBrain((prev) => ({ ...prev, qualification_decision: value }))}>
-                      <SelectTrigger className="rounded-xl">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="manual_review">Manual review</SelectItem>
-                        <SelectItem value="auto_approve">Auto approve</SelectItem>
-                        <SelectItem value="auto_reject">Auto reject</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
+              <IntelligenceBrainStep
+                brain={intelligenceBrain as any}
+                onChange={(patch) => setIntelligenceBrain((prev) => ({ ...prev, ...patch }))}
+              />
             )}
 
             {step === 4 && (
