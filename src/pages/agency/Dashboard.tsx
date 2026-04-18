@@ -931,13 +931,21 @@ const AgencyDashboard = () => {
                   <Link2 className="w-4 h-4 text-muted-foreground" /> LinkedIn
                 </h4>
                 {selectedInquiry.linkedinVerified ? (
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1">
+                  <div className="p-4 bg-blue-50/60 border border-blue-100 rounded-2xl space-y-3">
                     <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-medium text-blue-800">Verified</span>
+                      <CheckCircle className="w-5 h-5 text-blue-600" />
+                      <span className="text-base font-bold text-blue-900">Verified</span>
                     </div>
-                    <p className="text-xs text-blue-700">{selectedInquiry.linkedinHeadline}</p>
-                    <p className="text-xs text-blue-600">{selectedInquiry.linkedinProfile}</p>
+                    <p className="text-sm font-medium text-blue-700">{selectedInquiry.linkedinHeadline}</p>
+                    <a
+                      href={selectedInquiry.linkedinProfile.startsWith("http") ? selectedInquiry.linkedinProfile : `https://${selectedInquiry.linkedinProfile}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 underline underline-offset-2"
+                    >
+                      <Link2 className="w-4 h-4" />
+                      {selectedInquiry.linkedinProfile}
+                    </a>
                   </div>
                 ) : (
                   <div className="p-3 bg-muted/30 rounded-xl flex items-center gap-2">
