@@ -81,7 +81,16 @@ const TenantOnboarding = () => {
   const [searchParams] = useSearchParams();
   const agencyIdParam = searchParams.get("agency_id");
 
-  const [step, setStep] = useState(1);
+  const STORAGE_KEY = `modero_onboarding_${agencyIdParam || "default"}`;
+  const loadSaved = () => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  };
+  const saved = loadSaved();
+
+  const [step, setStep] = useState<number>(saved?.step ?? 1);
   const [saving, setSaving] = useState(false);
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [applicationId, setApplicationId] = useState<string | null>(null);
@@ -89,7 +98,10 @@ const TenantOnboarding = () => {
   const [brainLoading, setBrainLoading] = useState<boolean>(!!agencyIdParam);
 
   // Step 1 — Consent
-  const [consent, setConsent] = useState({ gdpr: false, photo: null as File | null });
+  const [consent, setConsent] = useState({
+    gdpr: saved?.consent?.gdpr ?? false,
+    photo: null as File | null,
+  });
 
   // Step 2 — Identity (now includes basic info + contact + verifications)
   const [identity, setIdentity] = useState({
@@ -100,24 +112,41 @@ const TenantOnboarding = () => {
     email_type: "" as "" | "business" | "student" | "private",
     email_code: "", email_verified: false,
     sms_code: "", sms_verified: false,
+    ...(saved?.identity ?? {}),
   });
 
   // Step 3 — Employment
   const [employment, setEmployment] = useState({
     employment_status: "", job_title: "", company: "",
     contract_type: "", income_monthly: "", salary_payment_date: "",
+    ...(saved?.employment ?? {}),
   });
 
   // Step 4 — Verifications (residency only now)
   const [verif, setVerif] = useState({
     residency_addresses: "",
+    ...(saved?.verif ?? {}),
   });
 
-  // Step 5 — Documents
+  // Step 5 — Documents (files cannot be persisted)
   const [files, setFiles] = useState<{ [key: string]: File | null }>({
     passport: null, payslip1: null, payslip2: null, payslip3: null,
     contract: null, tax_return: null,
   });
+
+  // ---------- Persist progress to localStorage ----------
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        step,
+        consent: { gdpr: consent.gdpr },
+        identity,
+        employment,
+        verif,
+      }));
+    } catch { /* ignore quota errors */ }
+  }, [STORAGE_KEY, step, consent.gdpr, identity, employment, verif]);
+
 
   // ---------- Load Brain from agency_setup ----------
   useEffect(() => {
