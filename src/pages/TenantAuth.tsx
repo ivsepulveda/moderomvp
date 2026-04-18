@@ -674,15 +674,6 @@ const TenantAuth = () => {
         <div className="lg:col-span-2" ref={formRef}>
           <div className="lg:sticky lg:top-24">
             <div className="rounded-3xl bg-card border border-border/60 shadow-elegant p-7 lg:p-8 space-y-6">
-              <div className="space-y-1.5">
-                <h2 className="text-2xl font-bold text-foreground">
-                  {isSignUp ? t.form.titleSignUp : t.form.titleSignIn}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {isSignUp ? t.form.subSignUp : t.form.subSignIn}
-                </p>
-              </div>
-
               <form onSubmit={handleSubmit} className="space-y-4">
                 {isSignUp && (
                   <div className="space-y-1.5">
