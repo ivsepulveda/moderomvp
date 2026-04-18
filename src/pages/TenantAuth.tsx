@@ -455,9 +455,9 @@ const TenantAuth = () => {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-10 lg:py-16 grid lg:grid-cols-5 gap-12">
+      <div className="max-w-7xl mx-auto px-6 py-10 lg:py-16">
         {/* Left: Pitch */}
-        <div className="lg:col-span-3 space-y-10">
+        <div className="space-y-10">
           <div ref={inquiryRef} className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/5 via-primary/[0.03] to-transparent p-6 lg:p-7 space-y-5 shadow-sm scroll-mt-24">
             <div className="flex items-center gap-2 flex-wrap">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold uppercase tracking-wide">
