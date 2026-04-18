@@ -485,7 +485,118 @@ const TenantOnboarding = () => {
                 <Input id="phone" value={identity.phone}
                   onChange={(e) => setIdentity({ ...identity, phone: e.target.value })}
                   placeholder="+34 612 345 678" className="h-12 rounded-xl" />
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Info className="w-3 h-3" /> Please use the phone number linked to your WhatsApp — agencies will contact you there.
+                </p>
               </div>
+
+              {/* WhatsApp */}
+              <div className="rounded-xl border border-border p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-primary" />
+                  <p className="text-sm font-medium">WhatsApp</p>
+                  {identity.whatsapp_connected && <CheckCircle className="w-4 h-4 text-green-600" />}
+                </div>
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="wa-same"
+                    checked={identity.whatsapp_same}
+                    onCheckedChange={(v) =>
+                      setIdentity({ ...identity, whatsapp_same: v === true, whatsapp_phone: v === true ? "" : identity.whatsapp_phone })
+                    }
+                  />
+                  <Label htmlFor="wa-same" className="font-normal text-sm cursor-pointer">
+                    My WhatsApp number is the same as the phone above
+                  </Label>
+                </div>
+                {!identity.whatsapp_same && (
+                  <Input
+                    value={identity.whatsapp_phone}
+                    onChange={(e) => setIdentity({ ...identity, whatsapp_phone: e.target.value })}
+                    placeholder="WhatsApp number with country code"
+                    className="h-10 rounded-lg"
+                  />
+                )}
+                {!identity.whatsapp_connected ? (
+                  <Button
+                    type="button" variant="outline" size="sm"
+                    onClick={() => setIdentity({ ...identity, whatsapp_connected: true })}
+                    disabled={identity.whatsapp_same ? !identity.phone : !identity.whatsapp_phone}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-1" /> Connect WhatsApp
+                  </Button>
+                ) : (
+                  <p className="text-xs text-green-700">WhatsApp connected ✓</p>
+                )}
+              </div>
+
+              {/* SMS verification (moved from Verifications step) */}
+              {brain.sms_verification && (
+                <div className="rounded-xl border border-border p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-primary" />
+                    <p className="text-sm font-medium">SMS verification</p>
+                    {identity.sms_verified && <CheckCircle className="w-4 h-4 text-green-600" />}
+                  </div>
+                  {!identity.sms_verified ? (
+                    <div className="flex gap-2">
+                      <Input placeholder="6-digit code" value={identity.sms_code}
+                        onChange={(e) => setIdentity({ ...identity, sms_code: e.target.value })}
+                        className="h-10 rounded-lg" />
+                      <Button variant="outline" size="sm" type="button"
+                        onClick={() => setIdentity({ ...identity, sms_verified: true })}>
+                        Verify
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-green-700">Phone verified ✓</p>
+                  )}
+                </div>
+              )}
+
+              {/* Email type + Email verification */}
+              <div className="rounded-xl border border-border p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-primary" />
+                  <p className="text-sm font-medium">Email</p>
+                  {identity.email_verified && <CheckCircle className="w-4 h-4 text-green-600" />}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">What kind of email is this?</Label>
+                  <Select
+                    value={identity.email_type}
+                    onValueChange={(v) => setIdentity({ ...identity, email_type: v as typeof identity.email_type })}
+                  >
+                    <SelectTrigger className="h-10 rounded-lg">
+                      <SelectValue placeholder="Select email type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="business">Business email</SelectItem>
+                      <SelectItem value="student">Student email</SelectItem>
+                      <SelectItem value="private">Private email</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    A business or student email increases your trust score.
+                  </p>
+                </div>
+                {brain.email_verification && (
+                  !identity.email_verified ? (
+                    <div className="flex gap-2">
+                      <Input placeholder="6-digit code" value={identity.email_code}
+                        onChange={(e) => setIdentity({ ...identity, email_code: e.target.value })}
+                        className="h-10 rounded-lg" />
+                      <Button variant="outline" size="sm" type="button"
+                        onClick={() => setIdentity({ ...identity, email_verified: true })}>
+                        Verify
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-green-700">Email verified ✓</p>
+                  )
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Nationality</Label>
