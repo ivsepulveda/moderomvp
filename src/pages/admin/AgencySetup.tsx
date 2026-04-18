@@ -221,6 +221,38 @@ const AgencySetup = () => {
 
   const progress = useMemo(() => ((step + (completed ? 1 : 0)) / SETUP_STEPS.length) * 100, [completed, step]);
 
+  const handleLogoUpload = async (file: File) => {
+    if (!id) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Logo must be under 5 MB");
+      return;
+    }
+    setUploadingLogo(true);
+    const ext = file.name.split(".").pop() || "png";
+    const path = `${id}/logo-${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("agency-logos")
+      .upload(path, file, { upsert: true, contentType: file.type });
+    if (uploadError) {
+      toast.error(uploadError.message || "Upload failed");
+      setUploadingLogo(false);
+      return;
+    }
+    const { data } = supabase.storage.from("agency-logos").getPublicUrl(path);
+    setBasicInfo((prev) => ({ ...prev, logo_url: data.publicUrl }));
+    toast.success("Logo uploaded");
+    setUploadingLogo(false);
+  };
+
+  const removeLogo = () => {
+    setBasicInfo((prev) => ({ ...prev, logo_url: "" }));
+  };
+
+
   const canContinue = useMemo(() => {
     if (step === 0) return basicInfo.agency_name.trim() && basicInfo.email.trim();
     if (step === 1) return listings.some((listing) => listing.title.trim() && listing.address.trim());
