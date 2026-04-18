@@ -338,7 +338,10 @@ const TenantAuth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState(searchParams.get("name") || "");
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(true);
+  // Sign-up was removed: tenants only enter pre-qualification via the magic
+  // link emailed to them after their Idealista inquiry. The page now only
+  // offers a Sign-in form for tenants who already have an account.
+  const isSignUp = false;
   const navigate = useNavigate();
   const { toast } = useToast();
   const formRef = useRef<HTMLDivElement>(null);
