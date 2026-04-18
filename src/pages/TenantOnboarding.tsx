@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import {
   ArrowRight, ArrowLeft, User, Briefcase, Upload, CheckCircle, Info,
   Shield, ShieldCheck, Camera, Fingerprint, IdCard, History, Link2, Mail, Phone,
+  MessageCircle, Sparkles,
 } from "lucide-react";
 
 // ---------- constants ----------
