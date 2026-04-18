@@ -415,7 +415,7 @@ const Index = () => {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <ModeroLogo size="sm" />
           <p className="text-sm text-muted-foreground">
-            © 2026 Modero. The Tenant Intelligence Layer for Southern Europe.
+            © 2026 Modero. The Tenant Intelligence Layer for professional Real Estate Agencies
           </p>
         </div>
       </footer>
