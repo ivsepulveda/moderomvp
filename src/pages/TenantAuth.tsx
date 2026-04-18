@@ -20,6 +20,10 @@ import {
   CheckCircle2,
   Star,
   Zap,
+  Home,
+  MapPin,
+  Hash,
+  Info,
 } from "lucide-react";
 
 const TenantAuth = () => {
@@ -34,6 +38,12 @@ const TenantAuth = () => {
 
   const agencyName = searchParams.get("agency");
   const propertyTitle = searchParams.get("property");
+  const propertyAddress = searchParams.get("address");
+  const idealistaRef = searchParams.get("ref") || searchParams.get("idealista");
+  const rent = searchParams.get("rent");
+  const source = searchParams.get("source"); // e.g. "idealista"
+
+  const hasInquiryContext = !!(agencyName || propertyTitle || idealistaRef);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,13 +136,90 @@ const TenantAuth = () => {
       <div className="max-w-7xl mx-auto px-6 py-10 lg:py-16 grid lg:grid-cols-5 gap-12">
         {/* Left: Pitch */}
         <div className="lg:col-span-3 space-y-10">
-          {(agencyName || propertyTitle) && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-              <Building2 className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-foreground">
-                {agencyName ? `Invited by ${agencyName}` : "Application invitation"}
-                {propertyTitle && <span className="text-muted-foreground"> · {propertyTitle}</span>}
-              </span>
+          {hasInquiryContext && (
+            <div className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/5 via-primary/[0.03] to-transparent p-6 lg:p-7 space-y-5 shadow-sm">
+              <div className="flex items-center gap-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold uppercase tracking-wide">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Inquiry received
+                </div>
+                {source?.toLowerCase() === "idealista" && (
+                  <span className="text-xs font-medium text-muted-foreground">
+                    via Idealista
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <h2 className="text-xl lg:text-2xl font-bold text-foreground leading-snug">
+                  You've applied to rent
+                  {propertyTitle ? (
+                    <> <span className="text-primary">{propertyTitle}</span></>
+                  ) : (
+                    <> a property{agencyName ? <> with <span className="text-primary">{agencyName}</span></> : null}</>
+                  )}
+                </h2>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Your inquiry was forwarded to {agencyName || "the agency"} through Modero.
+                  To move forward, the agency requires a quick pre-qualification.
+                </p>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-3 pt-1">
+                {agencyName && (
+                  <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 border border-border/60">
+                    <Building2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">Agency</div>
+                      <div className="text-sm font-semibold text-foreground truncate">{agencyName}</div>
+                    </div>
+                  </div>
+                )}
+                {propertyTitle && (
+                  <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 border border-border/60">
+                    <Home className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">Property</div>
+                      <div className="text-sm font-semibold text-foreground truncate">
+                        {propertyTitle}
+                        {rent && <span className="text-muted-foreground font-normal"> · €{rent}/mo</span>}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {propertyAddress && (
+                  <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 border border-border/60">
+                    <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">Address</div>
+                      <div className="text-sm font-semibold text-foreground truncate">{propertyAddress}</div>
+                    </div>
+                  </div>
+                )}
+                {idealistaRef && (
+                  <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 border border-border/60">
+                    <Hash className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
+                        Idealista reference
+                      </div>
+                      <div className="text-sm font-semibold text-foreground truncate font-mono">
+                        #{idealistaRef}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20">
+                <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <p className="text-sm text-foreground leading-relaxed">
+                  <span className="font-semibold">Next step — pre-qualification.</span>{" "}
+                  Before {agencyName || "the agency"} can confirm a viewing, we need to verify
+                  you're a qualified tenant: identity, income and employment. It takes under
+                  3 minutes and gets you priority over unverified applicants.
+                </p>
+              </div>
             </div>
           )}
 
