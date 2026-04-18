@@ -208,6 +208,7 @@ const AgencySetup = () => {
           years_operating: app.years_operating ?? "",
           associations: app.associations ?? "",
           pitch: app.pitch ?? "",
+          logo_url: "",
         });
         setConnectionSettings((prev) => ({ ...prev, notification_email: app.email ?? prev.notification_email }));
       }
