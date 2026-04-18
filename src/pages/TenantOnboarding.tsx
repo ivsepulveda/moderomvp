@@ -134,6 +134,19 @@ const TenantOnboarding = () => {
     contract: null, tax_return: null,
   });
 
+  // Step 7 — Credit check & financing
+  const [credit, setCredit] = useState<{
+    status: "idle" | "running" | "passed" | "failed";
+    score: number | null;
+    provider: "" | "klarna" | "santander";
+    months: number;
+  }>({
+    status: saved?.credit?.status ?? "idle",
+    score: saved?.credit?.score ?? null,
+    provider: saved?.credit?.provider ?? "",
+    months: saved?.credit?.months ?? 0,
+  });
+
   // ---------- Persist progress to localStorage ----------
   useEffect(() => {
     try {
