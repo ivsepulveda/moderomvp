@@ -1018,8 +1018,11 @@ const AgencyDashboard = () => {
                 </h4>
                 <div className="space-y-1.5">
                   {selectedInquiry.documents.map((doc, i) => (
-                    <div key={i} className="flex items-center justify-between py-2 px-3 bg-muted/30 rounded-lg">
-                      <span className="text-sm text-foreground">{doc.name}</span>
+                    <div key={i} className="flex items-center justify-between py-2.5 px-3 bg-muted/30 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm text-foreground">{doc.name}</span>
+                      </div>
                       <div className="flex items-center gap-2">
                         {doc.uploaded ? (
                           <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">Uploaded</Badge>
@@ -1031,11 +1034,50 @@ const AgencyDashboard = () => {
                         ) : doc.uploaded ? (
                           <Badge variant="outline" className="text-[10px] bg-yellow-50 text-yellow-700 border-yellow-200">Pending</Badge>
                         ) : null}
+                        {doc.uploaded && (
+                          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-primary hover:text-primary/80">
+                            <Eye className="w-3.5 h-3.5" /> Preview
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
+
+              {/* Financing Selected (onboarding submissions) */}
+              {(selectedInquiry as any).submittedViaOnboarding && (selectedInquiry as any).qualifiedForFinancing && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-muted-foreground" /> Financing Selected
+                    </h4>
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-foreground">Provider</span>
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                          {(selectedInquiry as any).financingProvider}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3 pt-1">
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase">Term</p>
+                          <p className="text-sm font-semibold text-foreground">{(selectedInquiry as any).financingMonths} mo</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase">Deposit</p>
+                          <p className="text-sm font-semibold text-foreground">€{(selectedInquiry as any).financingDeposit?.toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase">Monthly</p>
+                          <p className="text-sm font-semibold text-foreground">€{(selectedInquiry as any).financingMonthly}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
 
               <Separator />
 
