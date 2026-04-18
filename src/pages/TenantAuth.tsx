@@ -430,7 +430,7 @@ const TenantAuth = () => {
               </span>
             </div>
           ) : (
-            <ModeroLogo size="default" />
+            <span />
           )}
           <div className="flex items-center gap-3">
             {/* Language selector */}

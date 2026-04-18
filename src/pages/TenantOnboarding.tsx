@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import ModeroLogo from "@/components/ModeroLogo";
 import {
   ArrowRight, ArrowLeft, User, Briefcase, Upload, CheckCircle, Info,
   Shield, ShieldCheck, Camera, Fingerprint, IdCard, History, Link2, Mail, Phone,
@@ -330,8 +329,7 @@ const TenantOnboarding = () => {
     <div className="min-h-screen gradient-hero">
       {/* Header */}
       <div className="border-b border-border/40 bg-card/50 backdrop-blur-sm">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <ModeroLogo size="sm" />
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-end">
           <span className="text-sm text-muted-foreground">
             Step {currentStepMeta.displayIndex} of {totalSteps}
           </span>
