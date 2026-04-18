@@ -2,3 +2,6 @@ project_id = "uzqjzjvvmjnupqvtypeb"
 
 [functions.sendgrid-inbound]
 verify_jwt = false
+
+[functions.seed-demo-data]
+verify_jwt = false
