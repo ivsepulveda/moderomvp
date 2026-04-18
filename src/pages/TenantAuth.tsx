@@ -788,6 +788,14 @@ const TenantAuth = () => {
           </div>
         </div>
       </div>
+
+      {/* Powered by footer */}
+      <footer className="border-t border-border/50 bg-background/60 mt-8">
+        <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <span>Powered by</span>
+          <ModeroLogo size="default" />
+        </div>
+      </footer>
     </div>
   );
 };
