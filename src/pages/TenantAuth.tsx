@@ -759,18 +759,6 @@ const TenantAuth = () => {
                   </div>
                 )}
               </form>
-
-              <div className="text-center text-sm text-muted-foreground border-t border-border/50 pt-4">
-                {t.form.switchToSignUp}{" "}
-                <button
-                  type="button"
-                  onClick={scrollToInquiry}
-                  className="text-primary font-semibold hover:underline underline-offset-4"
-                >
-                  {t.inquiry.cta}
-                </button>{" "}
-                — {t.inquiry.ctaTime}
-              </div>
             </div>
 
             <p className="text-xs text-muted-foreground/70 text-center mt-4">
