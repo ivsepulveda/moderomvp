@@ -511,7 +511,7 @@ const TenantOnboarding = () => {
                   <CardDescription>Required before we collect any of your data</CardDescription>
                 </div>
               </div>
-              <StepProgress value={stepCompleteness[1]} />
+              <StepProgress stepId={1} />
             </CardHeader>
             <CardContent className="space-y-5">
               {brain.require_gdpr && (
@@ -563,7 +563,7 @@ const TenantOnboarding = () => {
                   <CardDescription>Tell us who you are</CardDescription>
                 </div>
               </div>
-              <StepProgress value={stepCompleteness[2]} />
+              <StepProgress stepId={2} />
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
@@ -784,7 +784,7 @@ const TenantOnboarding = () => {
                   </CardDescription>
                 </div>
               </div>
-              <StepProgress value={stepCompleteness[3]} />
+              <StepProgress stepId={3} />
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
@@ -862,7 +862,7 @@ const TenantOnboarding = () => {
                   <CardDescription>Quick checks required by this agency</CardDescription>
                 </div>
               </div>
-              <StepProgress value={stepCompleteness[4]} />
+              <StepProgress stepId={4} />
             </CardHeader>
             <CardContent className="space-y-5">
               {brain.residency_history_check && (
@@ -902,7 +902,7 @@ const TenantOnboarding = () => {
                   <CardDescription>Upload only what this agency requires</CardDescription>
                 </div>
               </div>
-              <StepProgress value={stepCompleteness[5]} />
+              <StepProgress stepId={5} />
             </CardHeader>
             <CardContent className="space-y-5">
               {[
