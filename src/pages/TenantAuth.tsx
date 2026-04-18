@@ -350,6 +350,7 @@ const TenantAuth = () => {
   const agencyName = searchParams.get("agency");
   const agencyEmail = searchParams.get("agency_email");
   const agencyPhone = searchParams.get("agency_phone");
+  const agencyLogo = searchParams.get("agency_logo");
   const propertyTitle = searchParams.get("property");
   const propertyAddress = searchParams.get("address");
   const idealistaRef = searchParams.get("ref") || searchParams.get("idealista");
