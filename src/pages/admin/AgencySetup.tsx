@@ -180,11 +180,18 @@ const AgencySetup = () => {
           pitch: savedBasicInfo.pitch ?? app.pitch ?? "",
         });
         setListings(savedListings.length ? savedListings : [emptyListing()]);
-        setConnectionSettings({
+        setConnectionSettings((prev) => ({
+          ...prev,
           notification_email: savedConnectionSettings.notification_email ?? app.email ?? "",
           calendar_provider: savedConnectionSettings.calendar_provider ?? "none",
           inbox_connected: savedConnectionSettings.inbox_connected ?? false,
-        });
+          gmail_connected: savedConnectionSettings.gmail_connected ?? false,
+          outlook_mail_connected: savedConnectionSettings.outlook_mail_connected ?? false,
+          google_calendar_connected: savedConnectionSettings.google_calendar_connected ?? false,
+          outlook_calendar_connected: savedConnectionSettings.outlook_calendar_connected ?? false,
+          whatsapp_connected: savedConnectionSettings.whatsapp_connected ?? false,
+          zapier_webhook_url: savedConnectionSettings.zapier_webhook_url ?? "",
+        }));
         setIntelligenceBrain({ ...defaultBrain, ...(savedIntelligenceBrain as Partial<typeof defaultBrain>) });
         setTeamMembers(savedTeamMembers);
       } else {
