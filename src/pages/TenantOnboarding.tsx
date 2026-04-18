@@ -525,6 +525,7 @@ const TenantOnboarding = () => {
                   <CardDescription>Tell us who you are</CardDescription>
                 </div>
               </div>
+              <StepProgress value={stepCompleteness[2]} />
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
@@ -745,6 +746,7 @@ const TenantOnboarding = () => {
                   </CardDescription>
                 </div>
               </div>
+              <StepProgress value={stepCompleteness[3]} />
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
@@ -822,6 +824,7 @@ const TenantOnboarding = () => {
                   <CardDescription>Quick checks required by this agency</CardDescription>
                 </div>
               </div>
+              <StepProgress value={stepCompleteness[4]} />
             </CardHeader>
             <CardContent className="space-y-5">
               {brain.residency_history_check && (
@@ -861,6 +864,7 @@ const TenantOnboarding = () => {
                   <CardDescription>Upload only what this agency requires</CardDescription>
                 </div>
               </div>
+              <StepProgress value={stepCompleteness[5]} />
             </CardHeader>
             <CardContent className="space-y-5">
               {[
