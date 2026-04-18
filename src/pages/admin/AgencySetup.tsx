@@ -126,6 +126,12 @@ const AgencySetup = () => {
     notification_email: "",
     calendar_provider: "none",
     inbox_connected: false,
+    gmail_connected: false,
+    outlook_mail_connected: false,
+    google_calendar_connected: false,
+    outlook_calendar_connected: false,
+    whatsapp_connected: false,
+    zapier_webhook_url: "",
   });
   const [intelligenceBrain, setIntelligenceBrain] = useState(defaultBrain);
   const [teamMembers, setTeamMembers] = useState<TeamMemberDraft[]>([]);
