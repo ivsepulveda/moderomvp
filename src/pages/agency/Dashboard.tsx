@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { submittedApplicationDemo } from "@/data/submittedApplication";
 import LiveApplicationsPanel from "@/components/LiveApplicationsPanel";
+import RoiPerformanceStrip from "@/components/agency/RoiPerformanceStrip";
 
 const stats = [
   { label: "Active Listings", value: "34", icon: Building2, change: "+2 this week", trend: "up" },
@@ -392,6 +393,8 @@ const AgencyDashboard = () => {
       )}
 
       <LiveApplicationsPanel />
+
+      <RoiPerformanceStrip />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
