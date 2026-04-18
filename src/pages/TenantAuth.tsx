@@ -352,8 +352,13 @@ const TenantAuth = () => {
   const rent = searchParams.get("rent");
   const source = searchParams.get("source");
 
-  const hasInquiryContext = !!(agencyName || propertyTitle || idealistaRef);
   const hasAgencyContact = !!(agencyEmail || agencyPhone);
+  // Always show the inquiry context block. Use placeholders when params are missing
+  // so tenants always see what they applied to and why pre-qualification is needed.
+  const displayAgencyName = agencyName || "the agency";
+  const displayPropertyTitle = propertyTitle;
+  const displayAddress = propertyAddress || "—";
+  const displayRef = idealistaRef || "—";
 
   const scrollToForm = () => {
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
