@@ -607,52 +607,6 @@ const TenantOnboarding = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
-              {brain.email_verification && (
-                <div className="rounded-xl border border-border p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-primary" />
-                    <p className="text-sm font-medium">Email verification</p>
-                    {verif.email_verified && <CheckCircle className="w-4 h-4 text-green-600" />}
-                  </div>
-                  {!verif.email_verified ? (
-                    <div className="flex gap-2">
-                      <Input placeholder="6-digit code" value={verif.email_code}
-                        onChange={(e) => setVerif({ ...verif, email_code: e.target.value })}
-                        className="h-10 rounded-lg" />
-                      <Button variant="outline" size="sm"
-                        onClick={() => setVerif({ ...verif, email_verified: true })}>
-                        Verify
-                      </Button>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-green-700">Email verified ✓</p>
-                  )}
-                </div>
-              )}
-
-              {brain.sms_verification && (
-                <div className="rounded-xl border border-border p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-primary" />
-                    <p className="text-sm font-medium">SMS verification</p>
-                    {verif.sms_verified && <CheckCircle className="w-4 h-4 text-green-600" />}
-                  </div>
-                  {!verif.sms_verified ? (
-                    <div className="flex gap-2">
-                      <Input placeholder="6-digit code" value={verif.sms_code}
-                        onChange={(e) => setVerif({ ...verif, sms_code: e.target.value })}
-                        className="h-10 rounded-lg" />
-                      <Button variant="outline" size="sm"
-                        onClick={() => setVerif({ ...verif, sms_verified: true })}>
-                        Verify
-                      </Button>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-green-700">Phone verified ✓</p>
-                  )}
-                </div>
-              )}
-
               {brain.residency_history_check && (
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2"><History className="w-4 h-4" /> Last 5 years of residency</Label>
