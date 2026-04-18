@@ -2,6 +2,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AgencySidebar } from "@/components/AgencySidebar";
 import { Outlet, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import NotificationBell from "@/components/agency/NotificationBell";
 
 const AgencyLayout = () => {
   const { profile, userRole } = useAuth();
@@ -21,9 +22,12 @@ const AgencyLayout = () => {
               <SidebarTrigger className="mr-4" />
               <h1 className="text-sm font-semibold text-foreground">Agency Portal</h1>
             </div>
-            {profile?.agency_name && (
-              <span className="text-xs text-muted-foreground">{profile.agency_name}</span>
-            )}
+            <div className="flex items-center gap-3">
+              {profile?.agency_name && (
+                <span className="text-xs text-muted-foreground hidden sm:inline">{profile.agency_name}</span>
+              )}
+              <NotificationBell />
+            </div>
           </header>
           <main className="flex-1 overflow-auto">
             <Outlet />

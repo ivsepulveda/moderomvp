@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Building2, Settings, LogOut, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Users, Building2, Settings, LogOut, BarChart3, MessageCircle } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import ModeroLogo from "@/components/ModeroLogo";
@@ -18,6 +18,7 @@ import {
 
 const mainItems = [
   { title: "Dashboard", url: "/agency", icon: LayoutDashboard },
+  { title: "Inbox", url: "/agency/inbox", icon: MessageCircle },
   { title: "Tenants", url: "/agency/tenants", icon: Users },
   { title: "Listings", url: "/agency/listings", icon: Building2 },
   { title: "Analytics", url: "/agency/analytics", icon: BarChart3 },
