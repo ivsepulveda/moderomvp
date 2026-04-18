@@ -338,7 +338,10 @@ const TenantAuth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState(searchParams.get("name") || "");
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(true);
+  // Sign-up was removed: tenants only enter pre-qualification via the magic
+  // link emailed to them after their Idealista inquiry. The page now only
+  // offers a Sign-in form for tenants who already have an account.
+  const isSignUp = false;
   const navigate = useNavigate();
   const { toast } = useToast();
   const formRef = useRef<HTMLDivElement>(null);
@@ -429,10 +432,7 @@ const TenantAuth = () => {
               {t.header.alreadyQualified}
             </span>
             <button
-              onClick={() => {
-                setIsSignUp(false);
-                scrollToForm();
-              }}
+              onClick={scrollToForm}
               className="text-sm font-medium text-primary hover:underline"
             >
               {t.header.signIn}
@@ -747,14 +747,11 @@ const TenantAuth = () => {
               </form>
 
               <div className="text-center text-sm text-muted-foreground border-t border-border/50 pt-4">
-                {isSignUp ? `${t.form.switchToSignIn} ` : `${t.form.switchToSignUp} `}
-                <button
-                  type="button"
-                  onClick={() => setIsSignUp(!isSignUp)}
-                  className="text-primary font-medium hover:underline"
-                >
-                  {isSignUp ? t.form.switchSignIn : t.form.switchSignUp}
-                </button>
+                {t.form.switchToSignUp}{" "}
+                <span className="text-foreground font-medium">
+                  {t.inquiry.cta}
+                </span>{" "}
+                — {t.inquiry.ctaTime}
               </div>
             </div>
 

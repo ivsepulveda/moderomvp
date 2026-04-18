@@ -261,6 +261,8 @@ export type Database = {
           created_at: string | null
           id: string
           idealista_listing_id: string | null
+          linked_application_id: string | null
+          match_status: string
           message: string | null
           price: number | null
           processed: boolean | null
@@ -275,6 +277,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           idealista_listing_id?: string | null
+          linked_application_id?: string | null
+          match_status?: string
           message?: string | null
           price?: number | null
           processed?: boolean | null
@@ -289,6 +293,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           idealista_listing_id?: string | null
+          linked_application_id?: string | null
+          match_status?: string
           message?: string | null
           price?: number | null
           processed?: boolean | null
@@ -299,7 +305,15 @@ export type Database = {
           tenant_name?: string | null
           tenant_phone?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "leads_linked_application_id_fkey"
+            columns: ["linked_application_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_applications"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
