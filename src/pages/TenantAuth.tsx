@@ -352,8 +352,13 @@ const TenantAuth = () => {
   const rent = searchParams.get("rent");
   const source = searchParams.get("source");
 
-  const hasInquiryContext = !!(agencyName || propertyTitle || idealistaRef);
   const hasAgencyContact = !!(agencyEmail || agencyPhone);
+  // Always show the inquiry context block. Use placeholders when params are missing
+  // so tenants always see what they applied to and why pre-qualification is needed.
+  const displayAgencyName = agencyName || "the agency";
+  const displayPropertyTitle = propertyTitle;
+  const displayAddress = propertyAddress || "—";
+  const displayRef = idealistaRef || "—";
 
   const scrollToForm = () => {
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -439,148 +444,136 @@ const TenantAuth = () => {
       <div className="max-w-7xl mx-auto px-6 py-10 lg:py-16 grid lg:grid-cols-5 gap-12">
         {/* Left: Pitch */}
         <div className="lg:col-span-3 space-y-10">
-          {hasInquiryContext && (
-            <div className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/5 via-primary/[0.03] to-transparent p-6 lg:p-7 space-y-5 shadow-sm">
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold uppercase tracking-wide">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  {t.inquiry.badge}
-                </div>
-                {(source?.toLowerCase() === "idealista" || idealistaRef) && (
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {t.inquiry.via}
-                  </span>
-                )}
+          <div className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/5 via-primary/[0.03] to-transparent p-6 lg:p-7 space-y-5 shadow-sm">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold uppercase tracking-wide">
+                <Sparkles className="w-3.5 h-3.5" />
+                {t.inquiry.badge}
               </div>
+              <span className="text-xs font-medium text-muted-foreground">
+                {t.inquiry.via}
+              </span>
+            </div>
 
-              <div>
-                <h2 className="text-xl lg:text-2xl font-bold text-foreground leading-snug">
-                  {t.inquiry.title}{" "}
-                  {propertyTitle ? (
-                    <span className="text-primary">{propertyTitle}</span>
-                  ) : (
-                    <>
-                      {t.inquiry.titleFallback}
-                      {agencyName && (
-                        <>
-                          {" "}
-                          {t.inquiry.titleWith}{" "}
-                          <span className="text-primary">{agencyName}</span>
-                        </>
-                      )}
-                    </>
-                  )}
-                </h2>
-                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                  {t.inquiry.intro}
-                </p>
-              </div>
+            <div>
+              <h2 className="text-xl lg:text-2xl font-bold text-foreground leading-snug">
+                {t.inquiry.title}{" "}
+                {displayPropertyTitle ? (
+                  <span className="text-primary">{displayPropertyTitle}</span>
+                ) : (
+                  <>
+                    {t.inquiry.titleFallback}
+                    {agencyName && (
+                      <>
+                        {" "}
+                        {t.inquiry.titleWith}{" "}
+                        <span className="text-primary">{agencyName}</span>
+                      </>
+                    )}
+                  </>
+                )}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                {t.inquiry.intro}
+              </p>
+            </div>
 
-              <div className="grid sm:grid-cols-2 gap-3 pt-1">
-                {agencyName && (
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 border border-border/60">
-                    <Building2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                    <div className="min-w-0">
-                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
-                        {t.inquiry.agency}
-                      </div>
-                      <div className="text-sm font-semibold text-foreground truncate">{agencyName}</div>
-                    </div>
-                  </div>
-                )}
-                {propertyTitle && (
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 border border-border/60">
-                    <Home className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                    <div className="min-w-0">
-                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
-                        {t.inquiry.property}
-                      </div>
-                      <div className="text-sm font-semibold text-foreground truncate">
-                        {propertyTitle}
-                        {rent && <span className="text-muted-foreground font-normal"> · €{rent}/mo</span>}
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {propertyAddress && (
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 border border-border/60">
-                    <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                    <div className="min-w-0">
-                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
-                        {t.inquiry.address}
-                      </div>
-                      <div className="text-sm font-semibold text-foreground truncate">{propertyAddress}</div>
-                    </div>
-                  </div>
-                )}
-                {idealistaRef && (
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 border border-border/60">
-                    <Hash className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                    <div className="min-w-0">
-                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
-                        {t.inquiry.ref}
-                      </div>
-                      <div className="text-sm font-semibold text-foreground truncate font-mono">
-                        #{idealistaRef}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {hasAgencyContact && (
-                <div className="p-4 rounded-xl bg-background/60 border border-border/60 space-y-2">
+            <div className="grid sm:grid-cols-2 gap-3 pt-1">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 border border-border/60">
+                <Building2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <div className="min-w-0">
                   <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
-                    {t.inquiry.contact}
+                    {t.inquiry.agency}
                   </div>
-                  <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-                    {agencyEmail && (
-                      <a
-                        href={`mailto:${agencyEmail}`}
-                        className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
-                      >
-                        <Mail className="w-4 h-4 text-primary" />
-                        {agencyEmail}
-                      </a>
-                    )}
-                    {agencyPhone && (
-                      <a
-                        href={`tel:${agencyPhone}`}
-                        className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
-                      >
-                        <Phone className="w-4 h-4 text-primary" />
-                        {agencyPhone}
-                      </a>
-                    )}
+                  <div className="text-sm font-semibold text-foreground truncate">{displayAgencyName}</div>
+                </div>
+              </div>
+              {displayPropertyTitle && (
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 border border-border/60">
+                  <Home className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
+                      {t.inquiry.property}
+                    </div>
+                    <div className="text-sm font-semibold text-foreground truncate">
+                      {displayPropertyTitle}
+                      {rent && <span className="text-muted-foreground font-normal"> · €{rent}/mo</span>}
+                    </div>
                   </div>
                 </div>
               )}
-
-              {/* Why pre-qualification */}
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20">
-                <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-foreground">{t.inquiry.whyTitle}</p>
-                  <p className="text-sm text-foreground/80 leading-relaxed">{t.inquiry.whyBody}</p>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 border border-border/60">
+                <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
+                    {t.inquiry.address}
+                  </div>
+                  <div className="text-sm font-semibold text-foreground truncate">{displayAddress}</div>
                 </div>
               </div>
-
-              {/* CTA */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
-                <Button
-                  onClick={scrollToForm}
-                  variant="hero"
-                  size="lg"
-                  className="h-12 rounded-xl text-base px-6"
-                >
-                  <ClipboardCheck className="w-5 h-5 mr-2" />
-                  {t.inquiry.cta}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-                <span className="text-xs text-muted-foreground">{t.inquiry.ctaTime}</span>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 border border-border/60">
+                <Hash className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
+                    {t.inquiry.ref}
+                  </div>
+                  <div className="text-sm font-semibold text-foreground truncate font-mono">
+                    {displayRef === "—" ? "—" : `#${displayRef}`}
+                  </div>
+                </div>
               </div>
             </div>
-          )}
+
+            {hasAgencyContact && (
+              <div className="p-4 rounded-xl bg-background/60 border border-border/60 space-y-2">
+                <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
+                  {t.inquiry.contact}
+                </div>
+                <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                  {agencyEmail && (
+                    <a
+                      href={`mailto:${agencyEmail}`}
+                      className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
+                    >
+                      <Mail className="w-4 h-4 text-primary" />
+                      {agencyEmail}
+                    </a>
+                  )}
+                  {agencyPhone && (
+                    <a
+                      href={`tel:${agencyPhone}`}
+                      className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
+                    >
+                      <Phone className="w-4 h-4 text-primary" />
+                      {agencyPhone}
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20">
+              <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-foreground">{t.inquiry.whyTitle}</p>
+                <p className="text-sm text-foreground/80 leading-relaxed">{t.inquiry.whyBody}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
+              <Button
+                onClick={scrollToForm}
+                variant="hero"
+                size="lg"
+                className="h-12 rounded-xl text-base px-6"
+              >
+                <ClipboardCheck className="w-5 h-5 mr-2" />
+                {t.inquiry.cta}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+              <span className="text-xs text-muted-foreground">{t.inquiry.ctaTime}</span>
+            </div>
+          </div>
 
           <div className="space-y-5">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary border border-border">
