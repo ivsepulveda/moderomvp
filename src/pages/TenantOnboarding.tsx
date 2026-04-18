@@ -853,32 +853,7 @@ const TenantOnboarding = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Nationality</Label>
-                  <Select value={identity.nationality} onValueChange={(v) => setIdentity({ ...identity, nationality: v })}>
-                    <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                      {NATIONALITIES.map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Age range</Label>
-                  <Select value={identity.age_range} onValueChange={(v) => setIdentity({ ...identity, age_range: v })}>
-                    <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                      {AGE_RANGES.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Country of birth</Label>
-                <Input value={identity.country_of_birth}
-                  onChange={(e) => setIdentity({ ...identity, country_of_birth: e.target.value })}
-                  placeholder="Spain" className="h-12 rounded-xl" />
-              </div>
+
 
               {brain.require_nie && (
                 <div className="space-y-2">
