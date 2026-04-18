@@ -477,8 +477,13 @@ const TenantOnboarding = () => {
           ))}
         </div>
 
-        {/* Profile completeness — boosts trust score */}
-        <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4">
+        {/* Per-step segmented completeness — moved here from inside the step card */}
+        <div className="mt-5">
+          <StepProgress stepId={step} />
+        </div>
+
+        {/* Profile completeness — overall, boosts trust score */}
+        <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
           <div className="flex items-start gap-3">
             <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" />
             <div className="flex-1 space-y-2">
@@ -511,20 +516,46 @@ const TenantOnboarding = () => {
                   <CardDescription>Required before we collect any of your data</CardDescription>
                 </div>
               </div>
-              <StepProgress stepId={1} />
             </CardHeader>
             <CardContent className="space-y-5">
               {brain.require_gdpr && (
-                <div className="rounded-xl border border-border bg-muted/30 p-4">
-                  <div className="flex items-start gap-3">
-                    <Checkbox
-                      id="gdpr"
-                      checked={consent.gdpr}
-                      onCheckedChange={(v) => setConsent((p) => ({ ...p, gdpr: v === true }))}
-                    />
-                    <Label htmlFor="gdpr" className="font-normal text-sm leading-relaxed cursor-pointer">
-                      I consent to the processing of my personal data under GDPR for the purpose of tenant pre-qualification. I understand my data will be shared with the rental agency reviewing my application.
-                    </Label>
+                <div className="rounded-2xl border-2 border-green-500/30 bg-green-50/60 dark:bg-green-950/20 p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0">
+                      <Shield className="w-5 h-5 text-green-700 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-foreground">GDPR Data Consent</h3>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white">
+                          Required
+                        </span>
+                      </div>
+                      <p className="text-sm font-medium text-green-800 dark:text-green-300 mt-1">
+                        You must accept GDPR data processing consent before continuing the qualification form.
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                        This rule cannot be disabled. Under EU regulation, processing of your personal data requires explicit consent. Your data will be shared only with the rental agency reviewing your application.
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border border-green-600/40 text-green-700 dark:text-green-400 bg-transparent">
+                          EU Compliant
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border border-green-600/40 text-green-700 dark:text-green-400 bg-transparent">
+                          Always Active
+                        </span>
+                      </div>
+                      <div className="mt-4 flex items-start gap-3 pt-4 border-t border-green-600/20">
+                        <Checkbox
+                          id="gdpr"
+                          checked={consent.gdpr}
+                          onCheckedChange={(v) => setConsent((p) => ({ ...p, gdpr: v === true }))}
+                        />
+                        <Label htmlFor="gdpr" className="font-normal text-sm leading-relaxed cursor-pointer">
+                          I consent to the processing of my personal data under GDPR for the purpose of tenant pre-qualification.
+                        </Label>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -563,7 +594,6 @@ const TenantOnboarding = () => {
                   <CardDescription>Tell us who you are</CardDescription>
                 </div>
               </div>
-              <StepProgress stepId={2} />
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
@@ -784,7 +814,6 @@ const TenantOnboarding = () => {
                   </CardDescription>
                 </div>
               </div>
-              <StepProgress stepId={3} />
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
@@ -862,7 +891,6 @@ const TenantOnboarding = () => {
                   <CardDescription>Quick checks required by this agency</CardDescription>
                 </div>
               </div>
-              <StepProgress stepId={4} />
             </CardHeader>
             <CardContent className="space-y-5">
               {brain.residency_history_check && (
@@ -902,7 +930,6 @@ const TenantOnboarding = () => {
                   <CardDescription>Upload only what this agency requires</CardDescription>
                 </div>
               </div>
-              <StepProgress stepId={5} />
             </CardHeader>
             <CardContent className="space-y-5">
               {[
