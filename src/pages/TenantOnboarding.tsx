@@ -739,8 +739,15 @@ const TenantOnboarding = () => {
                     A business or student email increases your trust score.
                   </p>
                 </div>
-                {brain.email_verification && (
-                  !identity.email_verified ? (
+                {brain.email_verification && (() => {
+                  const gateReady = identity.whatsapp_connected && (!brain.require_linkedin || identity.linkedin_connected);
+                  if (identity.email_verified) return <p className="text-xs text-green-700">Email verified ✓</p>;
+                  if (!gateReady) return (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Info className="w-3 h-3" /> Connect WhatsApp{brain.require_linkedin ? " and add LinkedIn" : ""} to start email verification.
+                    </p>
+                  );
+                  return (
                     <div className="flex gap-2">
                       <Input placeholder="6-digit code" value={identity.email_code}
                         onChange={(e) => setIdentity({ ...identity, email_code: e.target.value })}
@@ -750,10 +757,8 @@ const TenantOnboarding = () => {
                         Verify
                       </Button>
                     </div>
-                  ) : (
-                    <p className="text-xs text-green-700">Email verified ✓</p>
-                  )
-                )}
+                  );
+                })()}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
