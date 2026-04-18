@@ -500,8 +500,11 @@ const AdminDashboard = () => {
         <Card className="shadow-card border-border">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-yellow-500" /> Risk Signals
+              <AlertTriangle className="w-4 h-4 text-yellow-500" /> Application Red Flags
             </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Common quality issues across inbound agency applications.
+            </p>
           </CardHeader>
           <CardContent>
             <div className="h-[180px]">
