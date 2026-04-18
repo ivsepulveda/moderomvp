@@ -503,12 +503,28 @@ const TenantOnboarding = () => {
                 <div>
                   <p className="text-2xl font-semibold tracking-tight text-foreground">Profile completeness</p>
                 </div>
-                <span className="text-2xl font-semibold text-primary">{completeness}%</span>
+                <span
+                  className="text-2xl font-semibold"
+                  style={{
+                    color:
+                      completeness < 25 ? "hsl(0 84% 55%)" :
+                      completeness < 50 ? "hsl(28 95% 53%)" :
+                      completeness < 75 ? "hsl(45 95% 50%)" :
+                      completeness < 100 ? "hsl(90 65% 45%)" :
+                      "hsl(142 71% 40%)",
+                  }}
+                >
+                  {completeness}%
+                </span>
               </div>
               <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-full bg-primary transition-all"
-                  style={{ width: `${completeness}%` }}
+                  className="h-full rounded-full transition-all"
+                  style={{
+                    width: `${completeness}%`,
+                    background:
+                      "linear-gradient(90deg, hsl(0 84% 55%) 0%, hsl(28 95% 53%) 25%, hsl(45 95% 50%) 50%, hsl(90 65% 45%) 75%, hsl(142 71% 40%) 100%)",
+                  }}
                 />
               </div>
               <p className="text-base leading-relaxed text-muted-foreground">
