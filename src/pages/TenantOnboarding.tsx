@@ -630,12 +630,52 @@ const TenantOnboarding = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full name</Label>
-                <Input id="name" value={identity.name}
-                  onChange={(e) => setIdentity({ ...identity, name: e.target.value })}
-                  placeholder="John Doe" className="h-12 rounded-xl" />
+              {/* Basic Info */}
+              <div className="rounded-xl border border-border p-4 space-y-4">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4 text-primary" />
+                  <p className="text-sm font-medium">Basic info</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full name (name & surname)</Label>
+                  <Input id="name" value={identity.name}
+                    onChange={(e) => setIdentity({ ...identity, name: e.target.value })}
+                    placeholder="John Doe" className="h-12 rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">Current address</Label>
+                  <Input id="address" value={identity.address}
+                    onChange={(e) => setIdentity({ ...identity, address: e.target.value })}
+                    placeholder="Street, number, city, postal code" className="h-12 rounded-xl" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Nationality</Label>
+                    <Select value={identity.nationality} onValueChange={(v) => setIdentity({ ...identity, nationality: v })}>
+                      <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        {NATIONALITIES.map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Age range</Label>
+                    <Select value={identity.age_range} onValueChange={(v) => setIdentity({ ...identity, age_range: v })}>
+                      <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        {AGE_RANGES.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Country of birth</Label>
+                  <Input value={identity.country_of_birth}
+                    onChange={(e) => setIdentity({ ...identity, country_of_birth: e.target.value })}
+                    placeholder="Spain" className="h-12 rounded-xl" />
+                </div>
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
                 <Input id="phone" value={identity.phone}
