@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { toast } from "sonner";
+import { submittedApplicationDemo } from "@/data/submittedApplication";
 
 interface TenantData {
   id: number;
@@ -193,6 +194,8 @@ const tenants: TenantData[] = [
       { category: "Verifications", score: 8, max: 15, color: "bg-amber-500" },
     ],
   },
+  // Newly submitted via /onboarding flow (seeded demo)
+  submittedApplicationDemo as unknown as TenantData,
 ];
 
 const statusStyles: Record<string, string> = {
@@ -280,7 +283,14 @@ const Tenants = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{tenant.name}</h3>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{tenant.name}</h3>
+                      {(tenant as any).submittedViaOnboarding && (
+                        <Badge variant="outline" className="text-[9px] h-4 bg-primary/10 text-primary border-primary/30 px-1.5">
+                          Onboarding submitted
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground">{tenant.property}</p>
                     <div className="flex items-center gap-2 mt-1.5">
                       {tenant.idVerified && (
