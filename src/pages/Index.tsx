@@ -112,8 +112,8 @@ const Index = () => {
             The Idealista Paradox
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold text-foreground leading-tight mb-6 tracking-tight">
-            150 WhatsApps. 50 emails.{" "}
-            <span className="text-primary">One listing.</span>
+            The Intelligence Layer for{" "}
+            <span className="text-primary">Serious Rental Agencies</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-6">
             In Spain, Portugal and Italy, an Idealista listing is both a blessing and a curse.
