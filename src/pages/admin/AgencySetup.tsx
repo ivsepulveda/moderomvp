@@ -451,33 +451,194 @@ const AgencySetup = () => {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold text-foreground">3. Connect settings</h3>
-                  <p className="text-sm text-muted-foreground">Set the communication defaults the agency portal should use.</p>
+                  <p className="text-sm text-muted-foreground">Connect the agency's email, calendar, messaging and automation tools.</p>
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2 md:col-span-2">
-                    <Label>Notification email</Label>
-                    <Input value={connectionSettings.notification_email} onChange={(e) => setConnectionSettings((prev) => ({ ...prev, notification_email: e.target.value }))} className="rounded-xl" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Calendar provider</Label>
-                    <Select value={connectionSettings.calendar_provider} onValueChange={(value) => setConnectionSettings((prev) => ({ ...prev, calendar_provider: value }))}>
-                      <SelectTrigger className="rounded-xl">
-                        <SelectValue placeholder="Select provider" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        <SelectItem value="google">Google Calendar</SelectItem>
-                        <SelectItem value="outlook">Outlook Calendar</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Inbox connection</Label>
-                    <div className="h-10 rounded-xl border border-input px-3 flex items-center justify-between">
-                      <span className="text-sm text-foreground">Mark inbox as connected</span>
-                      <Switch checked={connectionSettings.inbox_connected} onCheckedChange={(checked) => setConnectionSettings((prev) => ({ ...prev, inbox_connected: checked }))} />
+
+                <div className="space-y-2">
+                  <Label>Notification email</Label>
+                  <Input
+                    value={connectionSettings.notification_email}
+                    onChange={(e) => setConnectionSettings((prev) => ({ ...prev, notification_email: e.target.value }))}
+                    className="rounded-xl"
+                    placeholder="notifications@agency.com"
+                  />
+                </div>
+
+                {/* Email group */}
+                <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Mail className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-foreground">Email</p>
+                      <p className="text-sm text-muted-foreground">Connect your business email to send and receive tenant communications</p>
                     </div>
                   </div>
+
+                  <div className="rounded-xl bg-muted/40 p-4 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center">
+                        <Mail className="w-5 h-5 text-red-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Gmail</p>
+                        <p className="text-xs text-muted-foreground">Connect your business Gmail account</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant={connectionSettings.gmail_connected ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => setConnectionSettings((prev) => ({ ...prev, gmail_connected: !prev.gmail_connected, inbox_connected: !prev.gmail_connected || prev.outlook_mail_connected }))}
+                    >
+                      {connectionSettings.gmail_connected ? "Connected" : "Connect"}
+                    </Button>
+                  </div>
+
+                  <div className="rounded-xl bg-muted/40 p-4 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center">
+                        <Mail className="w-5 h-5 text-blue-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Outlook Mail</p>
+                        <p className="text-xs text-muted-foreground">Connect your Outlook email</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant={connectionSettings.outlook_mail_connected ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => setConnectionSettings((prev) => ({ ...prev, outlook_mail_connected: !prev.outlook_mail_connected, inbox_connected: !prev.outlook_mail_connected || prev.gmail_connected }))}
+                    >
+                      {connectionSettings.outlook_mail_connected ? "Connected" : "Connect"}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Calendar group */}
+                <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Calendar className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-foreground">Calendar</p>
+                      <p className="text-sm text-muted-foreground">Sync property viewings and tenant meetings with your calendar</p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-muted/40 p-4 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center">
+                        <Calendar className="w-5 h-5 text-green-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Google Calendar</p>
+                        <p className="text-xs text-muted-foreground">Sync viewings with Google Calendar</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant={connectionSettings.google_calendar_connected ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => setConnectionSettings((prev) => ({ ...prev, google_calendar_connected: !prev.google_calendar_connected, calendar_provider: !prev.google_calendar_connected ? "google" : prev.outlook_calendar_connected ? "outlook" : "none" }))}
+                    >
+                      {connectionSettings.google_calendar_connected ? "Connected" : "Connect"}
+                    </Button>
+                  </div>
+
+                  <div className="rounded-xl bg-muted/40 p-4 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center">
+                        <Calendar className="w-5 h-5 text-blue-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Outlook Calendar</p>
+                        <p className="text-xs text-muted-foreground">Sync viewings with Outlook Calendar</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant={connectionSettings.outlook_calendar_connected ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => setConnectionSettings((prev) => ({ ...prev, outlook_calendar_connected: !prev.outlook_calendar_connected, calendar_provider: !prev.outlook_calendar_connected ? "outlook" : prev.google_calendar_connected ? "google" : "none" }))}
+                    >
+                      {connectionSettings.outlook_calendar_connected ? "Connected" : "Connect"}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* WhatsApp group */}
+                <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <MessageSquare className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-foreground">WhatsApp Business</p>
+                      <p className="text-sm text-muted-foreground">Send viewing confirmations and tenant updates via WhatsApp</p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-muted/40 p-4 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center">
+                        <MessageSquare className="w-5 h-5 text-green-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">WhatsApp Business API</p>
+                        <p className="text-xs text-muted-foreground">Connect your WhatsApp Business account</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant={connectionSettings.whatsapp_connected ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => setConnectionSettings((prev) => ({ ...prev, whatsapp_connected: !prev.whatsapp_connected }))}
+                    >
+                      {connectionSettings.whatsapp_connected ? "Connected" : "Connect"}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Zapier */}
+                <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Zap className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-foreground">Zapier Integrations</p>
+                      <p className="text-sm text-muted-foreground">Automate workflows by connecting Modero to 5,000+ apps via Zapier</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Zapier Webhook URL</Label>
+                    <Input
+                      value={connectionSettings.zapier_webhook_url}
+                      onChange={(e) => setConnectionSettings((prev) => ({ ...prev, zapier_webhook_url: e.target.value }))}
+                      className="rounded-xl bg-muted/40"
+                      placeholder="https://hooks.zapier.com/hooks/catch/..."
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Create a Zap with a Webhook trigger, then paste the URL here.{" "}
+                      <a href="https://zapier.com/app/zaps" target="_blank" rel="noreferrer" className="text-primary font-medium hover:underline">
+                        Open Zapier ↗
+                      </a>
+                    </p>
+                  </div>
+
+                  <Button
+                    variant="hero"
+                    className="rounded-xl"
+                    onClick={() => toast.success("Webhook saved")}
+                    disabled={!connectionSettings.zapier_webhook_url.trim()}
+                  >
+                    Save Webhook
+                  </Button>
                 </div>
               </div>
             )}
