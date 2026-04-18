@@ -432,10 +432,7 @@ const TenantAuth = () => {
               {t.header.alreadyQualified}
             </span>
             <button
-              onClick={() => {
-                setIsSignUp(false);
-                scrollToForm();
-              }}
+              onClick={scrollToForm}
               className="text-sm font-medium text-primary hover:underline"
             >
               {t.header.signIn}
