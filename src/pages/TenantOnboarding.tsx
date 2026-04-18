@@ -228,6 +228,58 @@ const TenantOnboarding = () => {
     return Math.round((filled / checks.length) * 100);
   }, [consent, identity, employment, files, verif, brain]);
 
+  // ---------- Per-step completeness ----------
+  const pct = (arr: boolean[]) => Math.round((arr.filter(Boolean).length / arr.length) * 100);
+  const stepCompleteness = useMemo(() => ({
+    1: pct([
+      !brain.require_gdpr || consent.gdpr,
+      !brain.require_tenant_photo || !!consent.photo,
+    ]),
+    2: pct([
+      !!identity.name,
+      !!identity.phone,
+      !!identity.nationality,
+      !!identity.country_of_birth,
+      !!identity.age_range,
+      identity.whatsapp_connected || (identity.whatsapp_same && !!identity.phone),
+      !!identity.email_type,
+      !brain.email_verification || identity.email_verified,
+      !brain.sms_verification || identity.sms_verified,
+      !brain.require_linkedin || !!identity.linkedin_url,
+      !brain.require_nie || !!identity.nie,
+      !brain.require_dni || !!identity.dni,
+    ]),
+    3: pct([
+      !!employment.employment_status,
+      !!employment.job_title,
+      !!employment.company,
+      !!employment.contract_type,
+      !!employment.income_monthly,
+      !!employment.salary_payment_date,
+    ]),
+    4: pct([
+      !brain.residency_history_check || !!verif.residency_addresses,
+    ]),
+    5: pct([
+      !brain.require_biometric_id || !!files.passport,
+      !brain.require_payslips || !!files.payslip1,
+      !!files.payslip2,
+      !!files.payslip3,
+      !brain.require_work_contract || !!files.contract,
+      !brain.require_tax_return || !!files.tax_return,
+    ]),
+  }), [consent, identity, employment, files, verif, brain]);
+
+  const StepProgress = ({ value }: { value: number }) => (
+    <div className="mt-3 space-y-1.5">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-muted-foreground">Step completeness</span>
+        <span className="text-xs font-semibold text-primary">{value}%</span>
+      </div>
+      <Progress value={value} className="h-1.5" />
+    </div>
+  );
+
   const goNext = () => {
     const idx = steps.findIndex((x) => x.id === step);
     const next = steps[idx + 1];
