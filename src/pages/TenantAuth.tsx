@@ -366,7 +366,8 @@ const TenantAuth = () => {
   const displayRef = idealistaRef || "—";
 
   const scrollToForm = () => {
-    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const qs = searchParams.toString();
+    navigate(`/onboarding${qs ? `?${qs}` : ""}`);
   };
 
   const scrollToInquiry = () => {
