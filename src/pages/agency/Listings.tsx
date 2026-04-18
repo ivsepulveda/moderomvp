@@ -49,7 +49,7 @@ const initialListings: ListingDetail[] = [
     idealistaId: "IDL-38291045", status: "active", publishedDate: "2026-03-01",
     responsibleAgent: "María García", agentEmail: "maria@premierrentals.es",
     landlordName: "Eduardo Fernández", landlordPhone: "+34 611 222 333", landlordEmail: "eduardo@propietarios.es",
-    inquiries: 12, preScreened: 9, qualified: 7, viewingsScheduled: 4, leaseSigned: 0,
+    inquiries: 13, preScreened: 10, qualified: 8, viewingsScheduled: 4, leaseSigned: 0,
     avgDaysToLease: 0, vacancyCostSaved: "€2,640", roi: "320%",
   },
   {

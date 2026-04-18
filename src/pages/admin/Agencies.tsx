@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { submittedApplicationQualityKPIs } from "@/data/submittedApplication";
 
 interface ApprovedAgency {
   id: string;
@@ -206,7 +207,7 @@ const Agencies = () => {
                       </div>
                     </div>
                     {setup && (
-                      <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                      <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
                         <div className="rounded-xl bg-muted/30 px-3 py-2 text-sm">
                           <p className="text-xs text-muted-foreground">Portal listings</p>
                           <p className="font-semibold text-foreground">{listingsCount}</p>
@@ -215,9 +216,17 @@ const Agencies = () => {
                           <p className="text-xs text-muted-foreground">Team members</p>
                           <p className="font-semibold text-foreground">{teamCount}</p>
                         </div>
-                        <div className="rounded-xl bg-muted/30 px-3 py-2 text-sm sm:col-span-2">
-                          <p className="text-xs text-muted-foreground">Onboarding status</p>
-                          <p className="font-semibold text-foreground">{setup.completed ? "Completed" : `Step ${setup.current_step + 1} of 5`}</p>
+                        <div className="rounded-xl bg-primary/5 border border-primary/15 px-3 py-2 text-sm">
+                          <p className="text-xs text-muted-foreground">Avg trust score</p>
+                          <p className="font-semibold text-foreground">{submittedApplicationQualityKPIs.avgTrustScore.toFixed(1)}<span className="text-xs text-muted-foreground"> / 10</span></p>
+                        </div>
+                        <div className="rounded-xl bg-primary/5 border border-primary/15 px-3 py-2 text-sm">
+                          <p className="text-xs text-muted-foreground">Qualified for financing</p>
+                          <p className="font-semibold text-foreground">{submittedApplicationQualityKPIs.pctQualifiedForFinancing}%</p>
+                        </div>
+                        <div className="rounded-xl bg-muted/30 px-3 py-2 text-sm">
+                          <p className="text-xs text-muted-foreground">Fraud flag rate</p>
+                          <p className="font-semibold text-destructive">{submittedApplicationQualityKPIs.fraudFlagRate}%</p>
                         </div>
                       </div>
                     )}

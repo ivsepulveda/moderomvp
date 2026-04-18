@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { submittedApplicationQualityKPIs } from "@/data/submittedApplication";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
   PieChart, Pie, Cell, BarChart, Bar,
@@ -407,6 +408,46 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Tenant Quality KPIs (from onboarding submissions) */}
+      <Card className="shadow-card border-border bg-gradient-to-br from-primary/5 via-transparent to-transparent">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-primary" /> Tenant Quality (onboarding submissions)
+            </CardTitle>
+            <span className="text-xs text-muted-foreground">
+              {submittedApplicationQualityKPIs.totalSubmitted + metrics.tenantTotal} submitted across network
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="rounded-xl bg-background border border-border p-4">
+            <p className="text-xs text-muted-foreground">Avg Trust Score</p>
+            <p className="text-2xl font-bold text-foreground mt-1">
+              {submittedApplicationQualityKPIs.avgTrustScore.toFixed(1)}
+              <span className="text-sm font-normal text-muted-foreground"> / 10</span>
+            </p>
+            <Progress value={submittedApplicationQualityKPIs.avgTrustScore * 10} className="h-1.5 mt-2" />
+          </div>
+          <div className="rounded-xl bg-background border border-border p-4">
+            <p className="text-xs text-muted-foreground">% Qualified for Financing</p>
+            <p className="text-2xl font-bold text-foreground mt-1">
+              {submittedApplicationQualityKPIs.pctQualifiedForFinancing}
+              <span className="text-sm font-normal text-muted-foreground">%</span>
+            </p>
+            <Progress value={submittedApplicationQualityKPIs.pctQualifiedForFinancing} className="h-1.5 mt-2" />
+          </div>
+          <div className="rounded-xl bg-background border border-border p-4">
+            <p className="text-xs text-muted-foreground">Fraud Flag Rate</p>
+            <p className="text-2xl font-bold text-destructive mt-1">
+              {submittedApplicationQualityKPIs.fraudFlagRate}
+              <span className="text-sm font-normal text-muted-foreground">%</span>
+            </p>
+            <Progress value={submittedApplicationQualityKPIs.fraudFlagRate} className="h-1.5 mt-2" />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Recent Applications */}
       <Card className="shadow-card border-border">

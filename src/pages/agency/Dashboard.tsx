@@ -12,11 +12,12 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { submittedApplicationDemo } from "@/data/submittedApplication";
 
 const stats = [
   { label: "Active Listings", value: "34", icon: Building2, change: "+2 this week", trend: "up" },
-  { label: "Tenant Inquiries", value: "67", icon: Users, change: "+12 this week", trend: "up" },
-  { label: "Pre-Qualified", value: "41", icon: Shield, change: "61% rate", trend: "up" },
+  { label: "Tenant Inquiries", value: "68", icon: Users, change: "+1 onboarding submission", trend: "up" },
+  { label: "Pre-Qualified", value: "42", icon: Shield, change: "62% rate", trend: "up" },
   { label: "Avg. Trust Score", value: "7.8", icon: TrendingUp, change: "+0.3 vs last month", trend: "up" },
 ];
 
@@ -88,6 +89,8 @@ const listings: Listing[] = [
     address: "Calle Gran Vía 42, 3B, Madrid",
     rent: "€2,200/mo",
     inquiries: [
+      // Newest: tenant who just completed /onboarding submission
+      submittedApplicationDemo as any,
       {
         id: 1, name: "Carlos Mendez", email: "carlos@accenture.com", phone: "+34 612 345 678",
         score: 8.5, status: "qualified", time: "10 min ago", appliedDate: "2026-04-15",
@@ -480,7 +483,14 @@ const AgencyDashboard = () => {
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                          <p className="font-medium text-foreground text-sm truncate">{inquiry.name}</p>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className="font-medium text-foreground text-sm truncate">{inquiry.name}</p>
+                            {(inquiry as any).submittedViaOnboarding && (
+                              <Badge variant="outline" className="text-[9px] h-4 bg-primary/10 text-primary border-primary/30 px-1.5">
+                                Onboarding submitted
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-xs text-muted-foreground truncate">{inquiry.employer} · {inquiry.jobTitle}</p>
                         </div>
                       </div>
