@@ -79,6 +79,56 @@ const Applications = () => {
     fetchApps();
   }, []);
 
+  // Fetch related data when an application is selected
+  useEffect(() => {
+    if (!selectedApp) return;
+    let cancelled = false;
+    const loadDetails = async () => {
+      setDetails((d) => ({ ...d, loading: true }));
+      // Find the agency profile (id) by matching the application email
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .ilike("email", selectedApp.email)
+        .maybeSingle();
+
+      const agencyId = profile?.id;
+
+      const [agentsRes, listingsRes, scoresRes, setupRes] = await Promise.all([
+        agencyId
+          ? supabase.from("agency_agents").select("id, name, email, phone, is_active").eq("agency_id", agencyId)
+          : Promise.resolve({ data: [] as Agent[] }),
+        agencyId
+          ? supabase.from("properties").select("id, title, address, rent, bedrooms, is_active").eq("agency_id", agencyId).order("created_at", { ascending: false }).limit(20)
+          : Promise.resolve({ data: [] as Listing[] }),
+        agencyId
+          ? supabase
+              .from("score_logs")
+              .select("id, score, result, created_at, fraud_flag, application_id, tenant_applications!inner(agency_id)")
+              .eq("tenant_applications.agency_id", agencyId)
+              .order("created_at", { ascending: false })
+              .limit(10)
+          : Promise.resolve({ data: [] as ScoreLog[] }),
+        supabase
+          .from("agency_setup")
+          .select("completed, current_step, team_members, listings, basic_info")
+          .eq("application_id", selectedApp.id)
+          .maybeSingle(),
+      ]);
+
+      if (cancelled) return;
+      setDetails({
+        agents: (agentsRes.data as Agent[]) || [],
+        listings: (listingsRes.data as Listing[]) || [],
+        scores: (scoresRes.data as ScoreLog[]) || [],
+        setup: (setupRes.data as AgencySetup) || null,
+        loading: false,
+      });
+    };
+    loadDetails();
+    return () => { cancelled = true; };
+  }, [selectedApp]);
+
   const updateStatus = async (id: string, status: Application["status"], reason?: string) => {
     setUpdating(true);
     const { error } = await supabase
