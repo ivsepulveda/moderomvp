@@ -713,52 +713,103 @@ const TenantOnboarding = () => {
                 </div>
               )}
 
-              {/* Email type + Email verification */}
-              <div className="rounded-xl border border-border p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-primary" />
-                  <p className="text-sm font-medium">Email</p>
-                  {identity.email_verified && <CheckCircle className="w-4 h-4 text-green-600" />}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">What kind of email is this?</Label>
-                  <Select
-                    value={identity.email_type}
-                    onValueChange={(v) => setIdentity({ ...identity, email_type: v as typeof identity.email_type })}
-                  >
-                    <SelectTrigger className="h-10 rounded-lg">
-                      <SelectValue placeholder="Select email type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="business">Business email</SelectItem>
-                      <SelectItem value="student">Student email</SelectItem>
-                      <SelectItem value="private">Private email</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    A business or student email increases your trust score.
-                  </p>
-                </div>
-                {brain.email_verification && (() => {
-                  const gateReady = identity.whatsapp_connected && (!brain.require_linkedin || identity.linkedin_connected);
-                  if (identity.email_verified) return <p className="text-xs text-green-700">Email verified ✓</p>;
-                  if (!gateReady) return (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Info className="w-3 h-3" /> Connect WhatsApp{brain.require_linkedin ? " and add LinkedIn" : ""} to start email verification.
-                    </p>
-                  );
-                  return (
-                    <div className="flex gap-2">
-                      <Input placeholder="6-digit code" value={identity.email_code}
-                        onChange={(e) => setIdentity({ ...identity, email_code: e.target.value })}
-                        className="h-10 rounded-lg" />
-                      <Button variant="outline" size="sm" type="button"
-                        onClick={() => setIdentity({ ...identity, email_verified: true })}>
-                        Verify
-                      </Button>
+              {/* LinkedIn → Email (connected verification group) */}
+              <div className="rounded-xl border border-border overflow-hidden">
+                {brain.require_linkedin && (
+                  <>
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Link2 className="w-4 h-4" style={{ color: "#0A66C2" }} />
+                        <p className="text-sm font-medium">LinkedIn</p>
+                        {identity.linkedin_connected && <CheckCircle className="w-4 h-4 text-green-600" />}
+                      </div>
+                      <Label className="text-xs text-muted-foreground">LinkedIn profile URL</Label>
+                      <div className="flex gap-2">
+                        <Input value={identity.linkedin_url}
+                          onChange={(e) => setIdentity({ ...identity, linkedin_url: e.target.value, linkedin_connected: false })}
+                          placeholder="https://linkedin.com/in/your-profile" className="h-10 rounded-lg flex-1" />
+                        {!identity.linkedin_connected ? (
+                          <Button
+                            type="button" size="sm"
+                            disabled={!identity.linkedin_url.includes("linkedin.com/")}
+                            onClick={() => {
+                              setIdentity({ ...identity, linkedin_connected: true });
+                              setEmployment((p) => ({
+                                ...p,
+                                employment_status: p.employment_status || "employed",
+                                job_title: p.job_title || "Auto-filled from LinkedIn",
+                                company: p.company || "Auto-filled from LinkedIn",
+                              }));
+                            }}
+                            className="text-white hover:opacity-90 shadow-sm"
+                            style={{ backgroundColor: "#0A66C2" }}
+                          >
+                            <Link2 className="w-4 h-4 mr-1" /> Add
+                          </Button>
+                        ) : (
+                          <span className="text-xs font-medium flex items-center gap-1 px-2" style={{ color: "#0A66C2" }}>
+                            <CheckCircle className="w-3.5 h-3.5" /> Added
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Info className="w-3 h-3" /> Adding LinkedIn auto-fills your employer & job title
+                      </p>
                     </div>
-                  );
-                })()}
+                    {/* Connector */}
+                    <div className="relative h-6 border-t border-dashed border-border bg-muted/30">
+                      <div className={`absolute left-1/2 -translate-x-1/2 -top-3 w-6 h-6 rounded-full border flex items-center justify-center text-xs ${identity.linkedin_connected ? "bg-green-600 text-white border-green-600" : "bg-background text-muted-foreground border-border"}`}>
+                        ↓
+                      </div>
+                    </div>
+                  </>
+                )}
+                <div className="p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-primary" />
+                    <p className="text-sm font-medium">Email</p>
+                    {identity.email_verified && <CheckCircle className="w-4 h-4 text-green-600" />}
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">What kind of email is this?</Label>
+                    <Select
+                      value={identity.email_type}
+                      onValueChange={(v) => setIdentity({ ...identity, email_type: v as typeof identity.email_type })}
+                    >
+                      <SelectTrigger className="h-10 rounded-lg">
+                        <SelectValue placeholder="Select email type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="business">Business email</SelectItem>
+                        <SelectItem value="student">Student email</SelectItem>
+                        <SelectItem value="private">Private email</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      A business or student email increases your trust score.
+                    </p>
+                  </div>
+                  {brain.email_verification && (() => {
+                    const gateReady = identity.whatsapp_connected && (!brain.require_linkedin || identity.linkedin_connected);
+                    if (identity.email_verified) return <p className="text-xs text-green-700">Email verified ✓</p>;
+                    if (!gateReady) return (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Info className="w-3 h-3" /> Connect WhatsApp{brain.require_linkedin ? " and add LinkedIn" : ""} to start email verification.
+                      </p>
+                    );
+                    return (
+                      <div className="flex gap-2">
+                        <Input placeholder="6-digit code" value={identity.email_code}
+                          onChange={(e) => setIdentity({ ...identity, email_code: e.target.value })}
+                          className="h-10 rounded-lg" />
+                        <Button variant="outline" size="sm" type="button"
+                          onClick={() => setIdentity({ ...identity, email_verified: true })}>
+                          Verify
+                        </Button>
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -802,48 +853,6 @@ const TenantOnboarding = () => {
                   <Input value={identity.dni}
                     onChange={(e) => setIdentity({ ...identity, dni: e.target.value })}
                     placeholder="12345678A" className="h-12 rounded-xl" />
-                </div>
-              )}
-              {brain.require_linkedin && (
-                <div className="rounded-xl border border-border p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Link2 className="w-4 h-4" style={{ color: "#0A66C2" }} />
-                    <p className="text-sm font-medium">LinkedIn</p>
-                    {identity.linkedin_connected && <CheckCircle className="w-4 h-4 text-green-600" />}
-                  </div>
-                  <Label className="text-xs text-muted-foreground">LinkedIn profile URL</Label>
-                  <div className="flex gap-2">
-                    <Input value={identity.linkedin_url}
-                      onChange={(e) => setIdentity({ ...identity, linkedin_url: e.target.value, linkedin_connected: false })}
-                      placeholder="https://linkedin.com/in/your-profile" className="h-10 rounded-lg flex-1" />
-                    {!identity.linkedin_connected ? (
-                      <Button
-                        type="button" size="sm"
-                        disabled={!identity.linkedin_url.includes("linkedin.com/")}
-                        onClick={() => {
-                          setIdentity({ ...identity, linkedin_connected: true });
-                          // Auto-fill employment status from LinkedIn
-                          setEmployment((p) => ({
-                            ...p,
-                            employment_status: p.employment_status || "employed",
-                            job_title: p.job_title || "Auto-filled from LinkedIn",
-                            company: p.company || "Auto-filled from LinkedIn",
-                          }));
-                        }}
-                        className="text-white hover:opacity-90 shadow-sm"
-                        style={{ backgroundColor: "#0A66C2" }}
-                      >
-                        <Link2 className="w-4 h-4 mr-1" /> Add
-                      </Button>
-                    ) : (
-                      <span className="text-xs font-medium flex items-center gap-1 px-2" style={{ color: "#0A66C2" }}>
-                        <CheckCircle className="w-3.5 h-3.5" /> Added
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Info className="w-3 h-3" /> Adding LinkedIn auto-fills your employer & job title
-                  </p>
                 </div>
               )}
               {brain.require_biometric_id && (
