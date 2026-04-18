@@ -272,6 +272,30 @@ const AgencySetup = () => {
           permissions: { role: m.role, assigned_listing_ids: m.assigned_listing_ids } as any,
         }));
         await supabase.from("agency_agents").insert(rows as any);
+
+        // Send portal login invites (only when finalising the setup).
+        if (markCompleted) {
+          try {
+            const { data: inviteRes, error: inviteErr } = await supabase.functions.invoke("invite-agency-team", {
+              body: {
+                members: validMembers.map((m) => ({
+                  name: m.name.trim(),
+                  email: m.email.trim(),
+                  agency_id: agencyId,
+                  agency_name: basicInfo.agency_name || application?.agency_name || "Your agency",
+                  role: m.role,
+                })),
+              },
+            });
+            if (inviteErr) {
+              console.error("Failed to send team invites", inviteErr);
+            } else if (inviteRes?.invited > 0) {
+              toast.success(`${inviteRes.invited} team invite${inviteRes.invited === 1 ? "" : "s"} sent`);
+            }
+          } catch (inviteCatch) {
+            console.error("Invite call failed", inviteCatch);
+          }
+        }
       }
     } catch (syncErr) {
       console.error("Failed to sync team members to agency_agents", syncErr);

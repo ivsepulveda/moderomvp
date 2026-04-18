@@ -142,14 +142,12 @@ const Applications = () => {
       console.error(error);
     } else {
       setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status, ...(reason ? { rejection_reason: reason } : {}) } : a)));
-      toast.success(`Application ${status}`);
       if (status === "approved") {
-        setSelectedApp(null);
-        setShowRejectDialog(false);
-        setRejectReason("");
-        setUpdating(false);
-        navigate(`/admin/agencies/${id}/setup`);
-        return;
+        toast.success("Application approved — ready for setup", {
+          description: "Click Start Setup on the approved card when you're ready to onboard.",
+        });
+      } else {
+        toast.success(`Application ${status}`);
       }
     }
     setSelectedApp(null);
@@ -212,6 +210,18 @@ const Applications = () => {
                               <AlertTriangle className="w-3 h-3 text-destructive flex-shrink-0" />
                               <span className="text-xs text-destructive truncate">{app.flags.join(", ")}</span>
                             </div>
+                          )}
+                          {app.status === "approved" && (
+                            <Button
+                              size="sm"
+                              className="mt-3 w-full rounded-xl gradient-primary text-primary-foreground hover:opacity-90"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/admin/agencies/${app.id}/setup`);
+                              }}
+                            >
+                              <SettingsIcon className="w-3.5 h-3.5 mr-1.5" /> Start Setup
+                            </Button>
                           )}
                         </div>
                       </div>

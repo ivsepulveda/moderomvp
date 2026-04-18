@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Building2, Clock, ExternalLink, Globe, Loader2, Mail, Settings2, Users } from "lucide-react";
+import { ArrowRight, Building2, Clock, ExternalLink, Globe, Loader2, Mail, Settings2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -124,7 +124,7 @@ const Agencies = () => {
                 <Card
                   key={agency.id}
                   className="shadow-card hover:shadow-card-hover transition-all border-border cursor-pointer"
-                  onClick={() => setSelectedAgency(agency)}
+                  onClick={() => navigate(`/admin/agencies/${agency.id}/setup`)}
                 >
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between flex-wrap gap-4">
@@ -161,6 +161,17 @@ const Agencies = () => {
                           {setup?.completed ? "Setup complete" : setup ? "Setup in progress" : "Setup needed"}
                         </Badge>
                         <span className="text-xs text-muted-foreground">Joined {formatDate(agency.created_at)}</span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedAgency(agency);
+                          }}
+                        >
+                          View profile
+                        </Button>
                       </div>
                     </div>
                     {setup && (
@@ -289,6 +300,17 @@ const Agencies = () => {
                       <p className="text-lg font-semibold text-foreground mt-1">{selectedTeamCount}</p>
                     </div>
                   </div>
+                  <Button
+                    className="w-full rounded-xl gradient-primary text-primary-foreground hover:opacity-90"
+                    onClick={() => {
+                      const agencyId = selectedAgency.id;
+                      setSelectedAgency(null);
+                      navigate(`/admin/agencies/${agencyId}/setup`);
+                    }}
+                  >
+                    {selectedSetup?.completed ? "Review Agency Setup" : selectedSetup ? "Resume Agency Setup" : "Start Agency Setup"}
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
                 </div>
               </section>
             </div>
