@@ -674,14 +674,18 @@ const TenantOnboarding = () => {
                 )}
                 {!identity.whatsapp_connected ? (
                   <Button
-                    type="button" variant="outline" size="sm"
+                    type="button" size="sm"
                     onClick={() => setIdentity({ ...identity, whatsapp_connected: true })}
                     disabled={identity.whatsapp_same ? !identity.phone : !identity.whatsapp_phone}
+                    className="text-white hover:opacity-90 shadow-sm"
+                    style={{ backgroundColor: "#25D366" }}
                   >
                     <MessageCircle className="w-4 h-4 mr-1" /> Connect WhatsApp
                   </Button>
                 ) : (
-                  <p className="text-xs text-green-700">WhatsApp connected ✓</p>
+                  <p className="text-xs font-medium flex items-center gap-1" style={{ color: "#25D366" }}>
+                    <CheckCircle className="w-3.5 h-3.5" /> WhatsApp connected
+                  </p>
                 )}
               </div>
 
