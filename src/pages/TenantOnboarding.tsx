@@ -455,43 +455,85 @@ const TenantOnboarding = () => {
 
   return (
     <div className="min-h-screen gradient-hero">
-      {/* Header */}
-      <div className="border-b border-border/40 bg-card/50 backdrop-blur-sm">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-end">
-          <span className="text-sm text-muted-foreground">
-            Step {currentStepMeta.displayIndex} of {totalSteps}
-          </span>
-        </div>
-      </div>
-
       {/* Top progress */}
       <div className="max-w-2xl mx-auto px-4 pt-6 space-y-5">
-        <div
-          className="grid gap-3"
-          style={{ gridTemplateColumns: `repeat(${totalSteps}, minmax(0, 1fr))` }}
-        >
-          {steps.map((s) => {
-            const isActive = s.id === step;
-            const isComplete = s.displayIndex < currentStepMeta.displayIndex;
-            return (
-              <div key={s.id} className="flex flex-col gap-2">
-                <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                  <div
-                    className={`h-full rounded-full bg-primary transition-all ${
-                      isComplete ? "w-full" : isActive ? "w-1/2" : "w-0"
-                    }`}
-                  />
-                </div>
-                <span
-                  className={`text-sm font-medium ${
-                    isActive ? "text-primary" : "text-muted-foreground"
+        <div className="rounded-[28px] border border-border bg-card/80 backdrop-blur-sm shadow-card p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
+                Step {currentStepMeta.displayIndex} of {totalSteps}
+              </p>
+              <p className="text-lg font-semibold text-foreground">{currentStepMeta.label}</p>
+            </div>
+            <span
+              className="text-2xl font-bold"
+              style={{ color: "hsl(var(--primary))" }}
+            >
+              {Math.round(progressPercent)}%
+            </span>
+          </div>
+
+          {/* Gradient track */}
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${progressPercent}%`,
+                background:
+                  "linear-gradient(90deg, hsl(24 95% 53%) 0%, hsl(38 95% 55%) 50%, hsl(45 95% 55%) 100%)",
+              }}
+            />
+          </div>
+
+          {/* Step pills */}
+          <div
+            className="grid gap-2"
+            style={{ gridTemplateColumns: `repeat(${totalSteps}, minmax(0, 1fr))` }}
+          >
+            {steps.map((s) => {
+              const isActive = s.id === step;
+              const isComplete = s.displayIndex < currentStepMeta.displayIndex;
+              const Icon = s.icon;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => isComplete && setStep(s.id)}
+                  disabled={!isComplete && !isActive}
+                  className={`group flex flex-col items-center gap-1.5 rounded-xl py-2 px-1 transition-all ${
+                    isComplete ? "cursor-pointer hover:bg-muted/60" : ""
                   }`}
                 >
-                  {s.label}
-                </span>
-              </div>
-            );
-          })}
+                  <div
+                    className={`relative flex h-9 w-9 items-center justify-center rounded-full border-2 transition-all ${
+                      isActive
+                        ? "border-primary bg-primary text-primary-foreground shadow-orange scale-110"
+                        : isComplete
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-card text-muted-foreground"
+                    }`}
+                  >
+                    {isComplete ? (
+                      <CheckCircle className="h-4 w-4" />
+                    ) : (
+                      <Icon className="h-4 w-4" />
+                    )}
+                  </div>
+                  <span
+                    className={`text-[11px] font-medium leading-tight text-center truncate w-full ${
+                      isActive
+                        ? "text-foreground"
+                        : isComplete
+                        ? "text-foreground/70"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {s.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="rounded-[28px] border border-primary/20 bg-card/80 p-6 shadow-card backdrop-blur-sm">
