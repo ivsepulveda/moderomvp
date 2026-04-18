@@ -241,13 +241,43 @@ const AgencySetup = () => {
     };
 
     const { error } = await supabase.from("agency_setup").upsert([payload] as any, { onConflict: "application_id" });
-    setSaving(false);
 
     if (error) {
+      setSaving(false);
       toast.error(error.message || "Failed to save setup");
       return false;
     }
 
+    // Sync team members to agency_agents so they appear on the Approved Agency profile.
+    // Match the agency by profile email (the agency's auth user). If no profile exists yet,
+    // fall back to the application id so the records persist and can be re-linked later.
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .ilike("email", basicInfo.email || application?.email || "")
+        .maybeSingle();
+      const agencyId = profile?.id || id;
+
+      const validMembers = teamMembers.filter((m) => m.name.trim() && m.email.trim());
+      if (validMembers.length > 0) {
+        // Remove existing agents for this agency, then insert fresh from setup.
+        await supabase.from("agency_agents").delete().eq("agency_id", agencyId);
+        const rows = validMembers.map((m) => ({
+          agency_id: agencyId,
+          name: m.name.trim(),
+          email: m.email.trim(),
+          phone: m.phone?.trim() || null,
+          is_active: true,
+          permissions: { role: m.role, assigned_listing_ids: m.assigned_listing_ids } as any,
+        }));
+        await supabase.from("agency_agents").insert(rows as any);
+      }
+    } catch (syncErr) {
+      console.error("Failed to sync team members to agency_agents", syncErr);
+    }
+
+    setSaving(false);
     setCompleted(markCompleted);
     return true;
   };
