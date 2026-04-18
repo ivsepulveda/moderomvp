@@ -54,10 +54,10 @@ const TenantAuth = () => {
         });
         if (error) throw error;
         toast({
-          title: "Check your email",
-          description:
-            "We've sent you a verification link. Please confirm your email to continue your qualification.",
+          title: "Welcome to Modero",
+          description: "Let's complete your tenant qualification.",
         });
+        navigate("/onboarding");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
