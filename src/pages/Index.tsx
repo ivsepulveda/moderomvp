@@ -4,6 +4,8 @@ import { Shield, Zap, TrendingUp, Users, CheckCircle, Building, LogIn, ChevronDo
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
+import dashboardOverview from "@/assets/dashboard-overview.png";
+import dashboardTenant from "@/assets/dashboard-tenant.png";
 
 const ValueCard = ({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) => (
   <div className="bg-card rounded-2xl p-6 shadow-card hover:shadow-card-hover transition-all duration-300 border border-border group">
@@ -96,6 +98,76 @@ const Index = () => {
           <StatBadge value="3x" label="Faster Leasing" />
           <StatBadge value="87%" label="Fraud Reduction" />
           <StatBadge value="€0" label="First Year" />
+        </div>
+      </section>
+
+      {/* Product Preview */}
+      <section className="px-6 md:px-12 py-20 max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-4 py-1.5 rounded-full text-sm font-medium mb-4">
+            <Building className="w-4 h-4" />
+            Inside the Agency Portal
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">See your pipeline at a glance</h2>
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            Every inquiry pre-scored. Every tenant verified. Every listing tracked — in one clean workspace.
+          </p>
+        </div>
+
+        <div className="grid lg:grid-cols-5 gap-6 max-w-6xl mx-auto">
+          {/* Main dashboard screenshot */}
+          <div className="lg:col-span-3 relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-accent/20 rounded-3xl blur-xl opacity-60 group-hover:opacity-100 transition-opacity" />
+            <div className="relative rounded-2xl overflow-hidden border border-border shadow-card-hover bg-card">
+              <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border bg-muted/40">
+                <span className="w-3 h-3 rounded-full bg-destructive/70" />
+                <span className="w-3 h-3 rounded-full bg-primary/70" />
+                <span className="w-3 h-3 rounded-full bg-emerald-500/70" />
+                <span className="ml-3 text-xs text-muted-foreground font-mono">app.modero.io/agency</span>
+              </div>
+              <img
+                src={dashboardOverview}
+                alt="Modero agency dashboard showing active listings, tenant inquiries, pre-qualification rate and trust score KPIs"
+                loading="lazy"
+                width={1366}
+                height={768}
+                className="w-full h-auto block"
+              />
+            </div>
+            <div className="mt-4 px-2">
+              <h3 className="font-bold text-foreground">Real-time tenant inquiries</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Every Idealista lead lands here, automatically scored and grouped by listing.
+              </p>
+            </div>
+          </div>
+
+          {/* Tenant detail screenshot */}
+          <div className="lg:col-span-2 relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-accent/20 rounded-3xl blur-xl opacity-60 group-hover:opacity-100 transition-opacity" />
+            <div className="relative rounded-2xl overflow-hidden border border-border shadow-card-hover bg-card">
+              <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border bg-muted/40">
+                <span className="w-3 h-3 rounded-full bg-destructive/70" />
+                <span className="w-3 h-3 rounded-full bg-primary/70" />
+                <span className="w-3 h-3 rounded-full bg-emerald-500/70" />
+                <span className="ml-3 text-xs text-muted-foreground font-mono">tenant profile</span>
+              </div>
+              <img
+                src={dashboardTenant}
+                alt="Modero tenant trust score breakdown across credit, LinkedIn, identity, residency and verifications"
+                loading="lazy"
+                width={1366}
+                height={768}
+                className="w-full h-auto block"
+              />
+            </div>
+            <div className="mt-4 px-2">
+              <h3 className="font-bold text-foreground">100-point Trust Score</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                D&B credit, LinkedIn, ID and residency — combined into one decisive number.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
