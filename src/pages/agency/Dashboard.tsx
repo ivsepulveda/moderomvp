@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { submittedApplicationDemo } from "@/data/submittedApplication";
+import LiveApplicationsPanel from "@/components/LiveApplicationsPanel";
 
 const stats = [
   { label: "Active Listings", value: "34", icon: Building2, change: "+2 this week", trend: "up" },
@@ -390,15 +391,7 @@ const AgencyDashboard = () => {
         </Card>
       )}
 
-      <Card className="shadow-card border-border bg-muted/20">
-        <CardContent className="p-4 flex items-start gap-3">
-          <Settings2 className="w-5 h-5 text-primary mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-foreground">Viewing persistence fixed for the current demo dashboard</p>
-            <p className="text-xs text-muted-foreground mt-1">Scheduled viewings now stay stored in your portal state across reloads instead of disappearing after refresh.</p>
-          </div>
-        </CardContent>
-      </Card>
+      <LiveApplicationsPanel />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

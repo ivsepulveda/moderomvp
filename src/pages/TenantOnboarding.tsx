@@ -417,10 +417,20 @@ const TenantOnboarding = () => {
       if (applicationId) {
         await supabase.from("tenant_applications").update(appData).eq("id", applicationId);
       } else {
+        // Resolve demo agency + a real property so the application appears in the
+        // agency portal in real-time.
+        const { getDemoAgencyId, getDefaultPropertyId } = await import("@/lib/demo");
+        const [agencyResolved, propertyResolved] = await Promise.all([
+          getDemoAgencyId(),
+          getDefaultPropertyId(),
+        ]);
+        if (!agencyResolved || !propertyResolved) {
+          throw new Error("Demo agency not initialised yet — please contact support.");
+        }
         const { data, error } = await supabase.from("tenant_applications").insert({
           ...appData,
-          agency_id: "00000000-0000-0000-0000-000000000000",
-          property_id: "00000000-0000-0000-0000-000000000000",
+          agency_id: agencyResolved,
+          property_id: propertyResolved,
           status: "pending",
         }).select("id").single();
         if (error) throw error;

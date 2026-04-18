@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import ModeroLogo from "@/components/ModeroLogo";
-import { Mail, Lock, ArrowRight, Shield, Building2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, Shield, Building2, Sparkles, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { runDemoSeed, DEMO_ADMIN_EMAIL, DEMO_AGENCY_EMAIL } from "@/lib/demo";
 
 const Login = () => {
   const [searchParams] = useSearchParams();
@@ -17,9 +18,37 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const isDemoEmail = (e: string) =>
+    e.toLowerCase() === DEMO_ADMIN_EMAIL || e.toLowerCase() === DEMO_AGENCY_EMAIL;
+
+  const trySignIn = async (em: string, pw: string) => {
+    return supabase.auth.signInWithPassword({ email: em, password: pw });
+  };
+
+  const fillDemo = (which: "admin" | "agency") => {
+    if (which === "admin") {
+      setActiveTab("admin");
+      setEmail(DEMO_ADMIN_EMAIL);
+      setPassword("Admin1234!");
+    } else {
+      setActiveTab("agency");
+      setEmail(DEMO_AGENCY_EMAIL);
+      setPassword("Demo1234!");
+    }
+  };
+
+  const handleSeed = async () => {
+    setSeeding(true);
+    const r = await runDemoSeed();
+    setSeeding(false);
+    if (r.ok) toast({ title: "Demo ready", description: "Demo accounts and data are now available." });
+    else toast({ title: "Seed failed", description: r.message, variant: "destructive" });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,18 +67,29 @@ const Login = () => {
           description: "We've sent you a confirmation link.",
         });
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        let { data, error } = await trySignIn(email, password);
+
+        // Auto-seed and retry if a demo account doesn't exist yet
+        if (error && isDemoEmail(email)) {
+          toast({ title: "Setting up demo", description: "First-time setup — this takes a few seconds…" });
+          setSeeding(true);
+          await runDemoSeed();
+          setSeeding(false);
+          const retry = await trySignIn(email, password);
+          data = retry.data;
+          error = retry.error;
+        }
         if (error) throw error;
-        
+
         // Fetch role to decide where to redirect
         if (data.user) {
           const { data: roles } = await supabase
             .from("user_roles")
             .select("role")
             .eq("user_id", data.user.id);
-          
+
           const userRoles = roles?.map((r: any) => r.role) || [];
-          
+
           if (activeTab === "admin" && userRoles.includes("admin")) {
             navigate("/admin");
           } else if (activeTab === "agency" && userRoles.includes("agency")) {
@@ -59,7 +99,6 @@ const Login = () => {
           } else if (userRoles.includes("agency")) {
             navigate("/agency");
           } else {
-            // No role assigned yet — default based on tab
             navigate(activeTab === "admin" ? "/admin" : "/agency");
           }
         }
@@ -208,11 +247,43 @@ const Login = () => {
             </button>
           </div>
 
-          <div className="text-center pt-4">
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
+            </button>
+          </div>
+
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-medium text-primary">
+              <Sparkles className="w-3.5 h-3.5" /> Demo accounts
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => fillDemo("admin")}>
+                Use admin demo
+              </Button>
+              <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => fillDemo("agency")}>
+                Use agency demo
+              </Button>
+            </div>
+            <Button type="button" variant="ghost" size="sm" className="w-full text-xs" disabled={seeding} onClick={handleSeed}>
+              {seeding ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : null}
+              Reset / re-seed demo data
+            </Button>
+            <p className="text-[10px] text-muted-foreground text-center">
+              First sign-in auto-creates the demo data.
+            </p>
+          </div>
+
+          <div className="text-center pt-2">
             <a href="/" className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors">
               ← Back to modero.com
             </a>
           </div>
+
         </div>
       </div>
     </div>
