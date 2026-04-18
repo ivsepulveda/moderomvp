@@ -194,6 +194,40 @@ const TenantOnboarding = () => {
   const currentStepMeta = steps.find((x) => x.id === step) ?? steps[0];
   const progressPercent = (currentStepMeta.displayIndex / totalSteps) * 100;
 
+  // ---------- Profile completeness (boosts trust score) ----------
+  const completeness = useMemo(() => {
+    const checks: boolean[] = [
+      !!consent.gdpr,
+      !!identity.name,
+      !!identity.phone,
+      !!identity.nationality,
+      !!identity.country_of_birth,
+      !!identity.age_range,
+      identity.whatsapp_connected || (identity.whatsapp_same && !!identity.phone),
+      !!identity.email_type,
+      identity.email_verified,
+      identity.sms_verified,
+      !brain.require_linkedin || !!identity.linkedin_url,
+      !brain.require_nie || !!identity.nie,
+      !brain.require_dni || !!identity.dni,
+      !!employment.employment_status,
+      !!employment.job_title,
+      !!employment.company,
+      !!employment.contract_type,
+      !!employment.income_monthly,
+      !!employment.salary_payment_date,
+      !brain.require_biometric_id || !!files.passport,
+      !brain.require_payslips || !!files.payslip1,
+      !!files.payslip2,
+      !!files.payslip3,
+      !brain.require_work_contract || !!files.contract,
+      !brain.require_tax_return || !!files.tax_return,
+      !brain.residency_history_check || !!verif.residency_addresses,
+    ];
+    const filled = checks.filter(Boolean).length;
+    return Math.round((filled / checks.length) * 100);
+  }, [consent, identity, employment, files, verif, brain]);
+
   const goNext = () => {
     const idx = steps.findIndex((x) => x.id === step);
     const next = steps[idx + 1];
