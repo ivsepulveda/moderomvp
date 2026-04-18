@@ -279,6 +279,12 @@ const AgencySettings = () => {
             <User className="w-4 h-4" /> Profile
           </TabsTrigger>
           <TabsTrigger
+            value="copilot"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none bg-transparent px-1 pb-3 pt-1 gap-2"
+          >
+            <Zap className="w-4 h-4" /> Co-pilot Agent
+          </TabsTrigger>
+          <TabsTrigger
             value="qualification"
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none bg-transparent px-1 pb-3 pt-1 gap-2"
           >
