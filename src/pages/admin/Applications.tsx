@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   CheckCircle, XCircle, Clock, Globe, Mail, Building2, BarChart3,
-  ExternalLink, AlertTriangle, GripVertical, Loader2
+  ExternalLink, AlertTriangle, GripVertical, Loader2, Users, Home, TrendingUp, Settings as SettingsIcon
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
