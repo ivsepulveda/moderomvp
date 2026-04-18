@@ -441,7 +441,59 @@ const AgencySetup = () => {
                   <h3 className="text-lg font-semibold text-foreground">1. Basic info</h3>
                   <p className="text-sm text-muted-foreground">Start from the application details and refine what will appear in the agency portal.</p>
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
+
+                {/* Agency logo */}
+                <div className="space-y-2">
+                  <Label>Agency logo</Label>
+                  <div className="flex items-center gap-4 p-4 rounded-xl border border-dashed border-border bg-secondary/30">
+                    <div className="w-20 h-20 rounded-xl bg-background border border-border flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {basicInfo.logo_url ? (
+                        <img src={basicInfo.logo_url} alt="Agency logo" className="w-full h-full object-contain" />
+                      ) : (
+                        <ImageIcon className="w-7 h-7 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">
+                        {basicInfo.logo_url ? "Logo uploaded" : "Upload agency logo"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        PNG, JPG or SVG. Square format recommended. Max 5 MB.
+                      </p>
+                      <div className="flex items-center gap-2 mt-3">
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            disabled={uploadingLogo}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleLogoUpload(file);
+                              e.target.value = "";
+                            }}
+                          />
+                          <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                            {uploadingLogo ? (
+                              <><Loader2 className="w-3 h-3 animate-spin" /> Uploading…</>
+                            ) : (
+                              <><Upload className="w-3 h-3" /> {basicInfo.logo_url ? "Replace" : "Upload"}</>
+                            )}
+                          </span>
+                        </label>
+                        {basicInfo.logo_url && (
+                          <button
+                            type="button"
+                            onClick={removeLogo}
+                            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:bg-secondary transition-colors"
+                          >
+                            <X className="w-3 h-3" /> Remove
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label>Agency name</Label>
                     <Input value={basicInfo.agency_name} onChange={(e) => setBasicInfo((prev) => ({ ...prev, agency_name: e.target.value }))} className="rounded-xl" />
