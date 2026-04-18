@@ -804,48 +804,6 @@ const TenantOnboarding = () => {
                     placeholder="12345678A" className="h-12 rounded-xl" />
                 </div>
               )}
-              {brain.require_linkedin && (
-                <div className="rounded-xl border border-border p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Link2 className="w-4 h-4" style={{ color: "#0A66C2" }} />
-                    <p className="text-sm font-medium">LinkedIn</p>
-                    {identity.linkedin_connected && <CheckCircle className="w-4 h-4 text-green-600" />}
-                  </div>
-                  <Label className="text-xs text-muted-foreground">LinkedIn profile URL</Label>
-                  <div className="flex gap-2">
-                    <Input value={identity.linkedin_url}
-                      onChange={(e) => setIdentity({ ...identity, linkedin_url: e.target.value, linkedin_connected: false })}
-                      placeholder="https://linkedin.com/in/your-profile" className="h-10 rounded-lg flex-1" />
-                    {!identity.linkedin_connected ? (
-                      <Button
-                        type="button" size="sm"
-                        disabled={!identity.linkedin_url.includes("linkedin.com/")}
-                        onClick={() => {
-                          setIdentity({ ...identity, linkedin_connected: true });
-                          // Auto-fill employment status from LinkedIn
-                          setEmployment((p) => ({
-                            ...p,
-                            employment_status: p.employment_status || "employed",
-                            job_title: p.job_title || "Auto-filled from LinkedIn",
-                            company: p.company || "Auto-filled from LinkedIn",
-                          }));
-                        }}
-                        className="text-white hover:opacity-90 shadow-sm"
-                        style={{ backgroundColor: "#0A66C2" }}
-                      >
-                        <Link2 className="w-4 h-4 mr-1" /> Add
-                      </Button>
-                    ) : (
-                      <span className="text-xs font-medium flex items-center gap-1 px-2" style={{ color: "#0A66C2" }}>
-                        <CheckCircle className="w-3.5 h-3.5" /> Added
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Info className="w-3 h-3" /> Adding LinkedIn auto-fills your employer & job title
-                  </p>
-                </div>
-              )}
               {brain.require_biometric_id && (
                 <div className="rounded-xl border border-dashed border-border p-4 flex items-start gap-3">
                   <Fingerprint className="w-5 h-5 text-primary mt-0.5" />
