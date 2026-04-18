@@ -473,6 +473,7 @@ const TenantOnboarding = () => {
                   <CardDescription>Required before we collect any of your data</CardDescription>
                 </div>
               </div>
+              <StepProgress value={stepCompleteness[1]} />
             </CardHeader>
             <CardContent className="space-y-5">
               {brain.require_gdpr && (
