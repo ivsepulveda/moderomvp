@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Brain, Building2, Calendar, Check, CheckCircle2, Loader2, Mail, MessageSquare, Plus, Settings2, Trash2, Users, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brain, Building2, Calendar, Check, CheckCircle2, ImageIcon, Loader2, Mail, MessageSquare, Plus, Settings2, Trash2, Upload, Users, X, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -120,7 +120,9 @@ const AgencySetup = () => {
     years_operating: "",
     associations: "",
     pitch: "",
+    logo_url: "",
   });
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [listings, setListings] = useState<ListingDraft[]>([emptyListing()]);
   const [connectionSettings, setConnectionSettings] = useState({
     notification_email: "",
@@ -178,6 +180,7 @@ const AgencySetup = () => {
           years_operating: savedBasicInfo.years_operating ?? app.years_operating ?? "",
           associations: savedBasicInfo.associations ?? app.associations ?? "",
           pitch: savedBasicInfo.pitch ?? app.pitch ?? "",
+          logo_url: savedBasicInfo.logo_url ?? "",
         });
         setListings(savedListings.length ? savedListings : [emptyListing()]);
         setConnectionSettings((prev) => ({
@@ -205,6 +208,7 @@ const AgencySetup = () => {
           years_operating: app.years_operating ?? "",
           associations: app.associations ?? "",
           pitch: app.pitch ?? "",
+          logo_url: "",
         });
         setConnectionSettings((prev) => ({ ...prev, notification_email: app.email ?? prev.notification_email }));
       }
@@ -216,6 +220,38 @@ const AgencySetup = () => {
   }, [id, navigate]);
 
   const progress = useMemo(() => ((step + (completed ? 1 : 0)) / SETUP_STEPS.length) * 100, [completed, step]);
+
+  const handleLogoUpload = async (file: File) => {
+    if (!id) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Logo must be under 5 MB");
+      return;
+    }
+    setUploadingLogo(true);
+    const ext = file.name.split(".").pop() || "png";
+    const path = `${id}/logo-${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("agency-logos")
+      .upload(path, file, { upsert: true, contentType: file.type });
+    if (uploadError) {
+      toast.error(uploadError.message || "Upload failed");
+      setUploadingLogo(false);
+      return;
+    }
+    const { data } = supabase.storage.from("agency-logos").getPublicUrl(path);
+    setBasicInfo((prev) => ({ ...prev, logo_url: data.publicUrl }));
+    toast.success("Logo uploaded");
+    setUploadingLogo(false);
+  };
+
+  const removeLogo = () => {
+    setBasicInfo((prev) => ({ ...prev, logo_url: "" }));
+  };
+
 
   const canContinue = useMemo(() => {
     if (step === 0) return basicInfo.agency_name.trim() && basicInfo.email.trim();
@@ -405,6 +441,60 @@ const AgencySetup = () => {
                   <h3 className="text-lg font-semibold text-foreground">1. Basic info</h3>
                   <p className="text-sm text-muted-foreground">Start from the application details and refine what will appear in the agency portal.</p>
                 </div>
+
+                {/* Agency logo */}
+                <div className="space-y-2">
+                  <Label>Agency logo</Label>
+                  <div className="flex items-center gap-4 p-4 rounded-xl border border-dashed border-border bg-secondary/30">
+                    <div className="w-20 h-20 rounded-xl bg-background border border-border flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {basicInfo.logo_url ? (
+                        <img src={basicInfo.logo_url} alt="Agency logo" className="w-full h-full object-contain" />
+                      ) : (
+                        <ImageIcon className="w-7 h-7 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">
+                        {basicInfo.logo_url ? "Logo uploaded" : "Upload agency logo"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        PNG, JPG or SVG. Square format recommended. Max 5 MB.
+                      </p>
+                      <div className="flex items-center gap-2 mt-3">
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            disabled={uploadingLogo}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleLogoUpload(file);
+                              e.target.value = "";
+                            }}
+                          />
+                          <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                            {uploadingLogo ? (
+                              <><Loader2 className="w-3 h-3 animate-spin" /> Uploading…</>
+                            ) : (
+                              <><Upload className="w-3 h-3" /> {basicInfo.logo_url ? "Replace" : "Upload"}</>
+                            )}
+                          </span>
+                        </label>
+                        {basicInfo.logo_url && (
+                          <button
+                            type="button"
+                            onClick={removeLogo}
+                            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:bg-secondary transition-colors"
+                          >
+                            <X className="w-3 h-3" /> Remove
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2 md:col-span-2">
                     <Label>Agency name</Label>
