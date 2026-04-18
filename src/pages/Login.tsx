@@ -247,11 +247,43 @@ const Login = () => {
             </button>
           </div>
 
-          <div className="text-center pt-4">
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
+            </button>
+          </div>
+
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-medium text-primary">
+              <Sparkles className="w-3.5 h-3.5" /> Demo accounts
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => fillDemo("admin")}>
+                Use admin demo
+              </Button>
+              <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => fillDemo("agency")}>
+                Use agency demo
+              </Button>
+            </div>
+            <Button type="button" variant="ghost" size="sm" className="w-full text-xs" disabled={seeding} onClick={handleSeed}>
+              {seeding ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : null}
+              Reset / re-seed demo data
+            </Button>
+            <p className="text-[10px] text-muted-foreground text-center">
+              First sign-in auto-creates the demo data.
+            </p>
+          </div>
+
+          <div className="text-center pt-2">
             <a href="/" className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors">
               ← Back to modero.com
             </a>
           </div>
+
         </div>
       </div>
     </div>
