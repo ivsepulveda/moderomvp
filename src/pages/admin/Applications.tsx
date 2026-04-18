@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ interface ScoreLog { id: string; score: number; result: string | null; created_a
 interface AgencySetup { completed: boolean; current_step: number; team_members: unknown; listings: unknown; basic_info: unknown; }
 
 const Applications = () => {
+  const navigate = useNavigate();
   const [apps, setApps] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
@@ -141,6 +143,14 @@ const Applications = () => {
     } else {
       setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status, ...(reason ? { rejection_reason: reason } : {}) } : a)));
       toast.success(`Application ${status}`);
+      if (status === "approved") {
+        setSelectedApp(null);
+        setShowRejectDialog(false);
+        setRejectReason("");
+        setUpdating(false);
+        navigate(`/admin/agencies/${id}/setup`);
+        return;
+      }
     }
     setSelectedApp(null);
     setShowRejectDialog(false);
