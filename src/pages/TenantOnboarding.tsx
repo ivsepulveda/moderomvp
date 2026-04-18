@@ -386,6 +386,25 @@ const TenantOnboarding = () => {
             </span>
           ))}
         </div>
+
+        {/* Profile completeness — boosts trust score */}
+        <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4">
+          <div className="flex items-start gap-3">
+            <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-foreground">
+                  Profile completeness
+                </p>
+                <span className="text-sm font-semibold text-primary">{completeness}%</span>
+              </div>
+              <Progress value={completeness} className="h-1.5" />
+              <p className="text-xs text-muted-foreground">
+                The more accurate information you add, the higher your trust score and the better your chances of approval.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-8">
