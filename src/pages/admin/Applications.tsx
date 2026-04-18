@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   CheckCircle, XCircle, Clock, Globe, Mail, Building2, BarChart3,
-  ExternalLink, AlertTriangle, GripVertical, Loader2
+  ExternalLink, AlertTriangle, GripVertical, Loader2, Users, Home, TrendingUp, Settings as SettingsIcon
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -45,6 +45,11 @@ function timeAgo(dateStr: string) {
   return `${days}d ago`;
 }
 
+interface Agent { id: string; name: string; email: string; phone: string | null; is_active: boolean; }
+interface Listing { id: string; title: string; address: string | null; rent: number | null; bedrooms: number | null; is_active: boolean | null; }
+interface ScoreLog { id: string; score: number; result: string | null; created_at: string | null; fraud_flag: boolean | null; }
+interface AgencySetup { completed: boolean; current_step: number; team_members: unknown; listings: unknown; basic_info: unknown; }
+
 const Applications = () => {
   const [apps, setApps] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,6 +57,9 @@ const Applications = () => {
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [details, setDetails] = useState<{
+    agents: Agent[]; listings: Listing[]; scores: ScoreLog[]; setup: AgencySetup | null; loading: boolean;
+  }>({ agents: [], listings: [], scores: [], setup: null, loading: false });
 
   const fetchApps = async () => {
     const { data, error } = await supabase
@@ -70,6 +78,56 @@ const Applications = () => {
   useEffect(() => {
     fetchApps();
   }, []);
+
+  // Fetch related data when an application is selected
+  useEffect(() => {
+    if (!selectedApp) return;
+    let cancelled = false;
+    const loadDetails = async () => {
+      setDetails((d) => ({ ...d, loading: true }));
+      // Find the agency profile (id) by matching the application email
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .ilike("email", selectedApp.email)
+        .maybeSingle();
+
+      const agencyId = profile?.id;
+
+      const [agentsRes, listingsRes, scoresRes, setupRes] = await Promise.all([
+        agencyId
+          ? supabase.from("agency_agents").select("id, name, email, phone, is_active").eq("agency_id", agencyId)
+          : Promise.resolve({ data: [] as Agent[] }),
+        agencyId
+          ? supabase.from("properties").select("id, title, address, rent, bedrooms, is_active").eq("agency_id", agencyId).order("created_at", { ascending: false }).limit(20)
+          : Promise.resolve({ data: [] as Listing[] }),
+        agencyId
+          ? supabase
+              .from("score_logs")
+              .select("id, score, result, created_at, fraud_flag, application_id, tenant_applications!inner(agency_id)")
+              .eq("tenant_applications.agency_id", agencyId)
+              .order("created_at", { ascending: false })
+              .limit(10)
+          : Promise.resolve({ data: [] as ScoreLog[] }),
+        supabase
+          .from("agency_setup")
+          .select("completed, current_step, team_members, listings, basic_info")
+          .eq("application_id", selectedApp.id)
+          .maybeSingle(),
+      ]);
+
+      if (cancelled) return;
+      setDetails({
+        agents: (agentsRes.data as Agent[]) || [],
+        listings: (listingsRes.data as Listing[]) || [],
+        scores: (scoresRes.data as ScoreLog[]) || [],
+        setup: (setupRes.data as AgencySetup) || null,
+        loading: false,
+      });
+    };
+    loadDetails();
+    return () => { cancelled = true; };
+  }, [selectedApp]);
 
   const updateStatus = async (id: string, status: Application["status"], reason?: string) => {
     setUpdating(true);
@@ -259,6 +317,108 @@ const Applications = () => {
                   <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{selectedApp.pitch || "—"}</p>
                 </div>
               </section>
+
+              {/* Live Platform Activity */}
+              <section>
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-2">
+                  Platform Activity
+                  {details.loading && <Loader2 className="w-3 h-3 animate-spin" />}
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-secondary rounded-xl p-3 text-center">
+                    <Users className="w-4 h-4 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-base font-bold text-foreground">{details.agents.length}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Agents</p>
+                  </div>
+                  <div className="bg-secondary rounded-xl p-3 text-center">
+                    <Home className="w-4 h-4 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-base font-bold text-foreground">{details.listings.length}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Listings (live)</p>
+                  </div>
+                </div>
+              </section>
+
+              {details.setup && (
+                <section>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+                    <SettingsIcon className="w-3 h-3" /> Onboarding Setup
+                  </h4>
+                  <div className="bg-secondary/50 rounded-xl p-3 flex items-center justify-between">
+                    <p className="text-sm text-foreground">Step {details.setup.current_step + 1} / 5</p>
+                    <Badge variant={details.setup.completed ? "default" : "secondary"} className="text-xs">
+                      {details.setup.completed ? "Completed" : "In progress"}
+                    </Badge>
+                  </div>
+                </section>
+              )}
+
+              {details.agents.length > 0 && (
+                <section>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+                    <Users className="w-3 h-3" /> Team ({details.agents.length})
+                  </h4>
+                  <div className="bg-secondary/50 rounded-xl divide-y divide-border">
+                    {details.agents.slice(0, 6).map((a) => (
+                      <div key={a.id} className="p-3 flex items-center justify-between">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{a.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{a.email}</p>
+                        </div>
+                        <Badge variant={a.is_active ? "default" : "secondary"} className="text-xs flex-shrink-0">
+                          {a.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {details.listings.length > 0 && (
+                <section>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+                    <Home className="w-3 h-3" /> Live Listings ({details.listings.length})
+                  </h4>
+                  <div className="bg-secondary/50 rounded-xl divide-y divide-border">
+                    {details.listings.slice(0, 6).map((l) => (
+                      <div key={l.id} className="p-3 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{l.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{l.address || "—"}</p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-semibold text-foreground">{l.rent ? `€${l.rent}` : "—"}</p>
+                          <p className="text-xs text-muted-foreground">{l.bedrooms ?? "—"} bd</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {details.scores.length > 0 && (
+                <section>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+                    <TrendingUp className="w-3 h-3" /> Recent Tenant Scores ({details.scores.length})
+                  </h4>
+                  <div className="bg-secondary/50 rounded-xl divide-y divide-border">
+                    {details.scores.map((s) => (
+                      <div key={s.id} className="p-3 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{s.score}/100</p>
+                          <p className="text-xs text-muted-foreground">
+                            {s.created_at ? timeAgo(s.created_at) : "—"} · {s.result || "—"}
+                          </p>
+                        </div>
+                        {s.fraud_flag && (
+                          <Badge variant="destructive" className="text-xs">
+                            <AlertTriangle className="w-3 h-3 mr-1" /> Fraud
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               {/* Flags */}
               {selectedApp.flags && selectedApp.flags.length > 0 && (
