@@ -134,6 +134,19 @@ const TenantOnboarding = () => {
     contract: null, tax_return: null,
   });
 
+  // Step 7 — Credit check & financing
+  const [credit, setCredit] = useState<{
+    status: "idle" | "running" | "passed" | "failed";
+    score: number | null;
+    provider: "" | "klarna" | "santander";
+    months: number;
+  }>({
+    status: saved?.credit?.status ?? "idle",
+    score: saved?.credit?.score ?? null,
+    provider: saved?.credit?.provider ?? "",
+    months: saved?.credit?.months ?? 0,
+  });
+
   // ---------- Persist progress to localStorage ----------
   useEffect(() => {
     try {
@@ -143,9 +156,10 @@ const TenantOnboarding = () => {
         identity,
         employment,
         verif,
+        credit,
       }));
     } catch { /* ignore quota errors */ }
-  }, [STORAGE_KEY, step, consent.gdpr, identity, employment, verif]);
+  }, [STORAGE_KEY, step, consent.gdpr, identity, employment, verif, credit]);
 
 
   // ---------- Load Brain from agency_setup ----------
@@ -450,13 +464,53 @@ const TenantOnboarding = () => {
       if (requiredOk) {
         await supabase.from("tenant_applications").update({ documents_complete: true }).eq("id", applicationId);
       }
-      try {
-        await supabase.functions.invoke("calculate-score", { body: { application_id: applicationId } });
-      } catch (err) { console.error("scoring failed", err); }
+      goNext();
+    } catch (e: any) {
+      toast({ title: "Upload error", description: e.message, variant: "destructive" });
+    } finally { setSaving(false); }
+  };
+
+  // ---------- Final submit (Step 7) ----------
+  const runCreditCheck = async () => {
+    setCredit((p) => ({ ...p, status: "running" }));
+    // Simulated D&B credit check based on income and employment
+    await new Promise((r) => setTimeout(r, 1400));
+    const income = Number(employment.income_monthly) || 0;
+    const hasContract = employment.contract_type === "permanent" || employment.contract_type === "temporary";
+    let score = 50;
+    if (income >= 1500) score += 15;
+    if (income >= 2500) score += 10;
+    if (income >= 4000) score += 10;
+    if (hasContract) score += 10;
+    if (employment.employment_status === "employed") score += 5;
+    score = Math.min(100, score);
+    const passed = score >= 60;
+    // Months of financing available based on score
+    const months = !passed ? 0 : score >= 90 ? 24 : score >= 80 ? 18 : score >= 70 ? 12 : 6;
+    setCredit({
+      status: passed ? "passed" : "failed",
+      score,
+      provider: "",
+      months,
+    });
+  };
+
+  const submitApplication = async () => {
+    setSaving(true);
+    try {
+      if (applicationId) {
+        await supabase.from("tenant_applications").update({
+          documents_complete: true,
+        }).eq("id", applicationId);
+        try {
+          await supabase.functions.invoke("calculate-score", { body: { application_id: applicationId } });
+        } catch (err) { console.error("scoring failed", err); }
+      }
+      try { localStorage.removeItem(STORAGE_KEY); } catch {}
       toast({ title: "Application submitted!", description: "Your trust score is being calculated." });
       navigate("/application-status");
     } catch (e: any) {
-      toast({ title: "Upload error", description: e.message, variant: "destructive" });
+      toast({ title: "Submit error", description: e.message, variant: "destructive" });
     } finally { setSaving(false); }
   };
 
@@ -1131,9 +1185,10 @@ const TenantOnboarding = () => {
                 <Button onClick={goBack} variant="outline" size="lg" className="h-12 rounded-xl">
                   <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Button>
-                <Button onClick={goNext} variant="hero" size="lg"
-                  className="flex-1 h-12 rounded-xl" disabled={!documentsValid}>
-                  Continue <ArrowRight className="w-4 h-4 ml-2" />
+                <Button onClick={submitDocuments} variant="hero" size="lg"
+                  className="flex-1 h-12 rounded-xl" disabled={!documentsValid || saving}>
+                  {saving ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground" />
+                    : <>Continue <ArrowRight className="w-4 h-4 ml-2" /></>}
                 </Button>
               </div>
             </CardContent>
@@ -1207,7 +1262,7 @@ const TenantOnboarding = () => {
           </Card>
         )}
 
-        {/* STEP 7 — Credit */}
+        {/* STEP 7 — Credit Check & Financing */}
         {step === 7 && (
           <Card className="shadow-card">
             <CardHeader className="text-center items-center">
@@ -1218,21 +1273,107 @@ const TenantOnboarding = () => {
               <CardDescription>Final financial assessment — this step is required for qualification</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="rounded-xl border border-border p-4 space-y-2">
-                <p className="text-sm font-medium">Authorize credit check</p>
-                <p className="text-xs text-muted-foreground">
-                  We'll perform a soft credit check to verify your financial standing. This will not affect your credit score.
-                </p>
+              {/* Credit check card */}
+              <div className="rounded-2xl border border-border p-5 space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <Shield className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground">Dun & Bradstreet Credit Check</p>
+                    <p className="text-sm text-muted-foreground">Authoritative credit risk assessment</p>
+                  </div>
+                  {credit.status === "passed" && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <CheckCircle className="w-3.5 h-3.5" /> {credit.score}
+                    </span>
+                  )}
+                  {credit.status === "failed" && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive">
+                      Score {credit.score}
+                    </span>
+                  )}
+                </div>
+
+                {credit.status === "idle" && (
+                  <Button
+                    onClick={runCreditCheck}
+                    variant="hero" size="lg"
+                    className="w-full h-12 rounded-xl"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" /> Run Credit Check
+                  </Button>
+                )}
+                {credit.status === "running" && (
+                  <Button disabled variant="hero" size="lg" className="w-full h-12 rounded-xl">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground mr-2" />
+                    Running credit check…
+                  </Button>
+                )}
+                {credit.status === "failed" && (
+                  <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                    Credit check did not meet the qualification threshold. You can still submit, but financing is unavailable.
+                  </div>
+                )}
               </div>
+
+              {/* Financing options — only when credit passed */}
+              {credit.status === "passed" && (
+                <div className="space-y-3">
+                  <div>
+                    <p className="font-semibold text-foreground">Financing Options (Optional)</p>
+                    <p className="text-sm text-muted-foreground">
+                      Based on your score, you qualify for up to <span className="font-semibold text-foreground">{credit.months} months</span> of financing for your deposit
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { id: "klarna" as const, name: "Klarna", letter: "K", bg: "bg-[hsl(142_71%_45%)]", desc1: "Buy now, pay later", desc2: "Flexible instalments" },
+                      { id: "santander" as const, name: "Santander", letter: "S", bg: "bg-[hsl(0_84%_55%)]", desc1: "Personal financing", desc2: "Competitive rates" },
+                    ].map((p) => {
+                      const selected = credit.provider === p.id;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setCredit((c) => ({ ...c, provider: selected ? "" : p.id }))}
+                          className={`text-left rounded-2xl border-2 p-4 transition-all ${
+                            selected ? "border-primary bg-primary/5 shadow-orange" : "border-border hover:border-primary/40"
+                          }`}
+                        >
+                          <div className={`w-11 h-11 rounded-full ${p.bg} flex items-center justify-center text-white font-bold mb-3`}>
+                            {p.letter}
+                          </div>
+                          <p className="font-semibold text-foreground">{p.name}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{p.desc1}</p>
+                          <p className="text-xs text-muted-foreground">{p.desc2}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {credit.provider && (
+                    <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-primary" />
+                      <span>
+                        Selected <span className="font-semibold capitalize">{credit.provider}</span> — up to <span className="font-semibold">{credit.months} months</span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex gap-3 pt-2">
                 <Button onClick={goBack} variant="outline" size="lg" className="h-12 rounded-xl">
                   <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Button>
-                <Button onClick={submitDocuments} variant="hero" size="lg"
-                  className="flex-1 h-12 rounded-xl" disabled={saving}>
+                <Button
+                  onClick={submitApplication}
+                  variant="hero" size="lg"
+                  className="flex-1 h-12 rounded-xl"
+                  disabled={saving || credit.status === "idle" || credit.status === "running"}
+                >
                   {saving ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground" />
-                    : <>Submit Application <CheckCircle className="w-4 h-4 ml-2" /></>}
+                    : <>Submit Application <ArrowRight className="w-4 h-4 ml-2" /></>}
                 </Button>
               </div>
             </CardContent>
