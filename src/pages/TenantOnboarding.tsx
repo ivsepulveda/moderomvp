@@ -228,57 +228,95 @@ const TenantOnboarding = () => {
     return Math.round((filled / checks.length) * 100);
   }, [consent, identity, employment, files, verif, brain]);
 
-  // ---------- Per-step completeness ----------
-  const pct = (arr: boolean[]) => Math.round((arr.filter(Boolean).length / arr.length) * 100);
-  const stepCompleteness = useMemo(() => ({
-    1: pct([
-      !brain.require_gdpr || consent.gdpr,
-      !brain.require_tenant_photo || !!consent.photo,
-    ]),
-    2: pct([
-      !!identity.name,
-      !!identity.phone,
-      !!identity.nationality,
-      !!identity.country_of_birth,
-      !!identity.age_range,
-      identity.whatsapp_connected || (identity.whatsapp_same && !!identity.phone),
-      !!identity.email_type,
-      !brain.email_verification || identity.email_verified,
-      !brain.sms_verification || identity.sms_verified,
-      !brain.require_linkedin || !!identity.linkedin_url,
-      !brain.require_nie || !!identity.nie,
-      !brain.require_dni || !!identity.dni,
-    ]),
-    3: pct([
-      !!employment.employment_status,
-      !!employment.job_title,
-      !!employment.company,
-      !!employment.contract_type,
-      !!employment.income_monthly,
-      !!employment.salary_payment_date,
-    ]),
-    4: pct([
-      !brain.residency_history_check || !!verif.residency_addresses,
-    ]),
-    5: pct([
-      !brain.require_biometric_id || !!files.passport,
-      !brain.require_payslips || !!files.payslip1,
-      !!files.payslip2,
-      !!files.payslip3,
-      !brain.require_work_contract || !!files.contract,
-      !brain.require_tax_return || !!files.tax_return,
-    ]),
+  // ---------- Per-step completeness (segmented by category) ----------
+  type Segment = { label: string; weight: number; filled: boolean; color: string };
+  const buildPct = (segs: Segment[]) => {
+    const total = segs.reduce((s, x) => s + x.weight, 0) || 1;
+    const done = segs.filter((s) => s.filled).reduce((s, x) => s + x.weight, 0);
+    return Math.round((done / total) * 100);
+  };
+
+  const stepSegments = useMemo<Record<number, Segment[]>>(() => ({
+    1: [
+      { label: "GDPR", weight: 60, filled: !brain.require_gdpr || consent.gdpr, color: "hsl(24 95% 53%)" },
+      { label: "Photo", weight: 40, filled: !brain.require_tenant_photo || !!consent.photo, color: "hsl(217 91% 60%)" },
+    ],
+    2: [
+      { label: "Personal", weight: 30, filled: !!identity.name && !!identity.phone && !!identity.nationality, color: "hsl(24 95% 53%)" },
+      { label: "WhatsApp", weight: 15, filled: identity.whatsapp_connected || (identity.whatsapp_same && !!identity.phone), color: "hsl(142 71% 45%)" },
+      { label: "Email type", weight: 10, filled: !!identity.email_type, color: "hsl(280 65% 60%)" },
+      { label: "Verifications", weight: 20, filled: (!brain.email_verification || identity.email_verified) && (!brain.sms_verification || identity.sms_verified), color: "hsl(38 92% 50%)" },
+      { label: "LinkedIn", weight: 15, filled: !brain.require_linkedin || !!identity.linkedin_url, color: "hsl(217 91% 60%)" },
+      { label: "ID numbers", weight: 10, filled: (!brain.require_nie || !!identity.nie) && (!brain.require_dni || !!identity.dni), color: "hsl(190 80% 50%)" },
+    ],
+    3: [
+      { label: "Status", weight: 20, filled: !!employment.employment_status, color: "hsl(24 95% 53%)" },
+      { label: "Job", weight: 20, filled: !!employment.job_title && !!employment.company, color: "hsl(217 91% 60%)" },
+      { label: "Contract", weight: 15, filled: !!employment.contract_type, color: "hsl(280 65% 60%)" },
+      { label: "Income", weight: 30, filled: !!employment.income_monthly, color: "hsl(142 71% 45%)" },
+      { label: "Pay date", weight: 15, filled: !!employment.salary_payment_date, color: "hsl(38 92% 50%)" },
+    ],
+    4: [
+      { label: "Residency", weight: 100, filled: !brain.residency_history_check || !!verif.residency_addresses, color: "hsl(24 95% 53%)" },
+    ],
+    5: [
+      { label: "ID doc", weight: 25, filled: !brain.require_biometric_id || !!files.passport, color: "hsl(24 95% 53%)" },
+      { label: "Payslips", weight: 35, filled: !brain.require_payslips || (!!files.payslip1 && !!files.payslip2 && !!files.payslip3), color: "hsl(217 91% 60%)" },
+      { label: "Contract", weight: 25, filled: !brain.require_work_contract || !!files.contract, color: "hsl(142 71% 45%)" },
+      { label: "Tax return", weight: 15, filled: !brain.require_tax_return || !!files.tax_return, color: "hsl(38 92% 50%)" },
+    ],
   }), [consent, identity, employment, files, verif, brain]);
 
-  const StepProgress = ({ value }: { value: number }) => (
-    <div className="mt-3 space-y-1.5">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground">Step completeness</span>
-        <span className="text-xs font-semibold text-primary">{value}%</span>
+  const stepCompleteness = useMemo<Record<number, number>>(() => ({
+    1: buildPct(stepSegments[1]),
+    2: buildPct(stepSegments[2]),
+    3: buildPct(stepSegments[3]),
+    4: buildPct(stepSegments[4]),
+    5: buildPct(stepSegments[5]),
+  }), [stepSegments]);
+
+  const StepProgress = ({ stepId }: { stepId: number }) => {
+    const segs = stepSegments[stepId] ?? [];
+    const total = segs.reduce((s, x) => s + x.weight, 0) || 1;
+    const value = stepCompleteness[stepId] ?? 0;
+    return (
+      <div className="mt-4 rounded-xl border border-primary/15 bg-primary/[0.04] p-3.5">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-medium text-muted-foreground">Step completeness</span>
+          <div className="flex items-baseline gap-1">
+            <span className="text-lg font-bold text-primary leading-none">{value}</span>
+            <span className="text-xs text-muted-foreground">/ 100%</span>
+          </div>
+        </div>
+        <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
+          {segs.map((s, i) => (
+            <div
+              key={i}
+              className="h-full transition-all"
+              style={{
+                width: `${s.filled ? (s.weight / total) * 100 : 0}%`,
+                backgroundColor: s.color,
+              }}
+              title={`${s.label} (${s.weight}%)`}
+            />
+          ))}
+        </div>
+        <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1.5">
+          {segs.map((s, i) => (
+            <div key={i} className="flex items-center gap-1.5">
+              <span
+                className="inline-block w-2 h-2 rounded-full shrink-0"
+                style={{ backgroundColor: s.color, opacity: s.filled ? 1 : 0.3 }}
+              />
+              <span className={`text-[11px] ${s.filled ? "text-foreground" : "text-muted-foreground line-through"}`}>
+                {s.label} ({s.weight}%)
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
-      <Progress value={value} className="h-1.5" />
-    </div>
-  );
+    );
+  };
 
   const goNext = () => {
     const idx = steps.findIndex((x) => x.id === step);
@@ -473,7 +511,7 @@ const TenantOnboarding = () => {
                   <CardDescription>Required before we collect any of your data</CardDescription>
                 </div>
               </div>
-              <StepProgress value={stepCompleteness[1]} />
+              <StepProgress stepId={1} />
             </CardHeader>
             <CardContent className="space-y-5">
               {brain.require_gdpr && (
@@ -525,7 +563,7 @@ const TenantOnboarding = () => {
                   <CardDescription>Tell us who you are</CardDescription>
                 </div>
               </div>
-              <StepProgress value={stepCompleteness[2]} />
+              <StepProgress stepId={2} />
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
@@ -746,7 +784,7 @@ const TenantOnboarding = () => {
                   </CardDescription>
                 </div>
               </div>
-              <StepProgress value={stepCompleteness[3]} />
+              <StepProgress stepId={3} />
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
@@ -824,7 +862,7 @@ const TenantOnboarding = () => {
                   <CardDescription>Quick checks required by this agency</CardDescription>
                 </div>
               </div>
-              <StepProgress value={stepCompleteness[4]} />
+              <StepProgress stepId={4} />
             </CardHeader>
             <CardContent className="space-y-5">
               {brain.residency_history_check && (
@@ -864,7 +902,7 @@ const TenantOnboarding = () => {
                   <CardDescription>Upload only what this agency requires</CardDescription>
                 </div>
               </div>
-              <StepProgress value={stepCompleteness[5]} />
+              <StepProgress stepId={5} />
             </CardHeader>
             <CardContent className="space-y-5">
               {[
