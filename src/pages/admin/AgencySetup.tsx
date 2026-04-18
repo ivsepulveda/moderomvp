@@ -218,7 +218,7 @@ const AgencySetup = () => {
     const payload = {
       application_id: id,
       basic_info: basicInfo,
-      listings: listings.filter((listing) => listing.title.trim() || listing.address.trim() || listing.rent.trim()),
+      listings: listings.filter((listing) => listing.title.trim() || listing.address.trim() || listing.rent.trim() || listing.idealista_id.trim()),
       connection_settings: connectionSettings,
       intelligence_brain: intelligenceBrain,
       team_members: teamMembers.filter((member) => member.name.trim() || member.email.trim()),
