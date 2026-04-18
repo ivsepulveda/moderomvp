@@ -464,13 +464,53 @@ const TenantOnboarding = () => {
       if (requiredOk) {
         await supabase.from("tenant_applications").update({ documents_complete: true }).eq("id", applicationId);
       }
-      try {
-        await supabase.functions.invoke("calculate-score", { body: { application_id: applicationId } });
-      } catch (err) { console.error("scoring failed", err); }
+      goNext();
+    } catch (e: any) {
+      toast({ title: "Upload error", description: e.message, variant: "destructive" });
+    } finally { setSaving(false); }
+  };
+
+  // ---------- Final submit (Step 7) ----------
+  const runCreditCheck = async () => {
+    setCredit((p) => ({ ...p, status: "running" }));
+    // Simulated D&B credit check based on income and employment
+    await new Promise((r) => setTimeout(r, 1400));
+    const income = Number(employment.income_monthly) || 0;
+    const hasContract = employment.contract_type === "permanent" || employment.contract_type === "temporary";
+    let score = 50;
+    if (income >= 1500) score += 15;
+    if (income >= 2500) score += 10;
+    if (income >= 4000) score += 10;
+    if (hasContract) score += 10;
+    if (employment.employment_status === "employed") score += 5;
+    score = Math.min(100, score);
+    const passed = score >= 60;
+    // Months of financing available based on score
+    const months = !passed ? 0 : score >= 90 ? 24 : score >= 80 ? 18 : score >= 70 ? 12 : 6;
+    setCredit({
+      status: passed ? "passed" : "failed",
+      score,
+      provider: "",
+      months,
+    });
+  };
+
+  const submitApplication = async () => {
+    setSaving(true);
+    try {
+      if (applicationId) {
+        await supabase.from("tenant_applications").update({
+          documents_complete: true,
+        }).eq("id", applicationId);
+        try {
+          await supabase.functions.invoke("calculate-score", { body: { application_id: applicationId } });
+        } catch (err) { console.error("scoring failed", err); }
+      }
+      try { localStorage.removeItem(STORAGE_KEY); } catch {}
       toast({ title: "Application submitted!", description: "Your trust score is being calculated." });
       navigate("/application-status");
     } catch (e: any) {
-      toast({ title: "Upload error", description: e.message, variant: "destructive" });
+      toast({ title: "Submit error", description: e.message, variant: "destructive" });
     } finally { setSaving(false); }
   };
 
