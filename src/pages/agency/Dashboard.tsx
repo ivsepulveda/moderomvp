@@ -490,24 +490,26 @@ const AgencyDashboard = () => {
                           <p className="text-xs text-muted-foreground truncate">{inquiry.employer} · {inquiry.jobTitle}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 flex-shrink-0">
-                        <div className="text-right hidden sm:block">
+                      <div className="flex items-center gap-4 flex-shrink-0">
+                        <div className="hidden sm:block w-20">
                           <div className="flex items-center gap-1">
-                            <Shield className="w-3.5 h-3.5 text-primary" />
-                            <span className={`text-sm font-bold ${scoreColor(inquiry.score)}`}>{inquiry.score}</span>
+                            <Shield className="w-3.5 h-3.5 text-primary shrink-0" />
+                            <span className={`text-sm font-bold tabular-nums ${scoreColor(inquiry.score)}`}>{inquiry.score}</span>
                           </div>
                           <p className="text-xs text-muted-foreground">Trust Score</p>
                         </div>
-                        <Badge variant="outline" className={`text-xs capitalize ${statusStyles[inquiry.status]}`}>
-                          {tenantActions[inquiry.id]?.status === "approved" ? "approved" : tenantActions[inquiry.id]?.status === "rejected" ? "rejected" : inquiry.status}
-                        </Badge>
+                        <div className="w-24 flex justify-center">
+                          <Badge variant="outline" className={`text-xs capitalize w-full justify-center ${statusStyles[inquiry.status]}`}>
+                            {tenantActions[inquiry.id]?.status === "approved" ? "approved" : tenantActions[inquiry.id]?.status === "rejected" ? "rejected" : inquiry.status}
+                          </Badge>
+                        </div>
                         {tenantActions[inquiry.id]?.viewing && (
                           <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
                             <Calendar className="w-3 h-3" /> {new Date(tenantActions[inquiry.id].viewing!.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                           </Badge>
                         )}
-                        <span className="text-xs text-muted-foreground hidden md:flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {inquiry.time}
+                        <span className="text-xs text-muted-foreground hidden md:flex items-center gap-1 w-24 justify-end tabular-nums">
+                          <Clock className="w-3 h-3 shrink-0" /> {inquiry.time}
                         </span>
                       </div>
                     </div>
