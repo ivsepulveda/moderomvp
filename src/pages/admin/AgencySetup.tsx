@@ -494,6 +494,8 @@ const AgencySetup = () => {
                     </div>
                   </div>
                 </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2 md:col-span-2">
                     <Label>Agency name</Label>
                     <Input value={basicInfo.agency_name} onChange={(e) => setBasicInfo((prev) => ({ ...prev, agency_name: e.target.value }))} className="rounded-xl" />
