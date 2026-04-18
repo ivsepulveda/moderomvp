@@ -747,14 +747,11 @@ const TenantAuth = () => {
               </form>
 
               <div className="text-center text-sm text-muted-foreground border-t border-border/50 pt-4">
-                {isSignUp ? `${t.form.switchToSignIn} ` : `${t.form.switchToSignUp} `}
-                <button
-                  type="button"
-                  onClick={() => setIsSignUp(!isSignUp)}
-                  className="text-primary font-medium hover:underline"
-                >
-                  {isSignUp ? t.form.switchSignIn : t.form.switchSignUp}
-                </button>
+                {t.form.switchToSignUp}{" "}
+                <span className="text-foreground font-medium">
+                  {t.inquiry.cta}
+                </span>{" "}
+                — {t.inquiry.ctaTime}
               </div>
             </div>
 
