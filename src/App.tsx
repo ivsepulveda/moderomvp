@@ -27,6 +27,7 @@ import Listings from "./pages/agency/Listings.tsx";
 import Analytics from "./pages/agency/Analytics.tsx";
 import AgencySettings from "./pages/agency/Settings.tsx";
 import AgencyOnboarding from "./pages/agency/Onboarding.tsx";
+import Inbox from "./pages/agency/Inbox.tsx";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const App = () => (
             </Route>
             <Route path="/agency" element={<AgencyRoute><AgencyLayout /></AgencyRoute>}>
               <Route index element={<AgencyDashboard />} />
+              <Route path="inbox" element={<Inbox />} />
               <Route path="tenants" element={<Tenants />} />
               <Route path="listings" element={<Listings />} />
               <Route path="analytics" element={<Analytics />} />
