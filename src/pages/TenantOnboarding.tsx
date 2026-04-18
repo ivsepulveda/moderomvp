@@ -463,23 +463,26 @@ const TenantOnboarding = () => {
         </div>
       </div>
 
-      {/* Progress */}
+      {/* Top progress with step labels — orange bar fills proportionally, labels below each segment */}
       <div className="max-w-2xl mx-auto px-4 pt-6">
-        <Progress value={progressPercent} className="h-2" />
-        <div className="flex justify-between mt-2 gap-2">
+        <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
+          <div
+            className="h-full bg-primary rounded-full transition-all"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        <div
+          className="grid mt-2 gap-2"
+          style={{ gridTemplateColumns: `repeat(${totalSteps}, minmax(0, 1fr))` }}
+        >
           {steps.map((s) => (
             <span
               key={s.id}
-              className={`text-xs font-medium ${s.id <= step ? "text-primary" : "text-muted-foreground"}`}
+              className={`text-xs font-medium text-left ${s.id <= step ? "text-primary" : "text-muted-foreground"}`}
             >
               {s.label}
             </span>
           ))}
-        </div>
-
-        {/* Per-step segmented completeness */}
-        <div className="mt-5">
-          <StepProgress stepId={step} />
         </div>
       </div>
 
