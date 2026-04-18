@@ -89,6 +89,8 @@ const listings: Listing[] = [
     address: "Calle Gran Vía 42, 3B, Madrid",
     rent: "€2,200/mo",
     inquiries: [
+      // Newest: tenant who just completed /onboarding submission
+      submittedApplicationDemo as any,
       {
         id: 1, name: "Carlos Mendez", email: "carlos@accenture.com", phone: "+34 612 345 678",
         score: 8.5, status: "qualified", time: "10 min ago", appliedDate: "2026-04-15",
