@@ -156,72 +156,148 @@ const Applications = () => {
         })}
       </div>
 
-      {/* Application Detail Dialog */}
+      {/* Application Detail Dialog — Full Profile */}
       <Dialog open={!!selectedApp && !showRejectDialog} onOpenChange={() => setSelectedApp(null)}>
         {selectedApp && (
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center text-primary-foreground font-bold">
+                <div className="w-12 h-12 gradient-primary rounded-2xl flex items-center justify-center text-primary-foreground font-bold text-lg">
                   {selectedApp.agency_name.charAt(0)}
                 </div>
-                {selectedApp.agency_name}
+                <div className="flex-1 min-w-0">
+                  <p className="text-lg font-bold text-foreground truncate">{selectedApp.agency_name}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge
+                      variant={
+                        selectedApp.status === "approved"
+                          ? "default"
+                          : selectedApp.status === "rejected"
+                          ? "destructive"
+                          : "secondary"
+                      }
+                      className="text-xs capitalize"
+                    >
+                      {selectedApp.status}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">Applied {timeAgo(selectedApp.created_at)}</span>
+                  </div>
+                </div>
               </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-4 py-2">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Mail className="w-4 h-4" /> {selectedApp.email}
-                </div>
-                {selectedApp.website && (
-                  <a href={selectedApp.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
-                    <Globe className="w-4 h-4" /> Website <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
-                {selectedApp.idealista_profile && (
-                  <a href={selectedApp.idealista_profile} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline col-span-2">
-                    <ExternalLink className="w-4 h-4" /> Idealista Profile
-                  </a>
-                )}
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { label: "Listings", value: selectedApp.active_listings || "—", icon: Building2 },
-                  { label: "Inquiries/mo", value: selectedApp.monthly_inquiries || "—", icon: BarChart3 },
-                  { label: "Years", value: selectedApp.years_operating || "—", icon: Clock },
-                ].map((s) => (
-                  <div key={s.label} className="bg-secondary rounded-xl p-3 text-center">
-                    <s.icon className="w-4 h-4 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-sm font-semibold text-foreground">{s.value}</p>
-                    <p className="text-xs text-muted-foreground">{s.label}</p>
+            <div className="space-y-5 py-2">
+              {/* Contact */}
+              <section>
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Contact</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                  <div className="flex items-center gap-2 bg-secondary/50 rounded-xl p-3">
+                    <Mail className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <span className="truncate text-foreground">{selectedApp.email}</span>
                   </div>
-                ))}
-              </div>
-
-              {selectedApp.associations && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">Associations</Label>
-                  <p className="text-sm text-foreground mt-0.5">{selectedApp.associations}</p>
+                  {selectedApp.website ? (
+                    <a
+                      href={selectedApp.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 bg-secondary/50 hover:bg-secondary rounded-xl p-3 text-primary transition-colors"
+                    >
+                      <Globe className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate flex-1">{selectedApp.website.replace(/^https?:\/\//, "")}</span>
+                      <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                    </a>
+                  ) : (
+                    <div className="flex items-center gap-2 bg-secondary/50 rounded-xl p-3 text-muted-foreground">
+                      <Globe className="w-4 h-4" /> No website
+                    </div>
+                  )}
+                  {selectedApp.idealista_profile && (
+                    <a
+                      href={selectedApp.idealista_profile}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 bg-secondary/50 hover:bg-secondary rounded-xl p-3 text-primary transition-colors sm:col-span-2"
+                    >
+                      <ExternalLink className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate flex-1">Idealista Profile</span>
+                      <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                    </a>
+                  )}
                 </div>
-              )}
+              </section>
 
-              <div>
-                <Label className="text-xs text-muted-foreground">Why they're serious</Label>
-                <p className="text-sm text-foreground mt-0.5 leading-relaxed">{selectedApp.pitch || "—"}</p>
-              </div>
-
-              {selectedApp.flags && selectedApp.flags.length > 0 && (
-                <div className="bg-destructive/10 rounded-xl p-3 space-y-1">
-                  <p className="text-xs font-semibold text-destructive flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" /> Flags
-                  </p>
-                  {selectedApp.flags.map((f) => (
-                    <p key={f} className="text-xs text-destructive">• {f}</p>
+              {/* Stats */}
+              <section>
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Business Stats</h4>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "Active Listings", value: selectedApp.active_listings || "—", icon: Building2 },
+                    { label: "Inquiries / month", value: selectedApp.monthly_inquiries || "—", icon: BarChart3 },
+                    { label: "Years Operating", value: selectedApp.years_operating || "—", icon: Clock },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-secondary rounded-xl p-3 text-center">
+                      <s.icon className="w-4 h-4 mx-auto text-muted-foreground mb-1" />
+                      <p className="text-base font-bold text-foreground">{s.value}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+                    </div>
                   ))}
                 </div>
+              </section>
+
+              {/* Associations */}
+              <section>
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Professional Associations</h4>
+                <div className="bg-secondary/50 rounded-xl p-3">
+                  <p className="text-sm text-foreground leading-relaxed">{selectedApp.associations || "—"}</p>
+                </div>
+              </section>
+
+              {/* Pitch */}
+              <section>
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Why They're Serious</h4>
+                <div className="bg-secondary/50 rounded-xl p-3">
+                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{selectedApp.pitch || "—"}</p>
+                </div>
+              </section>
+
+              {/* Flags */}
+              {selectedApp.flags && selectedApp.flags.length > 0 && (
+                <section>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-destructive mb-2 flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> Flags
+                  </h4>
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3 space-y-1">
+                    {selectedApp.flags.map((f) => (
+                      <p key={f} className="text-xs text-destructive">• {f}</p>
+                    ))}
+                  </div>
+                </section>
               )}
+
+              {/* Rejection reason */}
+              {selectedApp.status === "rejected" && selectedApp.rejection_reason && (
+                <section>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-destructive mb-2">Rejection Reason</h4>
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3">
+                    <p className="text-sm text-destructive leading-relaxed">{selectedApp.rejection_reason}</p>
+                  </div>
+                </section>
+              )}
+
+              {/* Approved confirmation */}
+              {selectedApp.status === "approved" && (
+                <section>
+                  <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                    <p className="text-sm text-primary font-medium">Approved — agency can now access the platform</p>
+                  </div>
+                </section>
+              )}
+
+              {/* Application ID */}
+              <p className="text-[10px] text-muted-foreground/60 font-mono pt-2 border-t border-border">
+                ID: {selectedApp.id}
+              </p>
             </div>
 
             {selectedApp.status === "pending" && (
