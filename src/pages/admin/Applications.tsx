@@ -287,9 +287,9 @@ const Applications = () => {
               {/* Approved confirmation */}
               {selectedApp.status === "approved" && (
                 <section>
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-                    <p className="text-sm text-green-700 font-medium">Approved — agency can now access the platform</p>
+                  <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                    <p className="text-sm text-primary font-medium">Approved — agency can now access the platform</p>
                   </div>
                 </section>
               )}
