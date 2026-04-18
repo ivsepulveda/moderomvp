@@ -135,6 +135,17 @@ const AdminSettings = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              const { runDemoSeed } = await import("@/lib/demo");
+              toast.info("Re-seeding demo data…");
+              const r = await runDemoSeed();
+              if (r.ok) toast.success("Demo data refreshed"); else toast.error(r.message);
+            }}
+          >
+            Reset demo data
+          </Button>
           <Button variant="outline" onClick={reset} disabled={saving}>Reset</Button>
           <Button onClick={save} disabled={!dirty || saving} className="gap-2">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
