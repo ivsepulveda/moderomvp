@@ -368,6 +368,10 @@ const TenantAuth = () => {
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const scrollToInquiry = () => {
+    inquiryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
