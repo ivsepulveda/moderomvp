@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
+import IntelligenceBrainStep from "@/components/agency-setup/IntelligenceBrainStep";
 import { toast } from "sonner";
 
 interface ApplicationRecord {
