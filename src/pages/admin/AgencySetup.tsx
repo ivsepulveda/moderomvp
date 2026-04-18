@@ -31,6 +31,7 @@ interface ApplicationRecord {
 
 interface ListingDraft {
   id: string;
+  idealista_id: string;
   title: string;
   address: string;
   rent: string;
@@ -82,6 +83,7 @@ const defaultBrain = {
 
 const emptyListing = (): ListingDraft => ({
   id: crypto.randomUUID(),
+  idealista_id: "",
   title: "",
   address: "",
   rent: "",
@@ -216,7 +218,7 @@ const AgencySetup = () => {
     const payload = {
       application_id: id,
       basic_info: basicInfo,
-      listings: listings.filter((listing) => listing.title.trim() || listing.address.trim() || listing.rent.trim()),
+      listings: listings.filter((listing) => listing.title.trim() || listing.address.trim() || listing.rent.trim() || listing.idealista_id.trim()),
       connection_settings: connectionSettings,
       intelligence_brain: intelligenceBrain,
       team_members: teamMembers.filter((member) => member.name.trim() || member.email.trim()),
@@ -400,6 +402,11 @@ const AgencySetup = () => {
                         )}
                       </div>
                       <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2 md:col-span-2">
+                          <Label>Idealista listing ID</Label>
+                          <Input value={listing.idealista_id} onChange={(e) => updateListing(listing.id, "idealista_id", e.target.value)} className="rounded-xl" placeholder="e.g. 107654321" />
+                          <p className="text-xs text-muted-foreground">Used to match incoming Idealista leads to this property.</p>
+                        </div>
                         <div className="space-y-2 md:col-span-2">
                           <Label>Listing title</Label>
                           <Input value={listing.title} onChange={(e) => updateListing(listing.id, "title", e.target.value)} className="rounded-xl" placeholder="e.g. Luxury Apartment in Madrid" />
