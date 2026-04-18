@@ -12,11 +12,12 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { submittedApplicationDemo } from "@/data/submittedApplication";
 
 const stats = [
   { label: "Active Listings", value: "34", icon: Building2, change: "+2 this week", trend: "up" },
-  { label: "Tenant Inquiries", value: "67", icon: Users, change: "+12 this week", trend: "up" },
-  { label: "Pre-Qualified", value: "41", icon: Shield, change: "61% rate", trend: "up" },
+  { label: "Tenant Inquiries", value: "68", icon: Users, change: "+1 onboarding submission", trend: "up" },
+  { label: "Pre-Qualified", value: "42", icon: Shield, change: "62% rate", trend: "up" },
   { label: "Avg. Trust Score", value: "7.8", icon: TrendingUp, change: "+0.3 vs last month", trend: "up" },
 ];
 
