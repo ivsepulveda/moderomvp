@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import {
   ArrowRight, ArrowLeft, User, Briefcase, Upload, CheckCircle, Info,
   Shield, ShieldCheck, Camera, Fingerprint, IdCard, History, Link2, Mail, Phone,
+  MessageCircle, Sparkles,
 } from "lucide-react";
 
 // ---------- constants ----------
@@ -90,10 +91,14 @@ const TenantOnboarding = () => {
   // Step 1 — Consent
   const [consent, setConsent] = useState({ gdpr: false, photo: null as File | null });
 
-  // Step 2 — Identity
+  // Step 2 — Identity (now includes contact + verifications)
   const [identity, setIdentity] = useState({
     name: "", phone: "", nationality: "", country_of_birth: "", age_range: "",
     nie: "", dni: "", linkedin_url: "",
+    whatsapp_same: true, whatsapp_phone: "", whatsapp_connected: false,
+    email_type: "" as "" | "business" | "student" | "private",
+    email_code: "", email_verified: false,
+    sms_code: "", sms_verified: false,
   });
 
   // Step 3 — Employment
@@ -102,10 +107,8 @@ const TenantOnboarding = () => {
     contract_type: "", income_monthly: "", salary_payment_date: "",
   });
 
-  // Step 4 — Verifications
+  // Step 4 — Verifications (residency only now)
   const [verif, setVerif] = useState({
-    email_code: "", sms_code: "",
-    email_verified: false, sms_verified: false,
     residency_addresses: "",
   });
 
@@ -177,7 +180,7 @@ const TenantOnboarding = () => {
       { id: 3, key: "employment", label: "Employment", icon: Briefcase, active: true },
       {
         id: 4, key: "verifications", label: "Verifications", icon: ShieldCheck,
-        active: brain.email_verification || brain.sms_verification || brain.residency_history_check,
+        active: brain.residency_history_check,
       },
       {
         id: 5, key: "documents", label: "Documents", icon: Upload,
@@ -190,6 +193,40 @@ const TenantOnboarding = () => {
   const totalSteps = steps.length;
   const currentStepMeta = steps.find((x) => x.id === step) ?? steps[0];
   const progressPercent = (currentStepMeta.displayIndex / totalSteps) * 100;
+
+  // ---------- Profile completeness (boosts trust score) ----------
+  const completeness = useMemo(() => {
+    const checks: boolean[] = [
+      !!consent.gdpr,
+      !!identity.name,
+      !!identity.phone,
+      !!identity.nationality,
+      !!identity.country_of_birth,
+      !!identity.age_range,
+      identity.whatsapp_connected || (identity.whatsapp_same && !!identity.phone),
+      !!identity.email_type,
+      identity.email_verified,
+      identity.sms_verified,
+      !brain.require_linkedin || !!identity.linkedin_url,
+      !brain.require_nie || !!identity.nie,
+      !brain.require_dni || !!identity.dni,
+      !!employment.employment_status,
+      !!employment.job_title,
+      !!employment.company,
+      !!employment.contract_type,
+      !!employment.income_monthly,
+      !!employment.salary_payment_date,
+      !brain.require_biometric_id || !!files.passport,
+      !brain.require_payslips || !!files.payslip1,
+      !!files.payslip2,
+      !!files.payslip3,
+      !brain.require_work_contract || !!files.contract,
+      !brain.require_tax_return || !!files.tax_return,
+      !brain.residency_history_check || !!verif.residency_addresses,
+    ];
+    const filled = checks.filter(Boolean).length;
+    return Math.round((filled / checks.length) * 100);
+  }, [consent, identity, employment, files, verif, brain]);
 
   const goNext = () => {
     const idx = steps.findIndex((x) => x.id === step);
@@ -349,6 +386,25 @@ const TenantOnboarding = () => {
             </span>
           ))}
         </div>
+
+        {/* Profile completeness — boosts trust score */}
+        <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4">
+          <div className="flex items-start gap-3">
+            <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-foreground">
+                  Profile completeness
+                </p>
+                <span className="text-sm font-semibold text-primary">{completeness}%</span>
+              </div>
+              <Progress value={completeness} className="h-1.5" />
+              <p className="text-xs text-muted-foreground">
+                The more accurate information you add, the higher your trust score and the better your chances of approval.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-8">
@@ -429,7 +485,118 @@ const TenantOnboarding = () => {
                 <Input id="phone" value={identity.phone}
                   onChange={(e) => setIdentity({ ...identity, phone: e.target.value })}
                   placeholder="+34 612 345 678" className="h-12 rounded-xl" />
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Info className="w-3 h-3" /> Please use the phone number linked to your WhatsApp — agencies will contact you there.
+                </p>
               </div>
+
+              {/* WhatsApp */}
+              <div className="rounded-xl border border-border p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-primary" />
+                  <p className="text-sm font-medium">WhatsApp</p>
+                  {identity.whatsapp_connected && <CheckCircle className="w-4 h-4 text-green-600" />}
+                </div>
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="wa-same"
+                    checked={identity.whatsapp_same}
+                    onCheckedChange={(v) =>
+                      setIdentity({ ...identity, whatsapp_same: v === true, whatsapp_phone: v === true ? "" : identity.whatsapp_phone })
+                    }
+                  />
+                  <Label htmlFor="wa-same" className="font-normal text-sm cursor-pointer">
+                    My WhatsApp number is the same as the phone above
+                  </Label>
+                </div>
+                {!identity.whatsapp_same && (
+                  <Input
+                    value={identity.whatsapp_phone}
+                    onChange={(e) => setIdentity({ ...identity, whatsapp_phone: e.target.value })}
+                    placeholder="WhatsApp number with country code"
+                    className="h-10 rounded-lg"
+                  />
+                )}
+                {!identity.whatsapp_connected ? (
+                  <Button
+                    type="button" variant="outline" size="sm"
+                    onClick={() => setIdentity({ ...identity, whatsapp_connected: true })}
+                    disabled={identity.whatsapp_same ? !identity.phone : !identity.whatsapp_phone}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-1" /> Connect WhatsApp
+                  </Button>
+                ) : (
+                  <p className="text-xs text-green-700">WhatsApp connected ✓</p>
+                )}
+              </div>
+
+              {/* SMS verification (moved from Verifications step) */}
+              {brain.sms_verification && (
+                <div className="rounded-xl border border-border p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-primary" />
+                    <p className="text-sm font-medium">SMS verification</p>
+                    {identity.sms_verified && <CheckCircle className="w-4 h-4 text-green-600" />}
+                  </div>
+                  {!identity.sms_verified ? (
+                    <div className="flex gap-2">
+                      <Input placeholder="6-digit code" value={identity.sms_code}
+                        onChange={(e) => setIdentity({ ...identity, sms_code: e.target.value })}
+                        className="h-10 rounded-lg" />
+                      <Button variant="outline" size="sm" type="button"
+                        onClick={() => setIdentity({ ...identity, sms_verified: true })}>
+                        Verify
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-green-700">Phone verified ✓</p>
+                  )}
+                </div>
+              )}
+
+              {/* Email type + Email verification */}
+              <div className="rounded-xl border border-border p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-primary" />
+                  <p className="text-sm font-medium">Email</p>
+                  {identity.email_verified && <CheckCircle className="w-4 h-4 text-green-600" />}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">What kind of email is this?</Label>
+                  <Select
+                    value={identity.email_type}
+                    onValueChange={(v) => setIdentity({ ...identity, email_type: v as typeof identity.email_type })}
+                  >
+                    <SelectTrigger className="h-10 rounded-lg">
+                      <SelectValue placeholder="Select email type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="business">Business email</SelectItem>
+                      <SelectItem value="student">Student email</SelectItem>
+                      <SelectItem value="private">Private email</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    A business or student email increases your trust score.
+                  </p>
+                </div>
+                {brain.email_verification && (
+                  !identity.email_verified ? (
+                    <div className="flex gap-2">
+                      <Input placeholder="6-digit code" value={identity.email_code}
+                        onChange={(e) => setIdentity({ ...identity, email_code: e.target.value })}
+                        className="h-10 rounded-lg" />
+                      <Button variant="outline" size="sm" type="button"
+                        onClick={() => setIdentity({ ...identity, email_verified: true })}>
+                        Verify
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-green-700">Email verified ✓</p>
+                  )
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Nationality</Label>
@@ -604,52 +771,6 @@ const TenantOnboarding = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
-              {brain.email_verification && (
-                <div className="rounded-xl border border-border p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-primary" />
-                    <p className="text-sm font-medium">Email verification</p>
-                    {verif.email_verified && <CheckCircle className="w-4 h-4 text-green-600" />}
-                  </div>
-                  {!verif.email_verified ? (
-                    <div className="flex gap-2">
-                      <Input placeholder="6-digit code" value={verif.email_code}
-                        onChange={(e) => setVerif({ ...verif, email_code: e.target.value })}
-                        className="h-10 rounded-lg" />
-                      <Button variant="outline" size="sm"
-                        onClick={() => setVerif({ ...verif, email_verified: true })}>
-                        Verify
-                      </Button>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-green-700">Email verified ✓</p>
-                  )}
-                </div>
-              )}
-
-              {brain.sms_verification && (
-                <div className="rounded-xl border border-border p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-primary" />
-                    <p className="text-sm font-medium">SMS verification</p>
-                    {verif.sms_verified && <CheckCircle className="w-4 h-4 text-green-600" />}
-                  </div>
-                  {!verif.sms_verified ? (
-                    <div className="flex gap-2">
-                      <Input placeholder="6-digit code" value={verif.sms_code}
-                        onChange={(e) => setVerif({ ...verif, sms_code: e.target.value })}
-                        className="h-10 rounded-lg" />
-                      <Button variant="outline" size="sm"
-                        onClick={() => setVerif({ ...verif, sms_verified: true })}>
-                        Verify
-                      </Button>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-green-700">Phone verified ✓</p>
-                  )}
-                </div>
-              )}
-
               {brain.residency_history_check && (
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2"><History className="w-4 h-4" /> Last 5 years of residency</Label>
