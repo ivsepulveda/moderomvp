@@ -403,6 +403,11 @@ const AgencySetup = () => {
                       </div>
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2 md:col-span-2">
+                          <Label>Idealista listing ID</Label>
+                          <Input value={listing.idealista_id} onChange={(e) => updateListing(listing.id, "idealista_id", e.target.value)} className="rounded-xl" placeholder="e.g. 107654321" />
+                          <p className="text-xs text-muted-foreground">Used to match incoming Idealista leads to this property.</p>
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
                           <Label>Listing title</Label>
                           <Input value={listing.title} onChange={(e) => updateListing(listing.id, "title", e.target.value)} className="rounded-xl" placeholder="e.g. Luxury Apartment in Madrid" />
                         </div>
