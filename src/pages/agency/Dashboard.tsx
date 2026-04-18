@@ -483,7 +483,14 @@ const AgencyDashboard = () => {
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                          <p className="font-medium text-foreground text-sm truncate">{inquiry.name}</p>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className="font-medium text-foreground text-sm truncate">{inquiry.name}</p>
+                            {(inquiry as any).submittedViaOnboarding && (
+                              <Badge variant="outline" className="text-[9px] h-4 bg-primary/10 text-primary border-primary/30 px-1.5">
+                                Onboarding submitted
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-xs text-muted-foreground truncate">{inquiry.employer} · {inquiry.jobTitle}</p>
                         </div>
                       </div>
