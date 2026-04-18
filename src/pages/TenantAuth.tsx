@@ -455,9 +455,9 @@ const TenantAuth = () => {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-10 lg:py-16 grid lg:grid-cols-5 gap-12">
+      <div className="max-w-7xl mx-auto px-6 py-10 lg:py-16">
         {/* Left: Pitch */}
-        <div className="lg:col-span-3 space-y-10">
+        <div className="space-y-10">
           <div ref={inquiryRef} className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/5 via-primary/[0.03] to-transparent p-6 lg:p-7 space-y-5 shadow-sm scroll-mt-24">
             <div className="flex items-center gap-2 flex-wrap">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold uppercase tracking-wide">
@@ -661,102 +661,6 @@ const TenantAuth = () => {
           </div>
         </div>
 
-        {/* Right: Form */}
-        <div className="lg:col-span-2" ref={formRef}>
-          <div className="lg:sticky lg:top-24">
-            <div className="rounded-3xl bg-card border border-border/60 shadow-elegant p-7 lg:p-8 space-y-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {isSignUp && (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="fullName" className="text-sm font-medium">
-                      {t.form.fullName}
-                    </Label>
-                    <div className="relative">
-                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="fullName"
-                        type="text"
-                        placeholder={t.form.fullNamePh}
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className="pl-11 h-12 rounded-xl bg-background border-border/60"
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
-                <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-sm font-medium">
-                    {t.form.email}
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder={t.form.emailPh}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-11 h-12 rounded-xl bg-background border-border/60"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="password" className="text-sm font-medium">
-                    {t.form.password}
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-11 h-12 rounded-xl bg-background border-border/60"
-                      required
-                      minLength={6}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">{t.form.passwordHint}</p>
-                </div>
-
-                <Button
-                  type="submit"
-                  variant="hero"
-                  size="lg"
-                  className="w-full h-12 rounded-xl text-base"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground" />
-                  ) : (
-                    <>
-                      {isSignUp ? t.form.submitSignUp : t.form.submitSignIn}
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </>
-                  )}
-                </Button>
-
-                {isSignUp && (
-                  <div className="pt-1 space-y-2">
-                    {t.form.perksSignUp.map((p) => (
-                      <div key={p} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                        {p}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </form>
-            </div>
-
-            <p className="text-xs text-muted-foreground/70 text-center mt-4">
-              {t.form.legal}
-            </p>
-          </div>
-        </div>
       </div>
 
       {/* Powered by footer */}
