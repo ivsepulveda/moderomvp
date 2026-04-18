@@ -83,6 +83,7 @@ const defaultBrain = {
 
 const emptyListing = (): ListingDraft => ({
   id: crypto.randomUUID(),
+  idealista_id: "",
   title: "",
   address: "",
   rent: "",
