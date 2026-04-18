@@ -463,26 +463,53 @@ const TenantOnboarding = () => {
         </div>
       </div>
 
-      {/* Top progress with step labels — orange bar fills proportionally, labels below each segment */}
-      <div className="max-w-2xl mx-auto px-4 pt-6">
-        <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
+      {/* Top progress */}
+      <div className="max-w-2xl mx-auto px-4 pt-6 space-y-5">
+        <div>
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
           <div
-            className="h-full bg-primary rounded-full transition-all"
-            style={{ width: `${progressPercent}%` }}
-          />
+            className="mt-3 grid gap-2"
+            style={{ gridTemplateColumns: `repeat(${totalSteps}, minmax(0, 1fr))` }}
+          >
+            {steps.map((s) => (
+              <span
+                key={s.id}
+                className={`text-sm font-medium ${s.id <= step ? "text-primary" : "text-muted-foreground"}`}
+              >
+                {s.label}
+              </span>
+            ))}
+          </div>
         </div>
-        <div
-          className="grid mt-2 gap-2"
-          style={{ gridTemplateColumns: `repeat(${totalSteps}, minmax(0, 1fr))` }}
-        >
-          {steps.map((s) => (
-            <span
-              key={s.id}
-              className={`text-xs font-medium text-left ${s.id <= step ? "text-primary" : "text-muted-foreground"}`}
-            >
-              {s.label}
-            </span>
-          ))}
+
+        <div className="rounded-[28px] border border-primary/20 bg-card/80 p-6 shadow-card backdrop-blur-sm">
+          <div className="flex items-start gap-3">
+            <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1 space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-2xl font-semibold tracking-tight text-foreground">Profile completeness</p>
+                </div>
+                <span className="text-2xl font-semibold text-primary">{completeness}%</span>
+              </div>
+              <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{ width: `${completeness}%` }}
+                />
+              </div>
+              <p className="text-base leading-relaxed text-muted-foreground">
+                The more accurate information you add, the higher your trust score and the better your chances of approval.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
