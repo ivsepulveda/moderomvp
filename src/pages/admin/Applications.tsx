@@ -318,6 +318,108 @@ const Applications = () => {
                 </div>
               </section>
 
+              {/* Live Platform Activity */}
+              <section>
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-2">
+                  Platform Activity
+                  {details.loading && <Loader2 className="w-3 h-3 animate-spin" />}
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-secondary rounded-xl p-3 text-center">
+                    <Users className="w-4 h-4 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-base font-bold text-foreground">{details.agents.length}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Agents</p>
+                  </div>
+                  <div className="bg-secondary rounded-xl p-3 text-center">
+                    <Home className="w-4 h-4 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-base font-bold text-foreground">{details.listings.length}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Listings (live)</p>
+                  </div>
+                </div>
+              </section>
+
+              {details.setup && (
+                <section>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+                    <SettingsIcon className="w-3 h-3" /> Onboarding Setup
+                  </h4>
+                  <div className="bg-secondary/50 rounded-xl p-3 flex items-center justify-between">
+                    <p className="text-sm text-foreground">Step {details.setup.current_step + 1} / 5</p>
+                    <Badge variant={details.setup.completed ? "default" : "secondary"} className="text-xs">
+                      {details.setup.completed ? "Completed" : "In progress"}
+                    </Badge>
+                  </div>
+                </section>
+              )}
+
+              {details.agents.length > 0 && (
+                <section>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+                    <Users className="w-3 h-3" /> Team ({details.agents.length})
+                  </h4>
+                  <div className="bg-secondary/50 rounded-xl divide-y divide-border">
+                    {details.agents.slice(0, 6).map((a) => (
+                      <div key={a.id} className="p-3 flex items-center justify-between">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{a.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{a.email}</p>
+                        </div>
+                        <Badge variant={a.is_active ? "default" : "secondary"} className="text-xs flex-shrink-0">
+                          {a.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {details.listings.length > 0 && (
+                <section>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+                    <Home className="w-3 h-3" /> Live Listings ({details.listings.length})
+                  </h4>
+                  <div className="bg-secondary/50 rounded-xl divide-y divide-border">
+                    {details.listings.slice(0, 6).map((l) => (
+                      <div key={l.id} className="p-3 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{l.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{l.address || "—"}</p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-semibold text-foreground">{l.rent ? `€${l.rent}` : "—"}</p>
+                          <p className="text-xs text-muted-foreground">{l.bedrooms ?? "—"} bd</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {details.scores.length > 0 && (
+                <section>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+                    <TrendingUp className="w-3 h-3" /> Recent Tenant Scores ({details.scores.length})
+                  </h4>
+                  <div className="bg-secondary/50 rounded-xl divide-y divide-border">
+                    {details.scores.map((s) => (
+                      <div key={s.id} className="p-3 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{s.score}/100</p>
+                          <p className="text-xs text-muted-foreground">
+                            {s.created_at ? timeAgo(s.created_at) : "—"} · {s.result || "—"}
+                          </p>
+                        </div>
+                        {s.fraud_flag && (
+                          <Badge variant="destructive" className="text-xs">
+                            <AlertTriangle className="w-3 h-3 mr-1" /> Fraud
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
               {/* Flags */}
               {selectedApp.flags && selectedApp.flags.length > 0 && (
                 <section>
