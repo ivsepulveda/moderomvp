@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Brain, Building2, Calendar, Check, CheckCircle2, Loader2, Mail, MessageSquare, Plus, Settings2, Trash2, Users, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brain, Building2, Calendar, Check, CheckCircle2, ImageIcon, Loader2, Mail, MessageSquare, Plus, Settings2, Trash2, Upload, Users, X, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
