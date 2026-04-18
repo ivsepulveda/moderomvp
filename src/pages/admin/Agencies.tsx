@@ -300,6 +300,17 @@ const Agencies = () => {
                       <p className="text-lg font-semibold text-foreground mt-1">{selectedTeamCount}</p>
                     </div>
                   </div>
+                  <Button
+                    className="w-full rounded-xl gradient-primary text-primary-foreground hover:opacity-90"
+                    onClick={() => {
+                      const agencyId = selectedAgency.id;
+                      setSelectedAgency(null);
+                      navigate(`/admin/agencies/${agencyId}/setup`);
+                    }}
+                  >
+                    {selectedSetup?.completed ? "Review Agency Setup" : selectedSetup ? "Resume Agency Setup" : "Start Agency Setup"}
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
                 </div>
               </section>
             </div>
