@@ -465,26 +465,32 @@ const TenantOnboarding = () => {
 
       {/* Top progress */}
       <div className="max-w-2xl mx-auto px-4 pt-6 space-y-5">
-        <div>
-          <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-          <div
-            className="mt-3 grid gap-2"
-            style={{ gridTemplateColumns: `repeat(${totalSteps}, minmax(0, 1fr))` }}
-          >
-            {steps.map((s) => (
-              <span
-                key={s.id}
-                className={`text-sm font-medium ${s.id <= step ? "text-primary" : "text-muted-foreground"}`}
-              >
-                {s.label}
-              </span>
-            ))}
-          </div>
+        <div
+          className="grid gap-3"
+          style={{ gridTemplateColumns: `repeat(${totalSteps}, minmax(0, 1fr))` }}
+        >
+          {steps.map((s) => {
+            const isActive = s.id === step;
+            const isComplete = s.displayIndex < currentStepMeta.displayIndex;
+            return (
+              <div key={s.id} className="flex flex-col gap-2">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className={`h-full rounded-full bg-primary transition-all ${
+                      isComplete ? "w-full" : isActive ? "w-1/2" : "w-0"
+                    }`}
+                  />
+                </div>
+                <span
+                  className={`text-sm font-medium ${
+                    isActive ? "text-primary" : "text-muted-foreground"
+                  }`}
+                >
+                  {s.label}
+                </span>
+              </div>
+            );
+          })}
         </div>
 
         <div className="rounded-[28px] border border-primary/20 bg-card/80 p-6 shadow-card backdrop-blur-sm">
