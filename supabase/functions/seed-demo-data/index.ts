@@ -124,26 +124,44 @@ Deno.serve(async (req) => {
     ]);
 
     // ───────── 5. PROPERTIES ─────────
+    // Mix: 1 rented (proves ROI works for closed deals), 3 vacant with varied
+    // listed_at dates and varied target/suggested rent gaps so the analytics
+    // surface a clear "priced above market" insight.
+    const now = new Date();
+    const daysAgo = (n: number) => {
+      const d = new Date(now);
+      d.setDate(d.getDate() - n);
+      return d.toISOString();
+    };
+
     const propertiesData = [
       {
         title: "Luxury 2BR — Salamanca",
         address: "Calle Serrano 42, 28001 Madrid",
-        rent: 2200, bedrooms: 2, bathrooms: 2,
+        rent: 2400, target_rent: 2400, suggested_rent: 2150, // priced 12% above market
+        bedrooms: 2, bathrooms: 2,
+        listed_at: daysAgo(45), rented_at: null, commission_months: 1,
       },
       {
         title: "Cozy Studio — Malasaña",
         address: "Calle Fuencarral 88, 28004 Madrid",
-        rent: 1100, bedrooms: 0, bathrooms: 1,
+        rent: 1100, target_rent: 1100, suggested_rent: 1100, // on market
+        bedrooms: 0, bathrooms: 1,
+        listed_at: daysAgo(12), rented_at: null, commission_months: 1,
       },
       {
         title: "Family 3BR — Chamberí",
         address: "Paseo de la Castellana 120, 28046 Madrid",
-        rent: 3500, bedrooms: 3, bathrooms: 2,
+        rent: 3500, target_rent: 3500, suggested_rent: 3300, // 6% above
+        bedrooms: 3, bathrooms: 2,
+        listed_at: daysAgo(28), rented_at: null, commission_months: 1.5,
       },
       {
         title: "Bright 1BR — Lisbon Centro",
         address: "Rua Augusta 15, 1100-053 Lisbon",
-        rent: 1400, bedrooms: 1, bathrooms: 1,
+        rent: 1400, target_rent: 1400, suggested_rent: 1450, // 3% under, on market
+        bedrooms: 1, bathrooms: 1,
+        listed_at: daysAgo(60), rented_at: daysAgo(40), commission_months: 1, // RENTED in 20 days
       },
     ].map((p) => ({
       ...p,
