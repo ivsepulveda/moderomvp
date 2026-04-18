@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Users, Shield, AlertTriangle, CheckCircle, XCircle, Clock, Search, X, Eye, Briefcase, Mail, Phone, FileText, Globe, MapPin, IdCard, CreditCard, Link2, User, Building2, Calendar } from "lucide-react";
+import { Users, Shield, AlertTriangle, CheckCircle, XCircle, Clock, Search, X, Eye, Briefcase, Mail, Phone, FileText, Globe, MapPin, IdCard, CreditCard, Link2, User, Building2, Calendar, DollarSign } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -617,6 +617,40 @@ const Tenants = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Financing Selected (onboarding submissions) */}
+              {(selected as any).submittedViaOnboarding && (selected as any).qualifiedForFinancing && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-muted-foreground" /> Financing Selected
+                    </h4>
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-foreground">Provider</span>
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                          {(selected as any).financingProvider}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3 pt-1">
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase">Term</p>
+                          <p className="text-sm font-semibold text-foreground">{(selected as any).financingMonths} mo</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase">Deposit</p>
+                          <p className="text-sm font-semibold text-foreground">€{(selected as any).financingDeposit?.toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase">Monthly</p>
+                          <p className="text-sm font-semibold text-foreground">€{(selected as any).financingMonthly}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
 
               <Separator />
 
