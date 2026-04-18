@@ -288,12 +288,12 @@ Deno.serve(async (req) => {
     if (scoreLogs.length) await supabase.from("score_logs").insert(scoreLogs as any);
 
     // ───────── 9. VIEWINGS ─────────
-    const now = new Date();
-    const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1); tomorrow.setHours(10, 0, 0, 0);
+    const vNow = new Date();
+    const tomorrow = new Date(vNow); tomorrow.setDate(tomorrow.getDate() + 1); tomorrow.setHours(10, 0, 0, 0);
     const tomorrowEnd = new Date(tomorrow); tomorrowEnd.setMinutes(30);
-    const nextWeek = new Date(now); nextWeek.setDate(nextWeek.getDate() + 7); nextWeek.setHours(14, 0, 0, 0);
+    const nextWeek = new Date(vNow); nextWeek.setDate(nextWeek.getDate() + 7); nextWeek.setHours(14, 0, 0, 0);
     const nextWeekEnd = new Date(nextWeek); nextWeekEnd.setMinutes(30);
-    const lastWeek = new Date(now); lastWeek.setDate(lastWeek.getDate() - 7); lastWeek.setHours(11, 0, 0, 0);
+    const lastWeek = new Date(vNow); lastWeek.setDate(lastWeek.getDate() - 7); lastWeek.setHours(11, 0, 0, 0);
     const lastWeekEnd = new Date(lastWeek); lastWeekEnd.setMinutes(30);
 
     await supabase.from("viewings").insert([
