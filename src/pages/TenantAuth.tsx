@@ -413,7 +413,24 @@ const TenantAuth = () => {
       {/* Top bar */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-          <ModeroLogo size="default" />
+          {agencyLogo ? (
+            <img
+              src={agencyLogo}
+              alt={agencyName || "Agency"}
+              className="h-9 w-auto max-w-[200px] object-contain"
+            />
+          ) : agencyName ? (
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-primary" />
+              </div>
+              <span className="font-bold text-foreground text-lg truncate max-w-[200px]">
+                {agencyName}
+              </span>
+            </div>
+          ) : (
+            <ModeroLogo size="default" />
+          )}
           <div className="flex items-center gap-3">
             {/* Language selector */}
             <div className="flex items-center gap-1.5">
