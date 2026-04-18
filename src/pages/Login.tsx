@@ -247,15 +247,6 @@ const Login = () => {
             </button>
           </div>
 
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
-            </button>
-          </div>
 
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
             <div className="flex items-center gap-2 text-xs font-medium text-primary">
