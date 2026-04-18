@@ -550,12 +550,6 @@ const TenantOnboarding = () => {
               </p>
               <p className="text-lg font-semibold text-foreground">{currentStepMeta.label}</p>
             </div>
-            <span
-              className="text-2xl font-bold"
-              style={{ color: "hsl(var(--primary))" }}
-            >
-              {Math.round(progressPercent)}%
-            </span>
           </div>
 
           {/* Gradient track */}
