@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import {
   ArrowRight, ArrowLeft, User, Briefcase, Upload, CheckCircle, Info,
   Shield, ShieldCheck, Camera, Fingerprint, IdCard, History, Link2, Mail, Phone,
-  MessageCircle, Sparkles,
+  MessageCircle, Sparkles, UserCircle2, Banknote, CreditCard,
 } from "lucide-react";
 
 // ---------- constants ----------
@@ -176,17 +176,19 @@ const TenantOnboarding = () => {
   // ---------- Adaptive steps ----------
   const steps = useMemo(() => {
     const s = [
-      { id: 1, key: "consent", label: "Consent", icon: Shield, active: true },
-      { id: 2, key: "identity", label: "Identity", icon: User, active: true },
+      { id: 1, key: "profile", label: "Profile", icon: Shield, active: true },
+      { id: 2, key: "personal", label: "Personal", icon: UserCircle2, active: true },
       { id: 3, key: "employment", label: "Employment", icon: Briefcase, active: true },
-      {
-        id: 4, key: "verifications", label: "Verifications", icon: ShieldCheck,
-        active: brain.residency_history_check,
-      },
       {
         id: 5, key: "documents", label: "Documents", icon: Upload,
         active: brain.require_payslips || brain.require_work_contract || brain.require_tax_return || brain.require_biometric_id,
       },
+      {
+        id: 4, key: "verification", label: "Verification", icon: ShieldCheck,
+        active: brain.residency_history_check,
+      },
+      { id: 6, key: "financial", label: "Financial", icon: Banknote, active: true },
+      { id: 7, key: "credit", label: "Credit", icon: CreditCard, active: true },
     ];
     return s.filter((x) => x.active).map((x, i) => ({ ...x, displayIndex: i + 1 }));
   }, [brain]);
