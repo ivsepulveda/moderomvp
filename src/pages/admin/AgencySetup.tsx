@@ -180,6 +180,7 @@ const AgencySetup = () => {
           years_operating: savedBasicInfo.years_operating ?? app.years_operating ?? "",
           associations: savedBasicInfo.associations ?? app.associations ?? "",
           pitch: savedBasicInfo.pitch ?? app.pitch ?? "",
+          logo_url: savedBasicInfo.logo_url ?? "",
         });
         setListings(savedListings.length ? savedListings : [emptyListing()]);
         setConnectionSettings((prev) => ({
