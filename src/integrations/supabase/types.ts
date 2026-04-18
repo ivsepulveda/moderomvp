@@ -154,6 +154,60 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          agency_id: string
+          application_id: string | null
+          created_at: string
+          id: string
+          last_message_at: string
+          lead_id: string | null
+          property_id: string | null
+          property_title: string | null
+          status: string
+          tenant_email: string | null
+          tenant_id: string | null
+          tenant_name: string | null
+          tenant_phone: string | null
+          unread_count: number
+          updated_at: string
+        }
+        Insert: {
+          agency_id: string
+          application_id?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          lead_id?: string | null
+          property_id?: string | null
+          property_title?: string | null
+          status?: string
+          tenant_email?: string | null
+          tenant_id?: string | null
+          tenant_name?: string | null
+          tenant_phone?: string | null
+          unread_count?: number
+          updated_at?: string
+        }
+        Update: {
+          agency_id?: string
+          application_id?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          lead_id?: string | null
+          property_id?: string | null
+          property_title?: string | null
+          status?: string
+          tenant_email?: string | null
+          tenant_id?: string | null
+          tenant_name?: string | null
+          tenant_phone?: string | null
+          unread_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           application_id: string
@@ -258,6 +312,10 @@ export type Database = {
       }
       leads: {
         Row: {
+          agency_id: string | null
+          ai_summary: string | null
+          approved_at: string | null
+          assigned_agent_id: string | null
           created_at: string | null
           id: string
           idealista_listing_id: string | null
@@ -266,14 +324,26 @@ export type Database = {
           message: string | null
           price: number | null
           processed: boolean | null
+          property_id: string | null
           property_title: string | null
+          qualification_reasons: Json | null
+          qualification_score: number | null
+          qualification_status: string | null
           raw_email_data: Json | null
           raw_email_source: string | null
+          rejected_at: string | null
           tenant_email: string | null
           tenant_name: string | null
           tenant_phone: string | null
+          viewing_accepted_at: string | null
+          viewing_declined_at: string | null
+          viewing_invited_at: string | null
         }
         Insert: {
+          agency_id?: string | null
+          ai_summary?: string | null
+          approved_at?: string | null
+          assigned_agent_id?: string | null
           created_at?: string | null
           id?: string
           idealista_listing_id?: string | null
@@ -282,14 +352,26 @@ export type Database = {
           message?: string | null
           price?: number | null
           processed?: boolean | null
+          property_id?: string | null
           property_title?: string | null
+          qualification_reasons?: Json | null
+          qualification_score?: number | null
+          qualification_status?: string | null
           raw_email_data?: Json | null
           raw_email_source?: string | null
+          rejected_at?: string | null
           tenant_email?: string | null
           tenant_name?: string | null
           tenant_phone?: string | null
+          viewing_accepted_at?: string | null
+          viewing_declined_at?: string | null
+          viewing_invited_at?: string | null
         }
         Update: {
+          agency_id?: string | null
+          ai_summary?: string | null
+          approved_at?: string | null
+          assigned_agent_id?: string | null
           created_at?: string | null
           id?: string
           idealista_listing_id?: string | null
@@ -298,12 +380,20 @@ export type Database = {
           message?: string | null
           price?: number | null
           processed?: boolean | null
+          property_id?: string | null
           property_title?: string | null
+          qualification_reasons?: Json | null
+          qualification_score?: number | null
+          qualification_status?: string | null
           raw_email_data?: Json | null
           raw_email_source?: string | null
+          rejected_at?: string | null
           tenant_email?: string | null
           tenant_name?: string | null
           tenant_phone?: string | null
+          viewing_accepted_at?: string | null
+          viewing_declined_at?: string | null
+          viewing_invited_at?: string | null
         }
         Relationships: [
           {
@@ -314,6 +404,83 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          sender_name: string | null
+          sender_type: string
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          sender_name?: string | null
+          sender_type: string
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          sender_name?: string | null
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          agency_id: string
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read: boolean
+          related_conversation_id: string | null
+          related_lead_id: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          agency_id: string
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read?: boolean
+          related_conversation_id?: string | null
+          related_lead_id?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          agency_id?: string
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read?: boolean
+          related_conversation_id?: string | null
+          related_lead_id?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
