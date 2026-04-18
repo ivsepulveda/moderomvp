@@ -94,7 +94,7 @@ const TenantOnboarding = () => {
   // Step 2 — Identity (now includes contact + verifications)
   const [identity, setIdentity] = useState({
     name: "", phone: "", nationality: "", country_of_birth: "", age_range: "",
-    nie: "", dni: "", linkedin_url: "",
+    nie: "", dni: "", linkedin_url: "", linkedin_connected: false,
     whatsapp_same: true, whatsapp_phone: "", whatsapp_connected: false,
     email_type: "" as "" | "business" | "student" | "private",
     email_code: "", email_verified: false,
