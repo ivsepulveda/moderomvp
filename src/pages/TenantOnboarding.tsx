@@ -1185,9 +1185,10 @@ const TenantOnboarding = () => {
                 <Button onClick={goBack} variant="outline" size="lg" className="h-12 rounded-xl">
                   <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Button>
-                <Button onClick={goNext} variant="hero" size="lg"
-                  className="flex-1 h-12 rounded-xl" disabled={!documentsValid}>
-                  Continue <ArrowRight className="w-4 h-4 ml-2" />
+                <Button onClick={submitDocuments} variant="hero" size="lg"
+                  className="flex-1 h-12 rounded-xl" disabled={!documentsValid || saving}>
+                  {saving ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground" />
+                    : <>Continue <ArrowRight className="w-4 h-4 ml-2" /></>}
                 </Button>
               </div>
             </CardContent>
