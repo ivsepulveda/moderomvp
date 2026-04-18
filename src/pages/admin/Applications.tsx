@@ -45,6 +45,11 @@ function timeAgo(dateStr: string) {
   return `${days}d ago`;
 }
 
+interface Agent { id: string; name: string; email: string; phone: string | null; is_active: boolean; }
+interface Listing { id: string; title: string; address: string | null; rent: number | null; bedrooms: number | null; is_active: boolean | null; }
+interface ScoreLog { id: string; score: number; result: string | null; created_at: string | null; fraud_flag: boolean | null; }
+interface AgencySetup { completed: boolean; current_step: number; team_members: unknown; listings: unknown; basic_info: unknown; }
+
 const Applications = () => {
   const [apps, setApps] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,6 +57,9 @@ const Applications = () => {
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [details, setDetails] = useState<{
+    agents: Agent[]; listings: Listing[]; scores: ScoreLog[]; setup: AgencySetup | null; loading: boolean;
+  }>({ agents: [], listings: [], scores: [], setup: null, loading: false });
 
   const fetchApps = async () => {
     const { data, error } = await supabase
