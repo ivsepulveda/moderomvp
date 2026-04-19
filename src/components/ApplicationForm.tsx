@@ -55,6 +55,9 @@ const ApplicationForm = () => {
     associations: "",
     pitch: "",
     logoFile: null,
+    crmSystem: "",
+    crmOther: "",
+    emailProvider: "",
   });
 
   const update = (field: keyof FormData, value: string | File | null) => {
