@@ -167,6 +167,44 @@ const ApplicationForm = () => {
                 <Label htmlFor="idealista">Idealista Profile Link</Label>
                 <Input id="idealista" placeholder="https://idealista.com/pro/your-agency" value={formData.idealistaProfile} onChange={(e) => update("idealistaProfile", e.target.value)} className="mt-1.5" />
               </div>
+              <div>
+                <Label>CRM System Currently Used *</Label>
+                <Select value={formData.crmSystem} onValueChange={(v) => update("crmSystem", v)}>
+                  <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select your CRM" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Inmovilla">Inmovilla</SelectItem>
+                    <SelectItem value="Witei">Witei</SelectItem>
+                    <SelectItem value="Sooprema">Sooprema</SelectItem>
+                    <SelectItem value="Habitania">Habitania</SelectItem>
+                    <SelectItem value="Idealista Tools">Idealista Tools</SelectItem>
+                    <SelectItem value="Fotocasa Pro">Fotocasa Pro</SelectItem>
+                    <SelectItem value="HubSpot">HubSpot</SelectItem>
+                    <SelectItem value="Salesforce">Salesforce</SelectItem>
+                    <SelectItem value="Spreadsheets / None">Spreadsheets / None</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                {formData.crmSystem === "Other" && (
+                  <Input
+                    placeholder="Specify your CRM"
+                    value={formData.crmOther}
+                    onChange={(e) => update("crmOther", e.target.value)}
+                    className="mt-2"
+                  />
+                )}
+              </div>
+              <div>
+                <Label>Business Email Provider *</Label>
+                <Select value={formData.emailProvider} onValueChange={(v) => update("emailProvider", v)}>
+                  <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select email provider" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Gmail Business (Google Workspace)">Gmail Business (Google Workspace)</SelectItem>
+                    <SelectItem value="Outlook Business (Microsoft 365)">Outlook Business (Microsoft 365)</SelectItem>
+                    <SelectItem value="Custom / Other">Custom / Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">Required for inbox integration with Modero</p>
+              </div>
             </div>
           </div>
         )}
