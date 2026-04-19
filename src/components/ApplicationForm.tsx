@@ -65,7 +65,7 @@ const ApplicationForm = () => {
   };
 
   const canProceed = () => {
-    if (step === 0) return formData.agencyName && formData.email && formData.website;
+    if (step === 0) return formData.agencyName && formData.email && formData.website && formData.crmSystem && formData.emailProvider && (formData.crmSystem !== "Other" || formData.crmOther.trim());
     if (step === 1) return formData.activeListings && formData.yearsOperating;
     if (step === 2) return formData.pitch.length > 20;
     return false;
