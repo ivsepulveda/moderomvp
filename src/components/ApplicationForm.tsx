@@ -19,6 +19,9 @@ interface FormData {
   associations: string;
   pitch: string;
   logoFile: File | null;
+  crmSystem: string;
+  crmOther: string;
+  emailProvider: string;
 }
 
 const STEPS = [
