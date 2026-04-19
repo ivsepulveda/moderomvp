@@ -75,6 +75,13 @@ const ApplicationForm = () => {
     setSubmitting(true);
     try {
       const flags = computeFlags(formData);
+      const crmLabel = formData.crmSystem === "Other" ? formData.crmOther.trim() : formData.crmSystem;
+      const pitchWithContext = [
+        `CRM: ${crmLabel || "n/a"}`,
+        `Email provider: ${formData.emailProvider || "n/a"}`,
+        "",
+        formData.pitch.trim(),
+      ].join("\n");
       const { error } = await supabase.from("applications").insert({
         agency_name: formData.agencyName.trim(),
         email: formData.email.trim(),
@@ -84,7 +91,7 @@ const ApplicationForm = () => {
         monthly_inquiries: formData.monthlyInquiries || null,
         years_operating: formData.yearsOperating || null,
         associations: formData.associations.trim() || null,
-        pitch: formData.pitch.trim() || null,
+        pitch: pitchWithContext,
         flags,
       });
       if (error) throw error;
