@@ -19,6 +19,9 @@ interface FormData {
   associations: string;
   pitch: string;
   logoFile: File | null;
+  crmSystem: string;
+  crmOther: string;
+  emailProvider: string;
 }
 
 const STEPS = [
@@ -52,6 +55,9 @@ const ApplicationForm = () => {
     associations: "",
     pitch: "",
     logoFile: null,
+    crmSystem: "",
+    crmOther: "",
+    emailProvider: "",
   });
 
   const update = (field: keyof FormData, value: string | File | null) => {
@@ -59,7 +65,7 @@ const ApplicationForm = () => {
   };
 
   const canProceed = () => {
-    if (step === 0) return formData.agencyName && formData.email && formData.website;
+    if (step === 0) return formData.agencyName && formData.email && formData.website && formData.crmSystem && formData.emailProvider && (formData.crmSystem !== "Other" || formData.crmOther.trim());
     if (step === 1) return formData.activeListings && formData.yearsOperating;
     if (step === 2) return formData.pitch.length > 20;
     return false;
@@ -69,6 +75,13 @@ const ApplicationForm = () => {
     setSubmitting(true);
     try {
       const flags = computeFlags(formData);
+      const crmLabel = formData.crmSystem === "Other" ? formData.crmOther.trim() : formData.crmSystem;
+      const pitchWithContext = [
+        `CRM: ${crmLabel || "n/a"}`,
+        `Email provider: ${formData.emailProvider || "n/a"}`,
+        "",
+        formData.pitch.trim(),
+      ].join("\n");
       const { error } = await supabase.from("applications").insert({
         agency_name: formData.agencyName.trim(),
         email: formData.email.trim(),
@@ -78,7 +91,7 @@ const ApplicationForm = () => {
         monthly_inquiries: formData.monthlyInquiries || null,
         years_operating: formData.yearsOperating || null,
         associations: formData.associations.trim() || null,
-        pitch: formData.pitch.trim() || null,
+        pitch: pitchWithContext,
         flags,
       });
       if (error) throw error;
@@ -160,6 +173,44 @@ const ApplicationForm = () => {
               <div>
                 <Label htmlFor="idealista">Idealista Profile Link</Label>
                 <Input id="idealista" placeholder="https://idealista.com/pro/your-agency" value={formData.idealistaProfile} onChange={(e) => update("idealistaProfile", e.target.value)} className="mt-1.5" />
+              </div>
+              <div>
+                <Label>CRM System Currently Used *</Label>
+                <Select value={formData.crmSystem} onValueChange={(v) => update("crmSystem", v)}>
+                  <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select your CRM" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Inmovilla">Inmovilla</SelectItem>
+                    <SelectItem value="Witei">Witei</SelectItem>
+                    <SelectItem value="Sooprema">Sooprema</SelectItem>
+                    <SelectItem value="Habitania">Habitania</SelectItem>
+                    <SelectItem value="Idealista Tools">Idealista Tools</SelectItem>
+                    <SelectItem value="Fotocasa Pro">Fotocasa Pro</SelectItem>
+                    <SelectItem value="HubSpot">HubSpot</SelectItem>
+                    <SelectItem value="Salesforce">Salesforce</SelectItem>
+                    <SelectItem value="Spreadsheets / None">Spreadsheets / None</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                {formData.crmSystem === "Other" && (
+                  <Input
+                    placeholder="Specify your CRM"
+                    value={formData.crmOther}
+                    onChange={(e) => update("crmOther", e.target.value)}
+                    className="mt-2"
+                  />
+                )}
+              </div>
+              <div>
+                <Label>Business Email Provider *</Label>
+                <Select value={formData.emailProvider} onValueChange={(v) => update("emailProvider", v)}>
+                  <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select email provider" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Gmail Business (Google Workspace)">Gmail Business (Google Workspace)</SelectItem>
+                    <SelectItem value="Outlook Business (Microsoft 365)">Outlook Business (Microsoft 365)</SelectItem>
+                    <SelectItem value="Custom / Other">Custom / Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">Required for inbox integration with Modero</p>
               </div>
             </div>
           </div>
