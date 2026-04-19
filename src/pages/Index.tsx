@@ -17,6 +17,8 @@ import {
   Gift,
   Handshake,
   AlertTriangle,
+  Globe,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,9 +27,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dashboardOverview from "@/assets/dashboard-hero-overview.png";
 import dashboardTenant from "@/assets/dashboard-hero-tenant.png";
+import { LANGUAGES, landingTranslations, type Lang } from "@/lib/landing-i18n";
 
 const StatBadge = ({ value, label }: { value: string; label: string }) => (
   <div className="text-center">
