@@ -17,6 +17,8 @@ import {
   Gift,
   Handshake,
   AlertTriangle,
+  Globe,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,9 +27,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dashboardOverview from "@/assets/dashboard-hero-overview.png";
 import dashboardTenant from "@/assets/dashboard-hero-tenant.png";
+import { LANGUAGES, landingTranslations, type Lang } from "@/lib/landing-i18n";
 
 const StatBadge = ({ value, label }: { value: string; label: string }) => (
   <div className="text-center">
@@ -54,8 +57,29 @@ const StepCard = ({
   </div>
 );
 
+const detectInitialLang = (): Lang => {
+  try {
+    const saved = localStorage.getItem("modero_lang");
+    if (saved && ["en", "es", "pt", "it"].includes(saved)) return saved as Lang;
+  } catch {}
+  if (typeof navigator !== "undefined") {
+    const nav = navigator.language?.slice(0, 2).toLowerCase();
+    if (nav && ["en", "es", "pt", "it"].includes(nav)) return nav as Lang;
+  }
+  return "en";
+};
+
 const Index = () => {
   const [showForm, setShowForm] = useState(false);
+  const [lang, setLang] = useState<Lang>(detectInitialLang());
+  const t = landingTranslations[lang];
+
+  useEffect(() => {
+    try { localStorage.setItem("modero_lang", lang); } catch {}
+    if (typeof document !== "undefined") document.documentElement.lang = lang;
+  }, [lang]);
+
+  const currentLang = LANGUAGES.find((l) => l.code === lang) ?? LANGUAGES[0];
 
   const openApply = () => {
     setShowForm(true);
@@ -77,9 +101,37 @@ const Index = () => {
                 variant="outline"
                 size="sm"
                 className="gap-2 rounded-xl border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all"
+                aria-label={t.nav.language}
+              >
+                <Globe className="w-4 h-4" />
+                <span className="hidden sm:inline">{currentLang.flag} {currentLang.label}</span>
+                <span className="sm:hidden">{currentLang.flag}</span>
+                <ChevronDown className="w-3 h-3 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              {LANGUAGES.map((l) => (
+                <DropdownMenuItem
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  className="cursor-pointer gap-2"
+                >
+                  <span>{l.flag}</span>
+                  <span className="flex-1">{l.label}</span>
+                  {l.code === lang && <Check className="w-4 h-4 text-primary" />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 rounded-xl border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all"
               >
                 <LogIn className="w-4 h-4" />
-                Modero Login
+                {t.nav.login}
                 <ChevronDown className="w-3 h-3 opacity-60" />
               </Button>
             </DropdownMenuTrigger>
@@ -87,46 +139,43 @@ const Index = () => {
               <DropdownMenuItem asChild>
                 <a href="/login?type=admin" className="cursor-pointer gap-2">
                   <Shield className="w-4 h-4" />
-                  Admin Login
+                  {t.nav.admin}
                 </a>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <a href="/login?type=agency" className="cursor-pointer gap-2">
                   <Building className="w-4 h-4" />
-                  Agency Login
+                  {t.nav.agency}
                 </a>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Button variant="hero" size="lg" onClick={openApply}>
-            Start Qualification
+            {t.nav.cta}
           </Button>
         </div>
       </nav>
 
-      {/* Hero — The Idealista Paradox */}
+      {/* Hero */}
       <section className="px-6 md:px-12 pt-16 pb-20 max-w-7xl mx-auto">
         <div className="max-w-3xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-4 py-1.5 rounded-full text-sm font-medium mb-6">
             <AlertTriangle className="w-4 h-4" />
-            The Idealista Paradox
+            {t.hero.badge}
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold text-foreground leading-tight mb-6 tracking-tight">
-            The Intelligence Layer for{" "}
-            <span className="text-primary">Serious Rental Agencies</span>
+            {t.hero.titleA}
+            <span className="text-primary">{t.hero.titleB}</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-6">
-            In Spain, Portugal and Italy, an Idealista listing is both a blessing and a curse.
-            You post a property at 10:00 AM, and by 11:00 AM your agents are no longer
-            Real Estate Experts — they're full-time filters, drowning in unqualified leads.
+            {t.hero.p1}
           </p>
           <p className="text-lg text-foreground font-medium max-w-2xl mx-auto leading-relaxed mb-10">
-            Modero is the only system that makes the inquiry flood disappear,
-            so you can focus on closing.
+            {t.hero.p2}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button variant="hero" size="xl" onClick={openApply}>
-              Start Qualification
+              {t.hero.cta}
             </Button>
             <Button
               variant="outline"
@@ -135,57 +184,35 @@ const Index = () => {
                 document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })
               }
             >
-              How It Works
+              {t.hero.how}
             </Button>
           </div>
         </div>
 
-        {/* Stats */}
         <div className="flex items-center justify-center gap-12 md:gap-20 mt-16 py-8 border-y border-border">
-          <StatBadge value="6 mo" label="Free Trial" />
-          <StatBadge value="0" label="Dashboards to Learn" />
-          <StatBadge value="100%" label="Inbox Relief" />
+          {t.stats.map((s) => (
+            <StatBadge key={s.l} value={s.v} label={s.l} />
+          ))}
         </div>
       </section>
 
-      {/* The Solution — The Invisible Co-pilot */}
+      {/* Solution */}
       <section id="how-it-works" className="px-6 md:px-12 py-20 max-w-7xl mx-auto">
         <div className="text-center mb-12 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-4 py-1.5 rounded-full text-sm font-medium mb-4">
             <EyeOff className="w-4 h-4" />
-            The Invisible Co-pilot
+            {t.solution.badge}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            We don't sell you another dashboard.
+            {t.solution.title}
           </h2>
-          <p className="text-muted-foreground leading-relaxed">
-            We don't ask your team to learn new software. Modero is an Invisible Co-pilot
-            that works in the background of your existing workflow — so your agents stay
-            in their email or CRM, but only ever see High-Value Segments.
-          </p>
+          <p className="text-muted-foreground leading-relaxed">{t.solution.sub}</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-          <StepCard
-            icon={Link2}
-            title="Instant Sync"
-            description="We link directly to your Idealista listings — no migration, no setup pain."
-          />
-          <StepCard
-            icon={MessageSquare}
-            title="Auto-Response"
-            description="The moment an inquiry hits, Modero engages the tenant immediately, 24/7."
-          />
-          <StepCard
-            icon={Filter}
-            title="Qualification Gate"
-            description="It asks the hard questions: income, employment stability, move-in dates, household composition."
-          />
-          <StepCard
-            icon={Flame}
-            title="The Hot List"
-            description="You don't see the 190 unqualified leads. Only the 10 pre-qualified tenants ready for a viewing."
-          />
+          {[Link2, MessageSquare, Filter, Flame].map((Icon, i) => (
+            <StepCard key={i} icon={Icon} title={t.solution.steps[i].t} description={t.solution.steps[i].d} />
+          ))}
         </div>
       </section>
 
@@ -194,14 +221,12 @@ const Index = () => {
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-4 py-1.5 rounded-full text-sm font-medium mb-4">
             <Inbox className="w-4 h-4" />
-            From Noise to Hot List
+            {t.preview.badge}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
-            Your Idealista inbox, finally clean.
+            {t.preview.title}
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            Every inquiry pre-scored. Every tenant verified. Only the ones worth your time.
-          </p>
+          <p className="text-muted-foreground max-w-xl mx-auto">{t.preview.sub}</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto items-stretch">
@@ -209,16 +234,14 @@ const Index = () => {
             <div className="relative rounded-3xl overflow-hidden ring-1 ring-border/40 shadow-2xl shadow-primary/10 transition-transform duration-500 group-hover:-translate-y-1 aspect-[16/10] bg-card">
               <img
                 src={dashboardOverview}
-                alt="Modero agency dashboard showing the Hot List of pre-qualified tenants"
+                alt={t.preview.card1Title}
                 loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover block"
               />
             </div>
             <div className="mt-5 px-1">
-              <h3 className="font-bold text-foreground text-lg">The Hot List view</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Optional — for the agencies that want to peek behind the curtain.
-              </p>
+              <h3 className="font-bold text-foreground text-lg">{t.preview.card1Title}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{t.preview.card1Sub}</p>
             </div>
           </div>
 
@@ -226,16 +249,14 @@ const Index = () => {
             <div className="relative rounded-3xl overflow-hidden ring-1 ring-border/40 shadow-2xl shadow-primary/10 transition-transform duration-500 group-hover:-translate-y-1 aspect-[16/10] bg-card">
               <img
                 src={dashboardTenant}
-                alt="Modero tenant qualification breakdown across income, employment, identity and residency"
+                alt={t.preview.card2Title}
                 loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover block"
               />
             </div>
             <div className="mt-5 px-1">
-              <h3 className="font-bold text-foreground text-lg">Tenant Qualification Profile</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Income, employment, ID and residency — combined into one decisive answer.
-              </p>
+              <h3 className="font-bold text-foreground text-lg">{t.preview.card2Title}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{t.preview.card2Sub}</p>
             </div>
           </div>
         </div>
@@ -248,71 +269,42 @@ const Index = () => {
           <div className="relative">
             <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-4 py-1.5 rounded-full text-sm font-medium mb-4">
               <Gift className="w-4 h-4" />
-              The 6-Month Partnership Offer
+              {t.offer.badge}
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 max-w-2xl">
-              Six months. Full system. Zero cost.
+              {t.offer.title}
             </h2>
-            <p className="text-muted-foreground leading-relaxed max-w-3xl mb-8">
-              We're not looking for every agency — we're looking for{" "}
-              <span className="text-foreground font-semibold">Serious Partners</span> managing
-              significant rental portfolios who are tired of the chaos. Because we believe in
-              our <span className="italic">Understanding First</span> philosophy, we're offering
-              a 6-Month Free Trial of the full Modero Intelligence Layer.
-            </p>
+            <p className="text-muted-foreground leading-relaxed max-w-3xl mb-8">{t.offer.body}</p>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="rounded-2xl bg-secondary/50 p-6 border border-border">
                 <Handshake className="w-6 h-6 text-primary mb-3" />
-                <h3 className="font-bold text-foreground mb-2">What we invest</h3>
-                <p className="text-sm text-muted-foreground">
-                  Our full technology stack — Idealista sync, auto-response, qualification gate
-                  and Hot List — deployed into your agency for 6 months at zero cost.
-                </p>
+                <h3 className="font-bold text-foreground mb-2">{t.offer.investTitle}</h3>
+                <p className="text-sm text-muted-foreground">{t.offer.investBody}</p>
               </div>
               <div className="rounded-2xl bg-secondary/50 p-6 border border-border">
                 <Users className="w-6 h-6 text-primary mb-3" />
-                <h3 className="font-bold text-foreground mb-2">What you contribute</h3>
-                <p className="text-sm text-muted-foreground">
-                  Ground Truth — real-world feedback and recordings that help us refine the
-                  Intelligence Web for the Mediterranean market.
-                </p>
+                <h3 className="font-bold text-foreground mb-2">{t.offer.contributeTitle}</h3>
+                <p className="text-sm text-muted-foreground">{t.offer.contributeBody}</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* The No-Hassle Setup */}
+      {/* No-Hassle Setup */}
       <section className="px-6 md:px-12 py-20 max-w-7xl mx-auto">
         <div className="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
           <div>
             <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-4 py-1.5 rounded-full text-sm font-medium mb-4">
               <Zap className="w-4 h-4" />
-              The No-Hassle Setup
+              {t.setup.badge}
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Set it once. Then forget it exists.
-            </h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              You set it up once. We define your agency's specific{" "}
-              <span className="text-foreground font-semibold">Red Lines</span> and{" "}
-              <span className="text-foreground font-semibold">Green Lights</span>.
-              After that, the system is invisible.
-            </p>
-            <p className="text-muted-foreground leading-relaxed">
-              Your team stays in their email or current CRM, but instead of raw noise,
-              they receive High-Value Segments. No dashboard. No training sessions.
-              Just a co-pilot that never sleeps and never misses a lead.
-            </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t.setup.title}</h2>
+            <p className="text-muted-foreground leading-relaxed mb-4">{t.setup.p1}</p>
+            <p className="text-muted-foreground leading-relaxed">{t.setup.p2}</p>
           </div>
           <div className="space-y-3">
-            {[
-              "No new dashboard to log into",
-              "No training sessions for your team",
-              "Works inside your existing inbox or CRM",
-              "Defined once around your Red Lines & Green Lights",
-              "Runs 24/7 — never sleeps, never misses a lead",
-            ].map((item) => (
+            {t.setup.bullets.map((item) => (
               <div
                 key={item}
                 className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border shadow-card"
@@ -325,51 +317,30 @@ const Index = () => {
         </div>
       </section>
 
-      {/* The Qualification — Are We a Match? */}
+      {/* Qualification */}
       <section className="px-6 md:px-12 py-20 max-w-7xl mx-auto">
         <div className="bg-card rounded-3xl p-10 md:p-14 shadow-card border border-border max-w-4xl mx-auto">
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-4 py-1.5 rounded-full text-sm font-medium mb-4">
               <Shield className="w-4 h-4" />
-              Are We a Match?
+              {t.qual.badge}
             </div>
-            <h2 className="text-3xl font-bold text-foreground mb-3">
-              This is a high-integrity partnership.
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              To see if your agency is a fit for our 6-Month Partnership Phase,
-              you must start our qualification process today. We will audit:
-            </p>
+            <h2 className="text-3xl font-bold text-foreground mb-3">{t.qual.title}</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">{t.qual.sub}</p>
           </div>
           <div className="grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto mb-10">
-            {[
-              {
-                title: "Your Portfolio Volume",
-                desc: "Are you managing enough doors to benefit from automation?",
-              },
-              {
-                title: "Your Current Workflow",
-                desc: "Ready to move from manual filtering to Intelligence-First management?",
-              },
-              {
-                title: "Your Vision",
-                desc: "Do you want to lead the PropTech revolution in Southern Europe?",
-              },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="p-5 rounded-2xl bg-secondary/40 border border-border"
-              >
+            {t.qual.items.map((item) => (
+              <div key={item.t} className="p-5 rounded-2xl bg-secondary/40 border border-border">
                 <CheckCircle className="w-5 h-5 text-primary mb-3" />
-                <h3 className="font-bold text-foreground mb-1 text-sm">{item.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                <h3 className="font-bold text-foreground mb-1 text-sm">{item.t}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{item.d}</p>
               </div>
             ))}
           </div>
           {!showForm && (
             <div className="text-center">
               <Button variant="hero" size="xl" onClick={() => setShowForm(true)}>
-                Start the Qualification Process
+                {t.qual.cta}
               </Button>
             </div>
           )}
@@ -380,17 +351,13 @@ const Index = () => {
       <section className="px-6 md:px-12 py-20 max-w-7xl mx-auto">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6 leading-tight">
-            Your co-pilot starts working{" "}
-            <span className="text-primary">tomorrow.</span>
+            {t.closing.titleA}
+            <span className="text-primary">{t.closing.titleB}</span>
           </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed mb-3">
-            If we're a match, you don't pay a cent for the next 6 months.
-          </p>
-          <p className="text-base text-foreground font-medium italic mb-10">
-            Understanding first. Money last. Let's clean up your Idealista inbox forever.
-          </p>
+          <p className="text-lg text-muted-foreground leading-relaxed mb-3">{t.closing.p1}</p>
+          <p className="text-base text-foreground font-medium italic mb-10">{t.closing.p2}</p>
           <Button variant="hero" size="xl" onClick={openApply}>
-            Start Qualification
+            {t.closing.cta}
           </Button>
         </div>
       </section>
@@ -399,12 +366,8 @@ const Index = () => {
       {showForm && (
         <section id="apply" className="px-6 md:px-12 py-20 max-w-7xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-foreground mb-3">
-              Apply for the 6-Month Partnership
-            </h2>
-            <p className="text-muted-foreground">
-              Complete the form below. Applications are reviewed within 48 hours.
-            </p>
+            <h2 className="text-3xl font-bold text-foreground mb-3">{t.apply.title}</h2>
+            <p className="text-muted-foreground">{t.apply.sub}</p>
           </div>
           <ApplicationForm />
         </section>
@@ -414,9 +377,7 @@ const Index = () => {
       <footer className="px-6 md:px-12 py-10 border-t border-border max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <ModeroLogo size="sm" />
-          <p className="text-sm text-muted-foreground">
-            © 2026 Modero. The Tenant Intelligence Layer for professional Real Estate Agencies
-          </p>
+          <p className="text-sm text-muted-foreground">{t.footer}</p>
         </div>
       </footer>
     </div>
