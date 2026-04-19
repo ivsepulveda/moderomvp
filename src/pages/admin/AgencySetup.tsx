@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Brain, Building2, Calendar, Check, CheckCircle2, ImageIcon, Loader2, Mail, MessageSquare, Plus, Settings2, Trash2, Upload, Users, X, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brain, Building2, Calendar, Check, CheckCircle2, ImageIcon, Loader2, Mail, MessageSquare, Plus, Settings2, Trash2, Upload, UserPlus, Users, X, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -584,6 +584,31 @@ const AgencySetup = () => {
                           <Label>Bathrooms</Label>
                           <Input value={listing.bathrooms} onChange={(e) => updateListing(listing.id, "bathrooms", e.target.value)} className="rounded-xl" />
                         </div>
+                      </div>
+                      <div className="flex flex-col gap-2 pt-2 border-t border-border md:flex-row md:items-center md:justify-between">
+                        <div className="text-xs text-muted-foreground">
+                          Send a tenant the pre-qualification link for this listing. The agency name, address and Idealista reference will be linked automatically.
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="rounded-xl border-primary/30 text-primary hover:bg-primary/5"
+                          disabled={!listing.title.trim() && !listing.address.trim() && !listing.idealista_id.trim()}
+                          onClick={() => {
+                            const params = new URLSearchParams();
+                            if (basicInfo.agency_name) params.set("agency", basicInfo.agency_name);
+                            if (basicInfo.email) params.set("agency_email", basicInfo.email);
+                            if (basicInfo.logo_url) params.set("agency_logo", basicInfo.logo_url);
+                            if (id) params.set("agency_id", id);
+                            if (listing.title) params.set("property", listing.title);
+                            if (listing.address) params.set("address", listing.address);
+                            if (listing.idealista_id) params.set("ref", listing.idealista_id);
+                            if (listing.rent) params.set("rent", listing.rent);
+                            params.set("source", "admin_invite");
+                            window.open(`/tenant/auth?${params.toString()}`, "_blank");
+                          }}
+                        >
+                          <UserPlus className="w-4 h-4 mr-2" /> Onboard New Tenant
+                        </Button>
                       </div>
                     </div>
                   ))}
